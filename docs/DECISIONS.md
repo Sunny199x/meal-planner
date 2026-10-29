@@ -290,6 +290,23 @@ and a change in one should show in the other.
 - **After Claude, the app's own rules** check and tidy the result the same way for every source:
   units, names matched to ones already used, the seafood check, suggested make-ahead tasks from
   existing names, and the fields the suggestion rules need.
+- **The normalising rules** (`src/lib/import/normalise.ts`), applied to every import after it is
+  read, listing each change, guess and gap for the review screen:
+  - US units to metric: cups (taken as 240 ml, flagged: sizes vary and dry food is better
+    weighed), ounces, pounds, fluid ounces, pints (US, flagged), quarts, sticks of butter (113 g,
+    flagged), "(14 oz)" can sizes; °F to °C (to the nearest 10, as oven dials go) and inches to cm
+    in the steps. Rounded like the kitchen amounts.
+  - US names to the ones used here: cilantro → coriander, ground beef → beef mince, scallions →
+    spring onions, heavy cream → double cream, all-purpose flour → plain flour, and a few more.
+  - Cuisine takes the household's spelling when it's the same cuisine ("Mexican" →
+    "Mexican-inspired"). Main protein (heaviest protein ingredient) and diet (meat if any meat,
+    vegetarian if any dairy/egg/honey, otherwise vegan) are guessed and marked as guesses.
+  - Missing title, servings, time, cuisine, "good as leftovers" and "freezer-friendly" are listed
+    as questions; they are never filled in silently.
+  - Make-ahead tasks are offered under names at least two household recipes already share, when
+    the new recipe has all of the task's key ingredients ("Garlic yoghurt" needs garlic and
+    yoghurt). One tap adds one.
+  - The seafood check runs as for every recipe.
 - **Photos are stored in the database,** shrunk on the phone first (about 1,200 px, roughly
   150 KB), so there is no extra service to set up. A few hundred photos fit easily in the free
   database.

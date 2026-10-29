@@ -18,9 +18,12 @@ export default function NewRecipePage() {
           then links back to it.
         </p>
         <p>
-          <strong className="text-ink">Not available yet:</strong> reading the recipe automatically from a
-          website link, and attaching photos. Both are planned for a later milestone. Instagram posts can&apos;t
-          be read automatically, so for those the link plus typing is how it will stay.
+          To add a photo, save the recipe first, then use <strong className="text-ink">Add photo</strong> on its
+          page.
+        </p>
+        <p>
+          <strong className="text-ink">Not available yet:</strong> reading a recipe automatically from a link or
+          from pasted text. It is being built now (milestone 4).
         </p>
       </div>
       <Suspense fallback={<p className="text-muted">Loading the form…</p>}>

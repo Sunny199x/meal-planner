@@ -28,7 +28,7 @@ const VERBS = new Set([
 ]);
 
 /** "Cut potato fries" → ["fry", "potato"]: what the task works on, main word first. */
-function taskWords(name: string): string[][] {
+export function taskWords(name: string): string[][] {
   return name
     .split(/\band\b|,/i)
     .map((part) => ingredientKey(part.replace(/-/g, " ")).split(" ").filter((w) => w.length >= 3 && !VERBS.has(w)).reverse())
