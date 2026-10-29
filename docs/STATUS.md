@@ -49,8 +49,9 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
   recipe page, the week's suggestion cards and *Browse all recipes*. Photos are behind the
   passcode like everything else.
 - **Importing a recipe** (Recipes → Import): paste a link to a recipe website (read from the page
-  directly), a YouTube link plus its description, an Instagram link plus its caption, or any
-  recipe text, in any language. The website's or video's photo can come along. Claude reads it and writes it
+  directly), a YouTube link (its description is read automatically once `YOUTUBE_API_KEY` is set;
+  until then, paste the description), an Instagram link plus its caption, or any recipe text, in
+  any language. The website's or video's photo can come along. Claude reads it and writes it
   in English with metric units (about 1–3 öre per recipe); the app's own rules then match units,
   names, cuisine and make-ahead tasks to the household's recipes. You check everything in the
   normal recipe form before saving. Needs `ANTHROPIC_API_KEY` in Vercel.
@@ -112,7 +113,8 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
 - Saved meal combinations and past weeks ("repeat a past week"): milestone 5.
 - Food-safety guidance for prep limits (Livsmedelsverket): waiting for the site to be allowed in
   the session's network settings; until then limits are the household's own.
-- Instagram and YouTube can't be read by apps: their caption or description is pasted.
+- Instagram posts can't be read by the app yet: the caption is pasted (see `docs/IDEAS.md`).
+- YouTube recipes that are only said out loud in the video, not written in its description.
 - TikTok: not supported (not used).
 - Named collections beyond favourites and tags.
 - Prices: none, by design.

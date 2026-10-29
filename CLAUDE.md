@@ -68,7 +68,8 @@ import, multi-user accounts beyond the shared household passcode, a large recomm
 - Layout check at phone and desktop width (needs a running app):
   `HOUSEHOLD_PASSCODE=... node scripts/check-pages.mjs http://localhost:3000`
   (screenshots go to `.screenshots/`)
-- Importing reads recipes with Claude and needs `ANTHROPIC_API_KEY`. Cloud sessions have no key:
+- Importing reads recipes with Claude and needs `ANTHROPIC_API_KEY`; YouTube links are read on
+  their own with `YOUTUBE_API_KEY` (optional; without it the description is pasted). Cloud sessions have no key:
   start a local server with `IMPORT_TEST_READER=1` to use a stand-in that answers like Claude for a
   sample recipe (`src/lib/import/test-reader.ts`). Never set it on Vercel.
 - Local database: without `DATABASE_URL` the app uses PGlite in `.data/pglite` (delete the folder

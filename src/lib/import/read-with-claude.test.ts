@@ -30,6 +30,7 @@ describe("reading a recipe with Claude", () => {
     });
     expect(await readWithClaude("hello", source, fakeClaude({ ...SAMPLE_READING, isRecipe: false }))).toEqual({
       error: "That doesn't look like a recipe. Paste the ingredients and steps.",
+      notARecipe: true,
     });
     expect(await readWithClaude("…", source, fakeClaude(SAMPLE_READING, "refusal"))).toEqual({
       error: "Claude declined to read this text.",

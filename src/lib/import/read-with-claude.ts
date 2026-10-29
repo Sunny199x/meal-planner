@@ -41,7 +41,7 @@ const INSTRUCTIONS = `You read one recipe and write it out for a household's rec
 - Put anything you were unsure about in "checks", briefly.
 - If the text isn't a recipe, set "isRecipe" to false and leave the other fields empty.`;
 
-export type ReadResult = { draft: ImportDraft; language: string } | { error: string };
+export type ReadResult = { draft: ImportDraft; language: string } | { error: string; notARecipe?: true };
 
 export async function readWithClaude(
   text: string,
@@ -70,7 +70,7 @@ export async function readWithClaude(
   if (response.stop_reason === "max_tokens") return { error: "The recipe was too long to read in one go." };
   const read = response.parsed_output;
   if (!read) return { error: "Claude's answer couldn't be read. Please try again." };
-  if (!read.isRecipe) return { error: "That doesn't look like a recipe. Paste the ingredients and steps." };
+  if (!read.isRecipe) return { error: "That doesn't look like a recipe. Paste the ingredients and steps.", notARecipe: true };
   return { draft: toDraft(read, source), language: read.language };
 }
 

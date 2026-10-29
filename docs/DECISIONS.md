@@ -22,10 +22,10 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
 | Database | Postgres from Neon, added through Vercel's Storage / Marketplace | No separate account to manage; the database URL is injected automatically. |
 | Sign-in | One shared household passcode (environment variable), cookie session | Two people, one household. Real user accounts are out of scope. |
 | Recipe URL import | Server-side fetch, parse schema.org `Recipe` JSON-LD, then a review screen | Works for most food blogs. Falls back to "save link + manual entry" when there is no structured data. |
-| Instagram | Save link (as the recipe's source) + type the recipe, clearly labelled | Instagram doesn't let apps read posts without a business developer account. |
-| YouTube | Save link now. Milestone 4: also fetch title, channel and thumbnail automatically (YouTube's public oEmbed, no key needed) | The recipe text is usually in the video description, which needs a YouTube Data API key; only with Saketh's OK. |
+| Instagram | Link + pasted caption, read by Claude (milestone 4) | Instagram's official access is locked down; a better way is in `docs/IDEAS.md` for later. |
+| YouTube | Link only: the official YouTube Data API reads the title, description and thumbnail (`YOUTUBE_API_KEY`, free; Saketh's OK 29 October 2026). Without the key, the description is pasted. | Most cooking videos write the recipe in the description. |
 | TikTok | Not supported | Saketh and Victoria don't use it (decided 29 October 2026). |
-| Photo import | Attach a photo to a recipe as a reference, then type the recipe manually | No OCR in the MVP. Label it honestly. |
+| Photo import | A photo's text (iPhone Live Text, Google Lens) pasted into Import and read by Claude; dish photos attached to recipes (milestone 4) | No reading of photos themselves yet; see `docs/IDEAS.md`. |
 | Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Saketh writes his own recipes there. See `seed-recipes/README.md`. |
 
 **Caveat:** Vercel's Hobby plan is for personal, non-commercial use. That fits a household app.
@@ -300,7 +300,14 @@ and a change in one should show in the other.
   recipe is read from the page's schema.org Recipe block (JSON-LD), sent to Claude as short clean
   text; without such a block, the page's visible text is sent instead. Pasted text always wins
   over fetching. YouTube and Instagram don't let apps read descriptions or captions, so those are
-  pasted; YouTube's public oEmbed gives the video title, channel and thumbnail.
+  pasted.
+  - **YouTube** (corrected 29 October 2026; the first version wrongly said apps can't read
+    descriptions): with `YOUTUBE_API_KEY` set, the official YouTube Data API v3 (`videos.list`,
+    part snippet; free, 1 unit of the 10,000-unit daily allowance per import) gives the title,
+    channel, description and thumbnail, and Claude reads the recipe from the description. If the
+    description has no recipe (it's only said out loud), the app says so and asks for it to be
+    pasted or typed. Pasted text always wins. Without the key, the description is pasted and the
+    public oEmbed adds title, channel and thumbnail.
   - **Fetching safely** (`src/lib/import/fetch-page.ts`): only plain http(s) addresses on the
     public internet, checked again after every redirect (no localhost, home networks or cloud
     metadata addresses); 10 seconds and 3 MB per page, 8 MB per picture.

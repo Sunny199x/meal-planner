@@ -7,10 +7,15 @@ import { normalise, type Household, type Normalised } from "./normalise";
 import { photoType } from "../recipes/photos";
 import { fetchPublic } from "./fetch-page";
 import { readWithClaude } from "./read-with-claude";
-import { prepareImport } from "./sources";
+import { NO_RECIPE_IN_VIDEO, prepareImport } from "./sources";
 import { fakeClaude } from "./test-reader";
 
 export type ImportResult = { normalised?: Normalised; language?: string; photo?: string | null; error?: string };
+
+/** True when YouTube links can be read on their own (YOUTUBE_API_KEY is set). */
+export async function youtubeReady(): Promise<boolean> {
+  return Boolean(process.env.YOUTUBE_API_KEY);
+}
 
 /** True when a recipe can be read: the API key is set (or a local test server uses the stand-in). */
 export async function readerReady(): Promise<boolean> {
@@ -35,7 +40,9 @@ export async function readRecipeAction(link: string, text: string, from: string)
   if ("error" in prepared) return { error: prepared.error };
   const testing = process.env.IMPORT_TEST_READER === "1";
   const result = await readWithClaude(prepared.text, prepared.source, testing ? fakeClaude() : undefined);
-  if ("error" in result) return { error: result.error };
+  if ("error" in result) {
+    return { error: result.notARecipe && prepared.fromVideoDescription ? NO_RECIPE_IN_VIDEO : result.error };
+  }
   let household: Household;
   try {
     household = await getImportHousehold();

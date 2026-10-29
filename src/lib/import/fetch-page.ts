@@ -60,7 +60,9 @@ async function checkHost(hostname: string): Promise<"public" | "private" | "unkn
   }
 }
 
-export type Fetched = { ok: true; body: Uint8Array; contentType: string; url: string } | { ok: false; error: string };
+export type Fetched =
+  | { ok: true; body: Uint8Array; contentType: string; url: string }
+  | { ok: false; error: string; status?: number };
 
 export async function fetchPublic(address: string, { accept, maxBytes }: { accept: string; maxBytes: number }): Promise<Fetched> {
   const start = readWebAddress(address);
@@ -88,7 +90,11 @@ export async function fetchPublic(address: string, { accept, maxBytes }: { accep
       continue;
     }
     if (!response.ok || !response.body) {
-      return { ok: false, error: `The site said no (error ${response.status}). Some sites block apps; paste the recipe text instead.` };
+      return {
+        ok: false,
+        status: response.status,
+        error: `The site said no (error ${response.status}). Some sites block apps; paste the recipe text instead.`,
+      };
     }
     const reader = response.body.getReader();
     const chunks: Uint8Array[] = [];

@@ -14,8 +14,11 @@ const inputClass =
 
 const LINK_HINTS = {
   website: "The app reads the recipe from the page. If the site blocks it, paste the recipe text below instead.",
-  youtube: "YouTube doesn't let apps read video descriptions: copy the description (that's usually where the recipe is) and paste it below.",
-  instagram: "Instagram doesn't let apps read posts: copy the caption and paste it below.",
+  youtube:
+    "The app reads the video's description, where most cooking videos write the recipe. If the recipe is only said out loud, paste or type it below.",
+  youtubeNoKey:
+    "Paste the video's description below. (Reading it automatically needs a YouTube key in Vercel, which isn't set up yet.)",
+  instagram: "The app can't read Instagram posts yet: copy the caption and paste it below.",
 } as const;
 
 type Reading = { normalised: Normalised; language: string; photo: string | null };
@@ -40,7 +43,18 @@ async function attachPhoto(savedPath: string, photo: string, link: string) {
 }
 
 /** Paste a link or a recipe, have it read, then check and save it in the normal recipe form. */
-export function ImportFlow({ cuisines, prepNames, ready }: { cuisines: string[]; prepNames: string[]; ready: boolean }) {
+export function ImportFlow({
+  cuisines,
+  prepNames,
+  ready,
+  youtube,
+}: {
+  cuisines: string[];
+  prepNames: string[];
+  ready: boolean;
+  /** YouTube descriptions can be read without pasting (the YouTube key is set). */
+  youtube: boolean;
+}) {
   const [link, setLink] = useState("");
   const [text, setText] = useState("");
   const [from, setFrom] = useState("");
@@ -166,18 +180,26 @@ export function ImportFlow({ cuisines, prepNames, ready }: { cuisines: string[];
           placeholder="https://"
           className={inputClass}
         />
-        {kind && <span className="mt-1 block text-sm text-muted">{LINK_HINTS[kind]}</span>}
+        {kind && (
+          <span className="mt-1 block text-sm text-muted">
+            {LINK_HINTS[kind === "youtube" && !youtube ? "youtubeNoKey" : kind]}
+          </span>
+        )}
       </label>
       <label className="block">
         <span className="font-medium">Recipe text</span>{" "}
-        <span className="text-sm text-muted">{kind === "website" ? "(optional with a website link)" : ""}</span>
+        <span className="text-sm text-muted">
+          {kind === "website" || (kind === "youtube" && youtube) ? "(optional with this link)" : ""}
+        </span>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
           placeholder={
             kind === "youtube"
-              ? "Paste the video's description here"
+              ? youtube
+                ? "Only if the recipe isn't in the video's description"
+                : "Paste the video's description here"
               : kind === "instagram"
                 ? "Paste the post's caption here"
                 : "Paste the ingredients and steps here"

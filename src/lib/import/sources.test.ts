@@ -11,11 +11,14 @@ describe("what gets read for each kind of paste", () => {
     expect(await prepareImport("", "200 g lentils", "Grandma's notebook")).toMatchObject({ source: { name: "Grandma's notebook" } });
   });
 
-  it("asks for the caption or description where the site doesn't let apps read it", async () => {
+  it("asks for the caption, or the description when there's no YouTube key", async () => {
     expect(await prepareImport("https://www.instagram.com/p/abc/", "", "")).toEqual({
-      error: "Instagram doesn't let apps read posts. Copy the post's caption and paste it below.",
+      error: "The app can't read Instagram posts yet. Copy the post's caption and paste it below.",
     });
-    expect(await prepareImport("https://youtu.be/xyz", "", "")).toMatchObject({ error: expect.stringContaining("YouTube doesn't let apps") });
+    // Without YOUTUBE_API_KEY the description has to be pasted.
+    expect(await prepareImport("https://youtu.be/dQw4w9WgXcQ", "", "")).toMatchObject({
+      error: expect.stringContaining("needs a YouTube key"),
+    });
   });
 
   it("keeps the link with a pasted caption", async () => {

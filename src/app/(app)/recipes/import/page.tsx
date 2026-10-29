@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ErrorBox } from "@/components/ui";
 import { describeDatabaseError } from "@/lib/db";
-import { readerReady } from "@/lib/import/actions";
+import { readerReady, youtubeReady } from "@/lib/import/actions";
 import { getFormSuggestions } from "@/lib/recipes/queries";
 import { ImportFlow } from "./import-flow";
 
@@ -25,5 +25,12 @@ async function Import() {
   } catch (error) {
     return <ErrorBox>{describeDatabaseError(error)}</ErrorBox>;
   }
-  return <ImportFlow cuisines={suggestions.cuisines} prepNames={suggestions.prepNames} ready={await readerReady()} />;
+  return (
+    <ImportFlow
+      cuisines={suggestions.cuisines}
+      prepNames={suggestions.prepNames}
+      ready={await readerReady()}
+      youtube={await youtubeReady()}
+    />
+  );
 }

@@ -112,6 +112,10 @@ as written.
 
 ## Noticed while building milestone 4 (Open)
 
+- **Instagram links on their own:** today the caption has to be pasted. Instagram's official
+  access needs a Meta developer app and is mainly for business accounts, so it needs a closer look.
+  Saketh: "let's see how we can fix it later" (29 October 2026).
+
 - **Remember corrections from the review screen:** if Claude keeps translating a word the same
   wrong way, or a name keeps needing the same fix, remember the fix and pass it to Claude next
   time. Worth building only once the same fix repeats.

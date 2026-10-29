@@ -3,33 +3,23 @@
 import { describeSourceLink } from "../recipes/source-link";
 import { fetchPublic, readWebAddress } from "./fetch-page";
 import { readRecipePage, recipeAsText } from "./recipe-page";
+import { fetchVideo, videoBasics, type Video } from "./youtube";
 
 export type Prepared = {
   text: string;
   source: { name: string; url: string | null };
   photo: string | null;
+  /** The text is a video's description, which may not contain the recipe at all. */
+  fromVideoDescription?: boolean;
 };
 
-const MAX_PAGE_BYTES = 3_000_000;
+export const NO_RECIPE_IN_VIDEO =
+  "This video's description doesn't include the recipe (some videos only say it out loud). Paste or type the recipe below; the link and photo stay.";
 
-/** What a YouTube link's public "oEmbed" information gives: title, channel and thumbnail. */
-async function youtubeDetails(url: string): Promise<{ title: string; channel: string; thumbnail: string | null } | null> {
-  const fetched = await fetchPublic(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`, {
-    accept: "application/json",
-    maxBytes: 100_000,
-  });
-  if (!fetched.ok) return null;
-  try {
-    const data = JSON.parse(new TextDecoder().decode(fetched.body)) as Record<string, unknown>;
-    return {
-      title: typeof data.title === "string" ? data.title : "",
-      channel: typeof data.author_name === "string" ? data.author_name : "",
-      thumbnail: typeof data.thumbnail_url === "string" ? data.thumbnail_url : null,
-    };
-  } catch {
-    return null;
-  }
-}
+const videoText = (video: Video, description: string) =>
+  `Video title: ${video.title}\nChannel: ${video.channel}\n\nVideo description:\n${description}`;
+
+const MAX_PAGE_BYTES = 3_000_000;
 
 export async function prepareImport(link: string, text: string, from: string): Promise<Prepared | { error: string }> {
   const pasted = text.trim();
@@ -45,22 +35,36 @@ export async function prepareImport(link: string, text: string, from: string): P
   const kind = describeSourceLink(address)?.kind ?? "website";
 
   if (kind === "instagram") {
-    if (!pasted) return { error: "Instagram doesn't let apps read posts. Copy the post's caption and paste it below." };
+    if (!pasted) return { error: "The app can't read Instagram posts yet. Copy the post's caption and paste it below." };
     return { text: pasted, source: { name: named || "Instagram", url: address }, photo: null };
   }
 
   if (kind === "youtube") {
-    if (!pasted) {
+    const key = process.env.YOUTUBE_API_KEY;
+    const sourceFor = (video: Video | null) => ({ name: named || (video?.channel ? `YouTube: ${video.channel}` : "YouTube"), url: address });
+    if (pasted) {
+      // The recipe was pasted; the video only adds its title, channel and thumbnail.
+      const found = key ? await fetchVideo(address, key) : null;
+      const video = found && "video" in found ? found.video : await videoBasics(address);
       return {
-        error: "YouTube doesn't let apps read video descriptions. Open the video, copy the description (that's usually where the recipe is) and paste it below.",
+        text: video ? videoText(video, pasted) : `Video description:\n${pasted}`,
+        source: sourceFor(video),
+        photo: video?.thumbnail ?? null,
       };
     }
-    const video = await youtubeDetails(address);
-    const heading = video ? `Video title: ${video.title}\nChannel: ${video.channel}\n\n` : "";
+    if (!key) {
+      return {
+        error: "Paste the video's description below. Reading it automatically needs a YouTube key in Vercel (YOUTUBE_API_KEY), which isn't set up yet.",
+      };
+    }
+    const found = await fetchVideo(address, key);
+    if ("error" in found) return { error: found.error };
+    if (found.video.description.trim().length < 40) return { error: NO_RECIPE_IN_VIDEO };
     return {
-      text: `${heading}Video description:\n${pasted}`,
-      source: { name: named || (video?.channel ? `YouTube: ${video.channel}` : "YouTube"), url: address },
-      photo: video?.thumbnail ?? null,
+      text: videoText(found.video, found.video.description),
+      source: sourceFor(found.video),
+      photo: found.video.thumbnail,
+      fromVideoDescription: true,
     };
   }
 
