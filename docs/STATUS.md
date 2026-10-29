@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
+Last updated: 29 October 2026, end of milestone 3 (Using the week).
 
 ## Where the app is
 
@@ -8,7 +8,7 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
   https://meal-planner-git-claude-youthful-newton-o8dps0-sunny199x.vercel.app (needs a Vercel login
   in the browser).
 - **Production** (what Victoria uses): the address under *Domains* in the Vercel project. It has
-  what is merged into `main`: milestone 1 now, milestone 2 once its pull request is merged.
+  what is merged into `main`: milestone 1 now; milestones 2 and 3 once their pull request is merged.
 - Both ask for the household passcode (`HOUSEHOLD_PASSCODE` in Vercel). Preview and production
   share one Neon database, so recipes added in one show up in the other.
 
@@ -29,6 +29,8 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
     - includes / leaves out an ingredient
   - Filters are kept in the address.
 - **Recipe page:**
+  - a portions control (− / +) that scales the ingredient amounts; opening a dish from the week
+    shows it at that dish's portions
   - times, servings, freezer and leftover notes
   - source, with a "Watch on YouTube" / "Open on Instagram" / website link
   - labels, with the reason shown ("62.5 g red lentils per serving")
@@ -43,8 +45,9 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
   and reports problems line by line. Settings → *Reset everything* starts over (type RESET).
 - **Seafood rule:** recipes with seafood get a red warning. Ingredients that often contain fish
   (Worcestershire sauce, curry pastes) get "may contain fish".
-- **Week tab (choosing a week):**
-  - Arrows move between weeks; it opens on the coming week (Monday to Sunday).
+- **Week tab:** arrows move between weeks; it opens on the coming week (Monday to Sunday). Three
+  parts: **Dinners**, **Shopping** and **Sunday prep**.
+- **Dinners (choosing a week):**
   - **Setup:** which evenings you cook and how much time each has (Quick ≤ 25 min, Normal
     ≤ 45 min, Relaxed), dinner portions and lunch boxes for Sunny and Victoria, and ingredients
     to use up. A new week copies last week's setup, minus the ingredients.
@@ -57,13 +60,32 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
     them), × to remove, *Undo*, a warning if a dish is too long for its evening, and what is still
     open (evenings, lunch boxes).
   - When every evening has a dish: "All N dinners chosen", and how many minutes choosing took.
+  - **Portions per dish:** "Cook 5½ portions: dinner 2½ · Sunny's lunch ×2 (3)". A lunch box is
+    the size of that person's dinner. Lunch boxes are shared out automatically over dishes that
+    are good as leftovers (at most two per dish). *Change* on a dish moves lunch boxes, adds
+    freezer portions (freezer-friendly dishes) or plans the dish again as leftovers on a later
+    open evening.
   - Choices save as you go; both phones see the same week.
+- **Shopping:**
+  - Ingredients of all chosen dishes, scaled to their portions and added up per ingredient,
+    grouped by supermarket section, with a "Check the cupboard" group for salt, oils and spices.
+  - Rounded up to what you can buy ("2 (1¼ needed)"); a can and grams of the same thing are
+    shown side by side.
+  - *For Mon, Wed* on an item shows which dishes need how much.
+  - Tick **Bought**, or **Have it** for things already at home; add your own items (milk,
+    coffee). Ticks are shared by both phones. If the plan later needs more of something ticked,
+    it comes back with a note.
+- **Sunday prep:**
+  - Make-ahead tasks of the chosen dishes; the same task in several dishes is one batch, with the
+    amounts each dish needs ("410 g basmati rice (Mon) + 300 g basmati rice (Tue)").
+  - Tick tasks off; ticks are shared by both phones.
+  - Each evening: what was done on Sunday, the rest to do, lunch boxes to pack and portions to
+    freeze, or an evening of leftovers with no cooking.
 - **Phones:** every page works at 375 px wide. "Add to Home Screen" gives the app its own icon.
 
 ## Not built yet (and labelled in the app where it shows)
 
-- The week as a plan to cook from, the shopping list and the Sunday prep list, with portions
-  scaled per person: milestone 3. The Week tab says so once the week is full.
+- Saved meal combinations and past weeks ("repeat a past week"): milestone 4.
 - Reading a recipe automatically from a website link, and attaching photos: milestone 4. The Add
   page says so.
 - Pasting recipe text (for example from a photo via iPhone Live Text or Google Lens) and having
@@ -72,7 +94,9 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
 - YouTube: link only for now. Fetching the video title and thumbnail is planned for milestone 4.
 - TikTok: not supported (not used).
 - Named collections beyond favourites and tags.
-- Recipe photos on cards: cards use a coloured tile with the first letter instead.
+- Recipe photos on cards and suggestions: cards use a coloured tile with the first letter
+  instead. Planned with link import (milestone 4); see `docs/IDEAS.md`.
+- Prices: none, by design.
 
 ## Known limitations
 
@@ -90,6 +114,16 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
 - **Choosing on both phones at once.** The other phone sees changes after reopening the Week tab,
   not live. If both change the same week at the same moment, the last save wins.
 - **"Not this one" is forgotten** when you leave the Week tab; the recipe can be suggested again.
+- **Shopping list adding-up is cautious.** Only names that reduce to the same thing are added
+  together, so "red onion" and "onion" stay apart, and a few lines you'd merge by hand may stay
+  separate. Sections come from keyword rules; anything unknown goes to "Other". Pack sizes are
+  not known, so small amounts (20 g curry paste) are shown as written.
+- **Shopping and prep ticks** reach the other phone when the app is opened or comes back to the
+  front, not live while both are looking at it.
+- **Amounts in the recipe steps are not scaled** ("Bring 300 ml water to the boil"); only the
+  ingredient list is. The recipe page says so.
+- **Prep amounts** for a shared task are found by its main word ("rice" in "Cook rice"); a task
+  like "Chop aromatics" shows no amounts. The app never says how long prepared food keeps.
 - **First load after a quiet spell** can take a second or two (the free Neon database sleeps).
 - **The passcode** keeps strangers out; it is not bank-level security.
 - **The three template recipes** are illustrative and untested. Delete their files once real
@@ -113,10 +147,22 @@ Last updated: 29 October 2026, end of milestone 2 (Choosing a week).
    one**. Repeat until the week is full.
 4. Note the "Chosen in N minutes" line, and anything that felt wrong (a bad suggestion, a missing
    reason, a reason that wasn't true). That feedback tunes the points.
+5. Check the portions under each dish. Tap **Change** on one to move a lunch box or plan it again
+   as leftovers.
+
+### Sunday (shopping and prep)
+
+1. **Shopping** tab: tap **Have it** for what's already at home (start with "Check the
+   cupboard"). In the shop, tick items as they go in the basket. The other phone sees the ticks
+   when it is opened.
+2. **Sunday prep** tab: work down the list; shared tasks come first. Tick each one off.
+3. During the week, open **Sunday prep** → *Each evening* to see what's left to do tonight and
+   which lunch boxes to pack.
 
 ## Next
 
-Milestone 3 (using the week): the chosen week as a plan to cook from, a shopping list that adds
-up quantities across dishes and portions, and a Sunday prep list that batches shared make-ahead
-tasks. Before that, try choosing one or two real weeks: the points are easier to tune with real
-feedback.
+1. Merge milestones 2 and 3 into `main` so Victoria has them on the production address.
+2. Use the app for one or two real weeks and note what feels wrong in `docs/IDEAS.md`.
+3. Milestone 4 (capture and history): reading recipes from website links (with their photos),
+   Instagram and YouTube links, the free "paste recipe text" import, saved meal combinations and
+   past weeks. Before weekly use, revisit the shared preview/production database.

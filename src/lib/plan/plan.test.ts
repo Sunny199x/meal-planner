@@ -34,7 +34,8 @@ describe("week dates", () => {
 describe("week setup", () => {
   it("defaults to five weekday dinners for Sunny and Victoria, with Sunny's lunches", () => {
     expect(DEFAULT_SETUP.people.map((p) => p.name)).toEqual(["Sunny", "Victoria"]);
-    expect(portionsNeeded(DEFAULT_SETUP)).toEqual({ perDinner: 2.5, dinners: 12.5, lunches: 4, total: 16.5 });
+    // Sunny's 4 lunch boxes are his dinner size, 1.5 portions each.
+    expect(portionsNeeded(DEFAULT_SETUP)).toEqual({ perDinner: 2.5, dinners: 12.5, lunches: 6, total: 18.5 });
   });
 
   it("accepts a valid setup and tidies text", () => {

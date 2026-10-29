@@ -73,11 +73,11 @@ export function cookingEvenings(setup: WeekSetup): number[] {
   return setup.evenings.flatMap((evening, day) => (evening.cooking ? [day] : []));
 }
 
-/** Portions needed for the week: every cooking evening's dinners plus all lunches. */
+/** Portions needed for the week: every cooking evening's dinners plus all lunch boxes (each the size of that person's dinner). */
 export function portionsNeeded(setup: WeekSetup) {
   const perDinner = setup.people.reduce((sum, p) => sum + p.dinnerPortion, 0);
   const dinners = perDinner * cookingEvenings(setup).length;
-  const lunches = setup.people.reduce((sum, p) => sum + p.lunches, 0);
+  const lunches = setup.people.reduce((sum, p) => sum + p.lunches * p.dinnerPortion, 0);
   return { perDinner, dinners, lunches, total: dinners + lunches };
 }
 

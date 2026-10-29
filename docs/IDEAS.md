@@ -50,6 +50,23 @@ Options:
 
 Options 1 and 2 together keep the rule strict and the names tidy.
 
+## Noticed while building milestone 3 (Open)
+
+Small things that may or may not matter once the app is used for real weeks:
+
+- **Supermarket section order:** the shopping list follows a typical Swedish supermarket. It
+  could follow your own shop's layout instead.
+- **Live ticks while shopping together:** ticks reach the other phone when the app is opened or
+  comes back to the front. If you split up in the shop, live updates would help.
+- **One person away for a dinner:** every dinner is cooked for everyone. A "Victoria is out on
+  Tuesday" switch would cook less that evening.
+- **Pack sizes:** the list shows "20 g curry paste" because the app doesn't know what a pack
+  holds. Remembering usual pack sizes ("spinach: 65 g bag") would let it say "1 bag" and what's
+  left over.
+- **Scaling amounts in the steps:** only the ingredient list is scaled; "Bring 300 ml water to
+  the boil" stays as written. Doing this automatically is error-prone; marking such amounts in
+  the recipe files would be safer.
+
 ## Parked earlier (decided "later")
 
 - **Reading photos with the Claude API** (about $0.04–0.05 per photo, needs an Anthropic API key).

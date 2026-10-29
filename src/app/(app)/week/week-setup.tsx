@@ -237,7 +237,7 @@ function SetupSummary({ setup }: { setup: WeekSetup }) {
           .join(", ")}
         .{" "}
         {portions.lunches > 0 &&
-          `Lunches: ${setup.people
+          `Lunch boxes: ${setup.people
             .filter((p) => p.lunches > 0)
             .map((p) => `${p.name} ${p.lunches}`)
             .join(", ")}. `}
