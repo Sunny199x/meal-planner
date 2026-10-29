@@ -167,6 +167,36 @@ the repo, then check it for real on the Vercel preview deployment.
   if it was one sitting (under two hours). It's the check for the brief's "agree on the week in
   10–15 minutes".
 
+## Decisions for milestone 3 (29 October 2026)
+
+- **Scope:** the plan (portions per dish), the shopping list and the Sunday prep list. The prep
+  list moved here from milestone 4, because shopping and prep happen on the same Sunday and both
+  need the portions. Milestone 2 and 3 are merged into `main` together at the end.
+- **Portions per dish** (`src/lib/plan/portions.ts`):
+  - Every chosen dish is cooked for one dinner for everyone (the setup's dinner portions added
+    up, e.g. Sunny 1.5 + Victoria 1 = 2.5).
+  - **A lunch box is the same size as that person's dinner** (Saketh's choice), so a lunch box
+    for Sunny is 1.5 portions.
+  - Lunch boxes are shared out automatically over dishes marked good as leftovers, one at a time,
+    earliest evening first. A dish whose lunch boxes are changed by hand keeps its numbers; the
+    automatic dishes make up the difference, so − on one dish moves a box to another. "Share
+    lunch boxes out automatically" undoes all hand changes.
+  - Lunch boxes are counted, not given days, and the app says nothing about how long leftovers
+    keep.
+  - **Freezer portions:** extra whole portions, offered for freezer-friendly recipes, 0 by default.
+  - **Eat again as leftovers:** a leftover-friendly dish can also cover a later open evening. That
+    evening counts as chosen, adds one dinner's portions to the dish, and is cleared if something
+    is cooked that evening or the dish moves after it.
+  - All of this is stored with each chosen dish in the week's existing `dishes` data, so no
+    database change was needed. Undo covers it.
+- **Scaling a recipe for cooking** (`src/lib/recipes/scale.ts`): the recipe page has a portions
+  control (steps of ½); opening a dish from the week opens it at that dish's portions.
+  - Grams and millilitres round to 0.5 below 10, to 5 below 100, to 10 below 1,000, then to 50
+    (shown as kg or l from 1,000). Spoons, decilitres and pieces round to quarters, or halves from 3.
+  - Packs and cans also show their scaled weight ("2¾ packs … (about 1.05 kg in total)").
+  - Lines without an amount ("salt, to taste") and lines with reading problems stay as written.
+    Amounts inside the steps are not scaled, and the page says so.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

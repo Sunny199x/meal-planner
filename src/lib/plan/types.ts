@@ -35,10 +35,17 @@ export type PlannedDish = {
   day: number | null;
   addedAt: string;
   via: "start" | "suggestion" | "browse";
+  /** Lunch boxes from this dish per person (same order as the setup's people). Unset = shared out automatically. */
+  lunches?: number[];
+  /** Extra portions for the freezer. */
+  freezer?: number;
+  /** A second evening this dish is eaten as leftovers, with no cooking. */
+  alsoOn?: number | null;
 };
 
 export const PORTION_CHOICES = [0.75, 1, 1.25, 1.5, 2];
 export const MAX_LUNCHES = 7;
+export const MAX_FREEZER = 12;
 
 export const DEFAULT_SETUP: WeekSetup = {
   evenings: DAY_NAMES.map((_, day) => ({ cooking: day < 5, time: day < 5 ? "normal" : "relaxed" })),
@@ -64,6 +71,9 @@ export function portionsNeeded(setup: WeekSetup) {
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VIA = ["start", "suggestion", "browse"];
 
+const isDay = (value: unknown) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 6;
+const isCount = (value: unknown, max: number) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= max;
+
 /** Checks the chosen dishes sent from the browser; returns null if anything is off. */
 export function readDishes(input: unknown): PlannedDish[] | null {
   if (!Array.isArray(input) || input.length > 14) return null;
@@ -73,11 +83,24 @@ export function readDishes(input: unknown): PlannedDish[] | null {
     const dish = d as Record<string, unknown>;
     const day = dish?.day;
     if (typeof dish?.recipeId !== "string" || !UUID.test(dish.recipeId) || seen.has(dish.recipeId)) return null;
-    if (day !== null && !(Number.isInteger(day) && (day as number) >= 0 && (day as number) <= 6)) return null;
+    if (day !== null && !isDay(day)) return null;
     if (typeof dish.addedAt !== "string" || Number.isNaN(Date.parse(dish.addedAt))) return null;
     if (!VIA.includes(String(dish.via))) return null;
+    const clean: PlannedDish = { recipeId: dish.recipeId, day: day as number | null, addedAt: dish.addedAt, via: dish.via as PlannedDish["via"] };
+    if (dish.lunches !== undefined) {
+      if (!Array.isArray(dish.lunches) || dish.lunches.length > 6 || !dish.lunches.every((n) => isCount(n, 14))) return null;
+      clean.lunches = dish.lunches as number[];
+    }
+    if (dish.freezer !== undefined) {
+      if (!isCount(dish.freezer, MAX_FREEZER)) return null;
+      clean.freezer = dish.freezer as number;
+    }
+    if (dish.alsoOn !== undefined) {
+      if (dish.alsoOn !== null && !isDay(dish.alsoOn)) return null;
+      clean.alsoOn = dish.alsoOn as number | null;
+    }
     seen.add(dish.recipeId);
-    dishes.push({ recipeId: dish.recipeId, day: day as number | null, addedAt: dish.addedAt, via: dish.via as PlannedDish["via"] });
+    dishes.push(clean);
   }
   return dishes;
 }

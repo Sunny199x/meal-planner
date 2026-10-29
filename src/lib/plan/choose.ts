@@ -34,14 +34,43 @@ export function removeDish(dishes: PlannedDish[], recipeId: string): PlannedDish
   return dishes.filter((d) => d.recipeId !== recipeId);
 }
 
-/** Moves a dish to another evening; a dish already there swaps places with it. */
+/**
+ * Moves a dish to another evening; a dish already there swaps places with it.
+ * An evening of leftovers that is now cooked on, or comes before its dish, is cleared.
+ */
 export function moveDish(dishes: PlannedDish[], recipeId: string, day: number | null): PlannedDish[] {
   const moving = dishes.find((d) => d.recipeId === recipeId);
   if (!moving) return dishes;
+  return tidyRepeats(
+    dishes.map((d) => {
+      if (d.recipeId === recipeId) return { ...d, day };
+      if (day !== null && d.day === day) return { ...d, day: moving.day };
+      return d;
+    }),
+  );
+}
+
+/** Eat a dish again as leftovers on a later evening (null to stop). */
+export function setRepeat(dishes: PlannedDish[], recipeId: string, alsoOn: number | null): PlannedDish[] {
+  return tidyRepeats(
+    dishes.map((d) => {
+      if (d.recipeId === recipeId) return { ...d, alsoOn };
+      return alsoOn !== null && d.alsoOn === alsoOn ? { ...d, alsoOn: null } : d;
+    }),
+  );
+}
+
+/** A repeat must come after its dish's evening, on an evening nothing is cooked. */
+function tidyRepeats(dishes: PlannedDish[]): PlannedDish[] {
+  const cooked = new Set(dishes.map((d) => d.day));
+  const used = new Set<number>();
   return dishes.map((d) => {
-    if (d.recipeId === recipeId) return { ...d, day };
-    if (day !== null && d.day === day) return { ...d, day: moving.day };
-    return d;
+    if (d.alsoOn === undefined || d.alsoOn === null) return d;
+    if (d.day !== null && d.alsoOn > d.day && !cooked.has(d.alsoOn) && !used.has(d.alsoOn)) {
+      used.add(d.alsoOn);
+      return d;
+    }
+    return { ...d, alsoOn: null };
   });
 }
 

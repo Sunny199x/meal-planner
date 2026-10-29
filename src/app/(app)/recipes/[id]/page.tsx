@@ -5,6 +5,7 @@ import { FavouriteButton } from "@/components/favourite-button";
 import { Chip, DIET_LABEL, ErrorBox, formatMinutes, RecipeTile } from "@/components/ui";
 import { describeDatabaseError } from "@/lib/db";
 import type { RecipeRow } from "@/lib/db/schema";
+import { readWeekStart } from "@/lib/plan/dates";
 import {
   carbLabel,
   CARB_RULE_TEXT,
@@ -13,31 +14,50 @@ import {
   PROTEIN_RULE_TEXT,
   type LabelResult,
 } from "@/lib/recipes/labels";
-import { parseIngredientLine, splitNote, type ParsedIngredient } from "@/lib/recipes/parse-ingredient-line";
+import { parseIngredientLine } from "@/lib/recipes/parse-ingredient-line";
 import { getRecipe } from "@/lib/recipes/queries";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
 import { describeSourceLink } from "@/lib/recipes/source-link";
 import { BackToRecipes } from "./back-link";
+import { Ingredients } from "./ingredients";
 import { SavedNotice } from "./saved-notice";
 
-export default function RecipePage({ params }: PageProps<"/recipes/[id]">) {
+export default function RecipePage({ params, searchParams }: PageProps<"/recipes/[id]">) {
   return (
     <div className="space-y-4">
-      <BackToRecipes />
       <Suspense fallback={<p className="text-muted">Loading recipe…</p>}>
-        <RecipeDetail params={params} />
+        <RecipeDetail params={params} searchParams={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params">) {
-  const { id } = await params;
+/** Portions asked for in the address (from the week plan), if sensible. */
+function readPortions(value: string | string[] | undefined): number | null {
+  const portions = Number(Array.isArray(value) ? value[0] : value);
+  return Number.isFinite(portions) && portions >= 0.5 && portions <= 40 ? Math.round(portions * 4) / 4 : null;
+}
+
+async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
+  const week = readWeekStart(Array.isArray(query.week) ? query.week[0] : query.week);
+  const back = week ? (
+    <Link href={`/week?week=${week}`} className="text-sm text-terracotta hover:underline">
+      ← Back to the week
+    </Link>
+  ) : (
+    <BackToRecipes />
+  );
   let recipe: RecipeRow | null;
   try {
     recipe = await getRecipe(id);
   } catch (error) {
-    return <ErrorBox>{describeDatabaseError(error)}</ErrorBox>;
+    return (
+      <>
+        {back}
+        <ErrorBox>{describeDatabaseError(error)}</ErrorBox>
+      </>
+    );
   }
   if (!recipe) notFound();
 
@@ -49,6 +69,7 @@ async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params
 
   return (
     <article className="space-y-5">
+      {back}
       <SavedNotice />
       <header className="flex gap-4">
         <RecipeTile title={recipe.title} cuisine={recipe.cuisine} size="lg" />
@@ -139,8 +160,11 @@ async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params
 
       <div className="grid gap-5 lg:grid-cols-[2fr_3fr]">
         <Section title="Ingredients">
-          <p className="mb-3 text-sm text-muted">For {recipe.servings} servings.</p>
-          <IngredientList items={parsed} />
+          <Ingredients
+            items={parsed}
+            servings={recipe.servings}
+            initialPortions={readPortions(query.portions) ?? recipe.servings}
+          />
         </Section>
 
         <Section title="Instructions">
@@ -227,45 +251,5 @@ function LabelLine({ name, result }: { name: string; result: LabelResult }) {
         </span>
       )}
     </li>
-  );
-}
-
-function IngredientList({ items }: { items: (ParsedIngredient & { group: string | null })[] }) {
-  const groups: { name: string | null; items: typeof items }[] = [];
-  for (const item of items) {
-    const last = groups[groups.length - 1];
-    if (last && last.name === item.group) last.items.push(item);
-    else groups.push({ name: item.group, items: [item] });
-  }
-  return (
-    <div className="space-y-4">
-      {groups.map((group, g) => (
-        <div key={g}>
-          {group.name && <h3 className="mb-1 font-medium">{group.name}</h3>}
-          <ul className="divide-y divide-line">
-            {group.items.map((item, i) => {
-              const withoutOptional = item.line.replace(/\s*\(\s*optional\s*\)\s*/gi, " ").replace(/,\s*optional\s*$/i, "");
-              const [main, note] = splitNote(withoutOptional.trim());
-              return (
-                <li key={i} className="py-2">
-                  <span>{main.trim()}</span>
-                  {note.trim() && <span className="text-muted">, {note.trim()}</span>}
-                  {item.optional && (
-                    <span className="ml-2">
-                      <Chip>optional</Chip>
-                    </span>
-                  )}
-                  {item.problems.map((problem) => (
-                    <span key={problem} className="mt-1 block text-xs text-danger">
-                      {problem}
-                    </span>
-                  ))}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </div>
   );
 }

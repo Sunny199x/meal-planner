@@ -3,10 +3,19 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { saveWeekDishesAction } from "@/lib/plan/actions";
-import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, timeClash } from "@/lib/plan/choose";
+import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, setRepeat, timeClash } from "@/lib/plan/choose";
+import {
+  changeFreezer,
+  changeLunchBoxes,
+  lunchStatus,
+  planPortions,
+  shareLunchesAutomatically,
+  type DishPortions,
+} from "@/lib/plan/portions";
 import { openEvenings, rankCandidates, shortlist, type PlanRecipe, type Suggestion } from "@/lib/plan/suggest";
-import { DAY_NAMES, DAY_SHORT, TIME_SLOTS, type PlannedDish, type WeekSetup } from "@/lib/plan/types";
+import { DAY_NAMES, DAY_SHORT, MAX_FREEZER, TIME_SLOTS, type PlannedDish, type WeekSetup } from "@/lib/plan/types";
 import { normalise } from "@/lib/recipes/filters";
+import { formatQuantity } from "@/lib/recipes/format";
 
 export function WeekChooser({
   weekStart,
@@ -31,11 +40,11 @@ export function WeekChooser({
   const [, startSaving] = useTransition();
 
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
-  const known = dishes.filter((d) => byId.has(d.recipeId));
+  const known = useMemo(() => dishes.filter((d) => byId.has(d.recipeId)), [dishes, byId]);
   const plan = { setup, dishes: known, dismissed };
   const ranked = useMemo(
-    () => rankCandidates(recipes, { setup, dishes: dishes.filter((d) => byId.has(d.recipeId)), dismissed }, weekStart),
-    [recipes, byId, setup, dishes, dismissed, weekStart],
+    () => rankCandidates(recipes, { setup, dishes: known, dismissed }, weekStart),
+    [recipes, setup, known, dismissed, weekStart],
   );
   const open = openEvenings(plan);
   const shown = shortlist(ranked, 3, page);
@@ -43,6 +52,7 @@ export function WeekChooser({
   const cookingDays = setup.evenings.flatMap((e, day) => (e.cooking ? [day] : []));
   const minutes = minutesToChoose(startedAt, known);
   const offEvening = known.filter((d) => d.day === null || !setup.evenings[d.day]?.cooking);
+  const portions = useMemo(() => planPortions(setup, known, byId), [setup, known, byId]);
 
   function save(next: PlannedDish[]) {
     startSaving(async () => {
@@ -67,6 +77,24 @@ export function WeekChooser({
   function add(recipe: PlanRecipe, via: PlannedDish["via"]) {
     change(addDish(dishes, recipe, setup, via));
   }
+  function renderDish(dish: PlannedDish) {
+    return (
+      <ChosenDish
+        weekStart={weekStart}
+        dish={dish}
+        recipe={byId.get(dish.recipeId)!}
+        portions={portions.get(dish.recipeId)!}
+        setup={setup}
+        cookingDays={cookingDays}
+        repeatDays={open.filter((day) => dish.day !== null && day > dish.day)}
+        onMove={(to) => change(moveDish(dishes, dish.recipeId, to))}
+        onRemove={() => change(removeDish(dishes, dish.recipeId))}
+        onLunch={(person, by) => change(changeLunchBoxes(dishes, portions, dish.recipeId, person, by))}
+        onFreezer={(by) => change(changeFreezer(dishes, dish.recipeId, by))}
+        onRepeat={(day) => change(setRepeat(dishes, dish.recipeId, day))}
+      />
+    );
+  }
 
   return (
     <>
@@ -87,23 +115,29 @@ export function WeekChooser({
             Undo
           </button>
         </div>
-        <RemainingNeeds setup={setup} open={open} chosen={known.map((d) => byId.get(d.recipeId)!)} />
+        <RemainingNeeds
+          setup={setup}
+          open={open}
+          portions={portions}
+          automatic={known.every((d) => !d.lunches)}
+          onShareOut={() => change(shareLunchesAutomatically(dishes))}
+        />
         <ul className="divide-y divide-line">
           {cookingDays.map((day) => {
             const dish = known.find((d) => d.day === day);
+            const repeat = known.find((d) => d.alsoOn === day);
             return (
               <li key={day} className="py-2">
                 <p className="text-xs tracking-wide text-muted uppercase">
                   {DAY_NAMES[day]} · {TIME_SLOTS[setup.evenings[day].time].label}
                 </p>
                 {dish ? (
-                  <ChosenDish
-                    dish={dish}
-                    recipe={byId.get(dish.recipeId)!}
-                    setup={setup}
-                    cookingDays={cookingDays}
-                    onMove={(to) => change(moveDish(dishes, dish.recipeId, to))}
-                    onRemove={() => change(removeDish(dishes, dish.recipeId))}
+                  renderDish(dish)
+                ) : repeat ? (
+                  <RepeatDinner
+                    dish={repeat}
+                    recipe={byId.get(repeat.recipeId)!}
+                    onStop={() => change(setRepeat(dishes, repeat.recipeId, null))}
                   />
                 ) : (
                   <p className="text-muted">Nothing yet</p>
@@ -114,14 +148,7 @@ export function WeekChooser({
           {offEvening.map((dish) => (
             <li key={dish.recipeId} className="py-2">
               <p className="text-xs tracking-wide text-muted uppercase">Not on an evening yet</p>
-              <ChosenDish
-                dish={dish}
-                recipe={byId.get(dish.recipeId)!}
-                setup={setup}
-                cookingDays={cookingDays}
-                onMove={(to) => change(moveDish(dishes, dish.recipeId, to))}
-                onRemove={() => change(removeDish(dishes, dish.recipeId))}
-              />
+              {renderDish(dish)}
             </li>
           ))}
         </ul>
@@ -200,7 +227,9 @@ export function WeekChooser({
           <h2 className="font-display text-xl font-semibold text-sage">All {cookingDays.length} dinners chosen</h2>
           <p className="mt-1 text-sm">
             {minutes !== null && <>Chosen in {minutes} {minutes === 1 ? "minute" : "minutes"}. </>}
-            The weekly plan view, shopping list and Sunday prep come in the next milestone.
+            Check the portions above: <strong>Change</strong> on a dish moves lunch boxes, adds freezer
+            portions or plans it again as leftovers. The shopping list and Sunday prep list are being
+            built next.
           </p>
         </section>
       )}
@@ -208,67 +237,232 @@ export function WeekChooser({
   );
 }
 
-/** What the week still needs: open evenings and lunch boxes. Portions come with the shopping list. */
-function RemainingNeeds({ setup, open, chosen }: { setup: WeekSetup; open: number[]; chosen: PlanRecipe[] }) {
-  const lunches = setup.people.reduce((sum, p) => sum + p.lunches, 0);
-  const leftovers = chosen.filter((r) => r.goodAsLeftovers).length;
+/** What the week still needs: open evenings and lunch boxes. */
+function RemainingNeeds({
+  setup,
+  open,
+  portions,
+  automatic,
+  onShareOut,
+}: {
+  setup: WeekSetup;
+  open: number[];
+  portions: Map<string, DishPortions>;
+  automatic: boolean;
+  onShareOut: () => void;
+}) {
+  const lunches = lunchStatus(setup, portions);
+  const short = lunches.some((l) => l.planned < l.needed);
   return (
     <p className="text-sm text-muted">
       {open.length > 0 ? <>Still open: {open.map((day) => DAY_SHORT[day]).join(", ")}. </> : null}
-      {lunches > 0 && (
+      {lunches.length > 0 && (
         <>
-          Lunch boxes: {lunches} needed; {leftovers} chosen {leftovers === 1 ? "dish is" : "dishes are"} good as
-          leftovers.
+          Lunch boxes: {lunches.map((l) => `${l.name} ${l.planned} of ${l.needed}`).join(", ")} planned.
+          {short && " Choose a dish that's good as leftovers, or use Change on a dish."}
+        </>
+      )}
+      {!automatic && (
+        <>
+          {" "}
+          <button type="button" onClick={onShareOut} className="text-terracotta underline">
+            Share lunch boxes out automatically
+          </button>
         </>
       )}
     </p>
   );
 }
 
+const fmt = formatQuantity;
+
+/** "dinner 2½ · again Thu 2½ · Sunny's lunch ×2 (3) · freezer 1" */
+function portionParts(portions: DishPortions, setup: WeekSetup, alsoOn: number | null | undefined): string[] {
+  const parts = [`dinner ${fmt(portions.dinner)}`];
+  if (portions.repeat && alsoOn != null) parts.push(`again ${DAY_SHORT[alsoOn]} ${fmt(portions.repeat)}`);
+  portions.lunchBoxes.forEach((boxes, i) => {
+    if (!boxes) return;
+    const person = setup.people[i];
+    const size = boxes * person.dinnerPortion;
+    parts.push(`${person.name}'s lunch ×${boxes}${size === boxes ? "" : ` (${fmt(size)})`}`);
+  });
+  if (portions.freezer) parts.push(`freezer ${fmt(portions.freezer)}`);
+  return parts;
+}
+
 function ChosenDish({
+  weekStart,
   dish,
   recipe,
+  portions,
   setup,
   cookingDays,
+  repeatDays,
   onMove,
   onRemove,
+  onLunch,
+  onFreezer,
+  onRepeat,
 }: {
+  weekStart: string;
   dish: PlannedDish;
   recipe: PlanRecipe;
+  portions: DishPortions;
   setup: WeekSetup;
   cookingDays: number[];
+  /** Open evenings after this dish's own, for eating it again. */
+  repeatDays: number[];
   onMove: (day: number | null) => void;
   onRemove: () => void;
+  onLunch: (person: number, by: 1 | -1) => void;
+  onFreezer: (by: 1 | -1) => void;
+  onRepeat: (day: number | null) => void;
 }) {
+  const [editing, setEditing] = useState(false);
   const clash = timeClash(recipe, setup, dish.day);
+  const lunchPeople = setup.people.flatMap((person, i) => (person.lunches > 0 || portions.lunchBoxes[i] > 0 ? [i] : []));
+  const canFreeze = recipe.freezerFriendly || portions.freezer > 0;
+  const canRepeat = (recipe.goodAsLeftovers && dish.day !== null) || dish.alsoOn != null;
+  const repeatOptions = [...new Set([...repeatDays, ...(dish.alsoOn != null ? [dish.alsoOn] : [])])].sort((a, b) => a - b);
+  return (
+    <div className="mt-1">
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <Link
+            href={`/recipes/${recipe.id}?portions=${portions.total}&week=${weekStart}`}
+            className="font-medium hover:text-terracotta"
+          >
+            {recipe.title}
+          </Link>
+          <p className="text-sm text-muted">
+            {recipe.timeTotalMin} min · {recipe.cuisine}
+          </p>
+          {clash && <p className="text-sm text-danger">{clash}</p>}
+        </div>
+        <select
+          aria-label={`Move ${recipe.title}`}
+          value={dish.day ?? ""}
+          onChange={(e) => onMove(e.target.value === "" ? null : Number(e.target.value))}
+          className="w-20 shrink-0 rounded-xl border border-line bg-cream px-2 py-1 text-sm"
+        >
+          {cookingDays.map((day) => (
+            <option key={day} value={day}>
+              {DAY_SHORT[day]}
+            </option>
+          ))}
+          <option value="">No evening</option>
+        </select>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Remove ${recipe.title}`}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-cream hover:text-ink"
+        >
+          ×
+        </button>
+      </div>
+      <p className="mt-1 text-sm">
+        <span className="font-medium">Cook {fmt(portions.total)} portions</span>
+        <span className="text-muted">: {portionParts(portions, setup, dish.alsoOn).join(" · ")}</span>
+        {(lunchPeople.length > 0 || canFreeze || canRepeat) && (
+          <>
+            {" "}
+            <button
+              type="button"
+              onClick={() => setEditing(!editing)}
+              aria-expanded={editing}
+              className="text-terracotta underline"
+            >
+              {editing ? "Done" : "Change"}
+            </button>
+          </>
+        )}
+      </p>
+      {editing && (
+        <div className="mt-2 space-y-2 rounded-xl bg-cream p-3 text-sm">
+          {lunchPeople.map((i) => (
+            <Stepper
+              key={i}
+              label={`${setup.people[i].name}'s lunch boxes`}
+              value={portions.lunchBoxes[i]}
+              max={14}
+              onChange={(by) => onLunch(i, by)}
+            />
+          ))}
+          {canFreeze && (
+            <Stepper label="Portions for the freezer" value={portions.freezer} max={MAX_FREEZER} onChange={onFreezer} />
+          )}
+          {canRepeat && (
+            <label className="flex items-center justify-between gap-3">
+              <span>Eat again as leftovers</span>
+              <select
+                value={dish.alsoOn ?? ""}
+                onChange={(e) => onRepeat(e.target.value === "" ? null : Number(e.target.value))}
+                className="rounded-xl border border-line bg-paper px-2 py-1"
+              >
+                <option value="">No</option>
+                {repeatOptions.map((day) => (
+                  <option key={day} value={day}>
+                    {DAY_NAMES[day]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          {canRepeat && repeatOptions.length === 0 && (
+            <p className="text-muted">No open evening later in the week for leftovers.</p>
+          )}
+          <p className="text-xs text-muted">
+            A lunch box is the size of that person&apos;s dinner. {recipe.servings} portions is the recipe as written.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stepper({
+  label,
+  value,
+  max,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  onChange: (by: 1 | -1) => void;
+}) {
+  const button = "flex h-8 w-8 items-center justify-center rounded-full border border-line bg-paper text-lg disabled:opacity-40";
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span>{label}</span>
+      <span className="flex items-center gap-2">
+        <button type="button" onClick={() => onChange(-1)} disabled={value <= 0} aria-label={`Fewer: ${label}`} className={button}>
+          −
+        </button>
+        <span className="w-6 text-center font-medium">{value}</span>
+        <button type="button" onClick={() => onChange(1)} disabled={value >= max} aria-label={`More: ${label}`} className={button}>
+          +
+        </button>
+      </span>
+    </div>
+  );
+}
+
+/** An evening of leftovers from a dish cooked earlier in the week. */
+function RepeatDinner({ dish, recipe, onStop }: { dish: PlannedDish; recipe: PlanRecipe; onStop: () => void }) {
   return (
     <div className="mt-1 flex items-start gap-2">
       <div className="min-w-0 flex-1">
-        <Link href={`/recipes/${recipe.id}`} className="font-medium hover:text-terracotta">
-          {recipe.title}
-        </Link>
+        <p className="font-medium">{recipe.title}</p>
         <p className="text-sm text-muted">
-          {recipe.timeTotalMin} min · {recipe.cuisine}
+          Leftovers from {dish.day !== null ? DAY_NAMES[dish.day] : "earlier"}: no cooking tonight
         </p>
-        {clash && <p className="text-sm text-danger">{clash}</p>}
       </div>
-      <select
-        aria-label={`Move ${recipe.title}`}
-        value={dish.day ?? ""}
-        onChange={(e) => onMove(e.target.value === "" ? null : Number(e.target.value))}
-        className="w-20 shrink-0 rounded-xl border border-line bg-cream px-2 py-1 text-sm"
-      >
-        {cookingDays.map((day) => (
-          <option key={day} value={day}>
-            {DAY_SHORT[day]}
-          </option>
-        ))}
-        <option value="">No evening</option>
-      </select>
       <button
         type="button"
-        onClick={onRemove}
-        aria-label={`Remove ${recipe.title}`}
+        onClick={onStop}
+        aria-label={`Don't eat ${recipe.title} again`}
         className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-cream hover:text-ink"
       >
         ×

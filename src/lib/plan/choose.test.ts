@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, timeClash } from "./choose";
+import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, setRepeat, timeClash } from "./choose";
+import { openEvenings } from "./suggest";
 import { DEFAULT_SETUP, readDishes, type WeekSetup } from "./types";
 
 // Mon normal, Tue quick, Wed quick, Thu normal, Fri off, Sat relaxed, Sun off
@@ -50,6 +51,22 @@ describe("placing dishes on evenings", () => {
     expect(removeDish(dishes, ID(1)).map((d) => d.recipeId)).toEqual([ID(2)]);
   });
 
+  it("keeps an evening of leftovers only after its dish, on an evening nothing is cooked", () => {
+    const dishes = [
+      { recipeId: ID(1), day: 0, addedAt: "", via: "start" as const },
+      { recipeId: ID(2), day: 1, addedAt: "", via: "suggestion" as const },
+    ];
+    const repeated = setRepeat(dishes, ID(1), 2);
+    expect(repeated[0].alsoOn).toBe(2);
+    expect(openEvenings({ setup, dishes: repeated, dismissed: [] })).toEqual([3, 5]);
+    expect(pickEvening({ timeTotalMin: 20 }, setup, repeated)).toBe(3);
+    // Cooking something on the leftovers evening, or moving the dish after it, clears it.
+    expect(moveDish(repeated, ID(2), 2)[0].alsoOn).toBeNull();
+    expect(moveDish(repeated, ID(1), 3)[0].alsoOn).toBeNull();
+    expect(setRepeat(repeated, ID(1), null)[0].alsoOn).toBeNull();
+    expect(setRepeat(dishes, ID(2), 0)[1].alsoOn).toBeNull();
+  });
+
   it("reports a dish on an evening that's too short", () => {
     expect(timeClash({ timeTotalMin: 45 }, setup, 1)).toBe("Takes 45 min on a Quick evening (up to 25 min).");
     expect(timeClash({ timeTotalMin: 20 }, setup, 1)).toBeNull();
@@ -79,5 +96,15 @@ describe("readDishes", () => {
     expect(readDishes([valid[0], valid[0]])).toBeNull();
     expect(readDishes([{ ...valid[0], via: "hack" }])).toBeNull();
     expect(readDishes("nope")).toBeNull();
+  });
+
+  it("accepts lunch boxes, freezer portions and a repeat evening within limits", () => {
+    const full = [{ recipeId: ID(1), day: 2, addedAt: now.toISOString(), via: "start", lunches: [2, 0], freezer: 2, alsoOn: 4 }];
+    expect(readDishes(full)).toEqual(full);
+    expect(readDishes([{ ...full[0], alsoOn: null }])?.[0].alsoOn).toBeNull();
+    expect(readDishes([{ ...full[0], lunches: [-1] }])).toBeNull();
+    expect(readDishes([{ ...full[0], lunches: [1.5] }])).toBeNull();
+    expect(readDishes([{ ...full[0], freezer: 99 }])).toBeNull();
+    expect(readDishes([{ ...full[0], alsoOn: 7 }])).toBeNull();
   });
 });

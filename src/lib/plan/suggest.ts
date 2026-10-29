@@ -23,7 +23,9 @@ export type PlanRecipe = {
   cuisine: string;
   mainProtein: string | null;
   timeTotalMin: number;
+  servings: number;
   goodAsLeftovers: boolean;
+  freezerFriendly: boolean;
   isFavourite: boolean;
   isTemplate: boolean;
   seafood: "contains" | "may contain" | null;
@@ -40,7 +42,9 @@ export function toPlanRecipe(row: RecipeRow): PlanRecipe {
     cuisine: row.cuisine,
     mainProtein: row.mainProtein,
     timeTotalMin: row.timeTotalMin,
+    servings: row.servings,
     goodAsLeftovers: row.goodAsLeftovers,
+    freezerFriendly: row.freezerFriendly,
     isFavourite: row.isFavourite,
     isTemplate: row.isTemplate,
     seafood: seafood.some((f) => f.level === "contains") ? "contains" : seafood.length ? "may contain" : null,
@@ -100,9 +104,9 @@ export type PlanState = {
   dismissed: string[];
 };
 
-/** Cooking evenings that don't have a dish yet. */
+/** Cooking evenings that don't have a dish yet (an evening of leftovers counts as taken). */
 export function openEvenings(plan: PlanState): number[] {
-  const taken = new Set(plan.dishes.map((d) => d.day));
+  const taken = new Set(plan.dishes.flatMap((d) => [d.day, d.alsoOn ?? null]));
   return plan.setup.evenings.flatMap((e, day) => (e.cooking && !taken.has(day) ? [day] : []));
 }
 
