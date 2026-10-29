@@ -195,11 +195,11 @@ function scoreRecipe(candidate: PlanRecipe, chosen: PlanRecipe[], plan: PlanStat
     add("use-up", POINTS.useUp * Math.min(usesUp.length, 2), `Uses your ${joinNames(usesUp)}.`);
   }
 
-  // Time: a quick dish when a Quick evening is still open.
+  // Time: the dish goes to the earliest open evening it fits; filling a Quick evening scores.
   const fitsDays = open.filter((day) => fitsEvening(candidate, plan.setup, day));
-  const quickDay = open.find((day) => plan.setup.evenings[day].time === "quick" && fitsEvening(candidate, plan.setup, day));
-  if (quickDay !== undefined) {
-    add("quick-evening", POINTS.quickEvening, `Quick enough for ${DAY_NAMES[quickDay]} (${candidate.timeTotalMin} min).`);
+  const placedOn = fitsDays[0];
+  if (placedOn !== undefined && plan.setup.evenings[placedOn].time === "quick") {
+    add("quick-evening", POINTS.quickEvening, `Quick enough for ${DAY_NAMES[placedOn]} (${candidate.timeTotalMin} min).`);
   }
 
   // Lunch boxes still needed.

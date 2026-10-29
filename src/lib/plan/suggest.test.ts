@@ -153,10 +153,14 @@ describe("reasons", () => {
     expect(ranked[0].reasons[0].text).toBe("Uses your Feta.");
   });
 
-  it("favours quick dishes while a Quick evening is open, and leftovers while lunches are needed", () => {
+  it("favours quick dishes for the next Quick evening, and leftovers while lunches are needed", () => {
     const withLunches = plan([], { setup: { ...setup, people: [{ name: "Sunny", dinnerPortion: 1, lunches: 4 }] } });
-    expect(kinds([recipe("fast", { timeTotalMin: 20 })], withLunches, "fast")).toContain("quick-evening");
-    expect(kinds([recipe("slow", { timeTotalMin: 40 })], withLunches, "slow")).not.toContain("quick-evening");
+    // Monday (Normal) is the next open evening, so a quick dish goes there: no Quick-evening reason.
+    expect(kinds([recipe("fast", { timeTotalMin: 20 })], withLunches, "fast")).not.toContain("quick-evening");
+    // With Monday taken, a quick dish goes to Tuesday (Quick); a 40-minute one skips to Wednesday.
+    const mondayTaken = plan(["mon"], { setup: withLunches.setup });
+    expect(kinds([recipe("mon"), recipe("fast", { timeTotalMin: 20 })], mondayTaken, "fast")).toContain("quick-evening");
+    expect(kinds([recipe("mon"), recipe("slow", { timeTotalMin: 40 })], mondayTaken, "slow")).not.toContain("quick-evening");
     expect(kinds([recipe("stew", { goodAsLeftovers: true })], withLunches, "stew")).toContain("lunches");
     expect(kinds([recipe("stew", { goodAsLeftovers: true })], plan([]), "stew")).not.toContain("lunches");
   });
