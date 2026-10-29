@@ -273,6 +273,32 @@ and a change in one should show in the other.
 - **Recipes moved** to `/recipes` (a Recipes link in the menu). On phones the menu shows the
   app icon instead of the words "Meal Planner" so four links fit.
 
+## Decisions for milestone 4: adding recipes (29 October 2026)
+
+- **Scope:** dish photos, importing (website links, pasted text, YouTube, Instagram), the
+  normalising layer with a review screen, prep timing (prep days and how far ahead each task can
+  be done), and a recipe health check. History (past weeks, repeat a week, liked combinations)
+  moves to milestone 5.
+- **Sources first:** English recipe websites, Instagram and YouTube (Saketh's answer), then
+  others. Recipes may be in English, Swedish, Hindi, Romanian or Russian.
+- **Reading and translating with Claude** (Saketh's choice): an import is sent once to Claude
+  Haiku 5.5 (`claude-haiku-5-5`, $0.10 / $0.50 per million input / output tokens; roughly 1–3 öre
+  per recipe), which returns the recipe in the app's format: English, metric units, flags where a
+  conversion is uncertain (a "glass" can be 200 or 250 ml). Needs `ANTHROPIC_API_KEY` in Vercel.
+  The review screen says the recipe was read and translated automatically and must be checked.
+  The suggestion rules stay plain rules; Claude only reads recipes.
+- **After Claude, the app's own rules** check and tidy the result the same way for every source:
+  units, names matched to ones already used, the seafood check, suggested make-ahead tasks from
+  existing names, and the fields the suggestion rules need.
+- **Photos are stored in the database,** shrunk on the phone first (about 1,200 px, roughly
+  150 KB), so there is no extra service to set up. A few hundred photos fit easily in the free
+  database.
+- **Prep timing:** Sunday and Wednesday are prep days by default (a setting). Each make-ahead task
+  has a "done at most N days ahead" limit, taken from published food-safety guidance
+  (Livsmedelsverket, the Swedish Food Agency) with the source shown; tasks the guidance doesn't
+  cover default to "on the day" until the household sets them. The app never makes up storage
+  times.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and
@@ -303,7 +329,8 @@ solved problem in other apps. So test the risky part early:
 3. **Executing the week:** weekly plan (move/swap, time conflicts, lunch and freezer allocations),
    consolidated shopping list with checkboxes.
 4. **Capture and prep:** URL import with review, photo/link entries, Sunday prep checklist, saved
-   combinations, past weeks.
+   combinations, past weeks. (As built: the Sunday prep list came in milestone 3; importing,
+   photos and prep timing are milestone 4; saved combinations and past weeks are milestone 5.)
 
 ## Success measures
 
