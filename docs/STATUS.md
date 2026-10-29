@@ -44,6 +44,10 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   - labels, with the reason shown ("62.5 g red lentils per serving")
   - grouped ingredients, steps, make-ahead tasks and notes
 - **Favourites**, shared by both phones.
+- **Dish photos:** on a recipe page, *Add photo* takes a picture or picks one from the phone. It
+  is shrunk on the phone (about 1,200 px) before it is saved, and shows on the recipe cards, the
+  recipe page, the week's suggestion cards and *Browse all recipes*. Photos are behind the
+  passcode like everything else.
 - **Adding, editing and deleting recipes** in the app:
   - Same format as the recipe files.
   - Live preview of how each ingredient line is read.
@@ -102,8 +106,8 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 - YouTube: link only for now. Fetching the video title and thumbnail is planned for milestone 4.
 - TikTok: not supported (not used).
 - Named collections beyond favourites and tags.
-- Recipe photos on cards and suggestions: cards use a coloured tile with the first letter
-  instead. Planned with link import (milestone 4); see `docs/IDEAS.md`.
+- Photos from a recipe's website or a YouTube thumbnail: with link import (milestone 4).
+  Recipes without a photo show a coloured tile with the first letter.
 - Prices: none, by design.
 
 ## Known limitations

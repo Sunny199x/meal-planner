@@ -19,6 +19,7 @@ function recipe(id: string, overrides: Partial<Omit<PlanRecipe, "ingredients">> 
     isTemplate: false,
     seafood: null,
     makeAhead: [],
+    photo: null,
     ...rest,
     ingredients: lines.map(parseIngredientLine),
   };

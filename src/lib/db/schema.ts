@@ -30,11 +30,29 @@ export const recipes = pgTable("recipes", {
   makeAhead: jsonb("make_ahead").$type<MakeAheadTask[]>().notNull(),
   notes: text("notes"),
   isFavourite: boolean("is_favourite").notNull().default(false),
+  /** Changes whenever the photo is added or replaced (so phones fetch the new one); null = no photo. */
+  photoVersion: text("photo_version"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export type RecipeRow = typeof recipes.$inferSelect;
+
+/**
+ * One photo per recipe, shrunk on the phone before upload (or taken from the
+ * recipe's website). Stored as base64 text: the hosted and local databases
+ * return binary columns differently, text behaves the same in both.
+ */
+export const recipePhotos = pgTable("recipe_photos", {
+  recipeId: uuid("recipe_id")
+    .primaryKey()
+    .references(() => recipes.id, { onDelete: "cascade" }),
+  contentType: text("content_type").notNull(),
+  data: text("data").notNull(),
+  source: text("source", { enum: ["upload", "website", "video"] }).notNull(),
+  sourceUrl: text("source_url"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 /** One row per week (named by its Monday): the setup and the dishes chosen. */
 export const weekPlans = pgTable("week_plans", {

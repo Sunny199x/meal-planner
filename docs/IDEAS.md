@@ -51,7 +51,7 @@ Related:
   instead would handle more but costs money per recipe and needs an API key; only if the word
   list proves too limited.
 
-### Show a photo of each dish when choosing (Planned: milestone 4)
+### Show a photo of each dish when choosing (Done for your own photos; website photos with import)
 
 *Saketh, 29 October 2026, after milestone 2.*
 

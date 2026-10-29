@@ -3,6 +3,7 @@
 // So the reasons shown are exactly the ones that produced the ranking.
 import type { RecipeRow } from "../db/schema";
 import { formatQuantity } from "../recipes/format";
+import { photoUrl } from "../recipes/photo-url";
 import { parseIngredientLine, type ParsedIngredient } from "../recipes/parse-ingredient-line";
 import { checkRecipeForSeafood } from "../recipes/seafood";
 import type { MakeAheadTask } from "../recipes/types";
@@ -31,6 +32,8 @@ export type PlanRecipe = {
   seafood: "contains" | "may contain" | null;
   ingredients: ParsedIngredient[];
   makeAhead: MakeAheadTask[];
+  /** Address of the photo, or null. */
+  photo: string | null;
 };
 
 export function toPlanRecipe(row: RecipeRow): PlanRecipe {
@@ -50,6 +53,7 @@ export function toPlanRecipe(row: RecipeRow): PlanRecipe {
     seafood: seafood.some((f) => f.level === "contains") ? "contains" : seafood.length ? "may contain" : null,
     ingredients,
     makeAhead: row.makeAhead,
+    photo: photoUrl(row.id, row.photoVersion),
   };
 }
 

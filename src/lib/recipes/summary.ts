@@ -3,6 +3,7 @@
 import type { RecipeRow } from "../db/schema";
 import { carbLabel, proteinLabel } from "./labels";
 import { parseIngredientLine } from "./parse-ingredient-line";
+import { photoUrl } from "./photo-url";
 import { checkRecipeForSeafood } from "./seafood";
 import type { Diet } from "./types";
 
@@ -23,6 +24,8 @@ export type RecipeSummary = {
   carbFocused: boolean;
   seafood: "contains" | "may contain" | null;
   ingredients: { name: string; optional: boolean }[];
+  /** Address of the photo, or null. */
+  photo: string | null;
 };
 
 export function toSummary(row: RecipeRow): RecipeSummary {
@@ -49,5 +52,6 @@ export function toSummary(row: RecipeRow): RecipeSummary {
         ? "may contain"
         : null,
     ingredients: parsed.map((p) => ({ name: p.name, optional: p.optional })),
+    photo: photoUrl(row.id, row.photoVersion),
   };
 }

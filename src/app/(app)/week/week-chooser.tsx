@@ -14,6 +14,7 @@ import {
 } from "@/lib/plan/portions";
 import { openEvenings, rankCandidates, shortlist, type PlanRecipe, type Suggestion } from "@/lib/plan/suggest";
 import { DAY_NAMES, DAY_SHORT, MAX_FREEZER, TIME_SLOTS, type PlannedDish, type WeekSetup } from "@/lib/plan/types";
+import { RecipeTile } from "@/components/ui";
 import { normalise } from "@/lib/recipes/filters";
 import { formatQuantity } from "@/lib/recipes/format";
 
@@ -493,53 +494,59 @@ function SuggestionCard({
   const { recipe, reasons, notes } = suggestion;
   const visible = allReasons ? reasons : reasons.slice(0, 3);
   return (
-    <article className="flex h-full flex-col gap-2 rounded-2xl border border-line bg-paper p-4 shadow-sm">
-      <h3 className="font-medium leading-snug">
-        <Link href={`/recipes/${recipe.id}`} className="hover:text-terracotta">
-          {recipe.title}
-        </Link>
-      </h3>
-      <p className="text-sm text-muted">
-        {recipe.timeTotalMin} min · {recipe.cuisine}
-      </p>
-      {visible.length > 0 && (
-        <ul className="space-y-1 text-sm">
-          {visible.map((r) => (
-            <li key={r.text} className="flex gap-2">
-              <span aria-hidden className="text-sage">
-                ✓
-              </span>
-              <span>{r.text}</span>
-            </li>
-          ))}
-        </ul>
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-sm">
+      {recipe.photo && (
+        // eslint-disable-next-line @next/next/no-img-element -- photos are already shrunk and served by the app
+        <img src={recipe.photo} alt="" loading="lazy" className="aspect-[16/9] w-full object-cover" />
       )}
-      {reasons.length > 3 && (
-        <button type="button" onClick={() => setAllReasons(!allReasons)} className="self-start text-sm text-terracotta underline">
-          {allReasons ? "Fewer reasons" : `${reasons.length - 3} more ${reasons.length - 3 === 1 ? "reason" : "reasons"}`}
-        </button>
-      )}
-      {notes.length > 0 && (
-        <ul className="space-y-1 text-sm text-muted">
-          {notes.map((n) => (
-            <li key={n} className="flex gap-2">
-              <span aria-hidden>–</span>
-              <span>{n}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="mt-auto flex flex-wrap gap-2 pt-2">
-        <button
-          type="button"
-          onClick={onAdd}
-          className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
-        >
-          {day === null ? "Add" : `Add to ${DAY_NAMES[day]}`}
-        </button>
-        <button type="button" onClick={onDismiss} className="rounded-xl border border-line px-3 py-2 text-sm hover:bg-cream">
-          Not this one
-        </button>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <h3 className="font-medium leading-snug">
+          <Link href={`/recipes/${recipe.id}`} className="hover:text-terracotta">
+            {recipe.title}
+          </Link>
+        </h3>
+        <p className="text-sm text-muted">
+          {recipe.timeTotalMin} min · {recipe.cuisine}
+        </p>
+        {visible.length > 0 && (
+          <ul className="space-y-1 text-sm">
+            {visible.map((r) => (
+              <li key={r.text} className="flex gap-2">
+                <span aria-hidden className="text-sage">
+                  ✓
+                </span>
+                <span>{r.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {reasons.length > 3 && (
+          <button type="button" onClick={() => setAllReasons(!allReasons)} className="self-start text-sm text-terracotta underline">
+            {allReasons ? "Fewer reasons" : `${reasons.length - 3} more ${reasons.length - 3 === 1 ? "reason" : "reasons"}`}
+          </button>
+        )}
+        {notes.length > 0 && (
+          <ul className="space-y-1 text-sm text-muted">
+            {notes.map((n) => (
+              <li key={n} className="flex gap-2">
+                <span aria-hidden>–</span>
+                <span>{n}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-auto flex flex-wrap gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onAdd}
+            className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
+          >
+            {day === null ? "Add" : `Add to ${DAY_NAMES[day]}`}
+          </button>
+          <button type="button" onClick={onDismiss} className="rounded-xl border border-line px-3 py-2 text-sm hover:bg-cream">
+            Not this one
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -572,8 +579,9 @@ function BrowseAll({
       />
       <ul className="divide-y divide-line">
         {list.map((r) => (
-          <li key={r.id} className="flex items-center justify-between gap-3 py-2">
-            <span className="min-w-0">
+          <li key={r.id} className="flex items-center gap-3 py-2">
+            <RecipeTile title={r.title} cuisine={r.cuisine} photo={r.photo} size="sm" />
+            <span className="min-w-0 flex-1">
               <span className="block">{r.title}</span>
               <span className="text-sm text-muted">
                 {r.timeTotalMin} min · {r.cuisine}
