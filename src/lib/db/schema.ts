@@ -1,7 +1,8 @@
 // Database tables. After changing this file, run `npm run db:generate` to
 // create a migration in drizzle/. While preview and production share one
 // database, only add tables or columns; never rename or drop them.
-import { boolean, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import type { PlannedDish, WeekSetup } from "../plan/types";
 import { DIETS, type IngredientLine, type MakeAheadTask } from "../recipes/types";
 
 export const recipes = pgTable("recipes", {
@@ -34,3 +35,17 @@ export const recipes = pgTable("recipes", {
 });
 
 export type RecipeRow = typeof recipes.$inferSelect;
+
+/** One row per week (named by its Monday): the setup and the dishes chosen. */
+export const weekPlans = pgTable("week_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  weekStart: date("week_start", { mode: "string" }).notNull().unique(),
+  setup: jsonb("setup").$type<WeekSetup>().notNull(),
+  dishes: jsonb("dishes").$type<PlannedDish[]>().notNull().default([]),
+  /** When choosing dinners started, to see how long agreeing on a week takes. */
+  choosingStartedAt: timestamp("choosing_started_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type WeekPlanRow = typeof weekPlans.$inferSelect;

@@ -113,6 +113,25 @@ the repo, then check it for real on the Vercel preview deployment.
 - **Layout check:** `scripts/check-pages.mjs` visits every page at 375 px and 1280 px, reports
   sideways scrolling and errors, and saves screenshots. Run it before pushing changes to pages.
 
+## Decisions for milestone 2 (29 October 2026)
+
+- **In the app, Saketh is shown as "Sunny"** (portion sizes, lunches). Docs keep his full name.
+- **Photo and screenshot import:** the free version comes first.
+  - A "paste recipe text" box sorts pasted text into the form using rules. Text can come from a
+    phone's copy-text-from-photo feature (iPhone Live Text, Google Lens), an Instagram caption or a
+    YouTube description.
+  - It will be built together with website / Instagram / YouTube import in the capture milestone.
+  - Reading photos with the Claude API (about $0.04–0.05 per photo with Claude Opus 5.5, needs an
+    Anthropic API key) waits until the free version shows a real need.
+- **Real recipes for testing:** the household's recipes are files in `seed-recipes/`, so suggestion
+  rules are checked against them directly (no export step needed).
+- **Week plans:** one row per week, named by its Monday, in Stockholm time.
+  - Each row holds the setup (evenings and time per evening, dinner portions per person,
+    lunches, ingredients to use up) and the chosen dishes (JSON).
+  - A new week starts from the previous week's setup, without its "ingredients to use".
+  - Time per evening: Quick ≤ 25 min, Normal ≤ 45 min, Relaxed no limit (total recipe time).
+  - Two phones editing the same week at the same moment: the last save wins.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and
