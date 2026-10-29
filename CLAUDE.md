@@ -53,4 +53,10 @@ import, multi-user accounts beyond the shared household passcode, a large recomm
 
 ## Commands
 
-(Fill in once the project is scaffolded: install, dev server, tests, database migrations, seed.)
+- Install: `npm install`
+- Dev server: `npm run dev` (http://localhost:3000)
+- Lint / type check / unit tests: `npm run lint`, `npm run typecheck`, `npm test`
+- Production build: `npm run build`
+
+Next.js here is version 16 with Cache Components on; see `AGENTS.md` and read the guides in
+`node_modules/next/dist/docs/` before relying on older Next.js knowledge.
