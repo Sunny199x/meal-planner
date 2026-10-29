@@ -155,9 +155,10 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 - **First load after a quiet spell** can take a second or two (the free Neon database sleeps).
 - **The passcode** keeps strangers out; it is not bank-level security.
 - **Importing needs `ANTHROPIC_API_KEY`** in Vercel, and costs about 1–3 öre per recipe. Some
-  websites block apps from reading their pages; pasting the recipe text always works. Website
-  reading was tested on saved copies of typical pages, not live sites (this session can't reach
-  them), so the first real imports may show sites that need a fix.
+  websites block apps from reading their pages; pasting the recipe text always works. On 29
+  October the page reader found the recipe and photo on real pages from BBC Good Food,
+  HelloFresh.se, RecipeTin Eats, Jamie Oliver and NYT Cooking. Allrecipes, Serious Eats and ICA.se
+  refused to send their pages to a test session, and may do the same to the app; paste those.
 - **The three template recipes** are illustrative and untested. Delete their files once real
   recipes are in, then press *Load recipes from files*.
 

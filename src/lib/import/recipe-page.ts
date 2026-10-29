@@ -78,7 +78,7 @@ function readSteps(value: unknown): string[] {
     } else if (item && typeof item === "object") {
       const node = item as Record<string, unknown>;
       if (asArray(node["@type"]).includes("HowToSection")) {
-        const name = clean(node.name);
+        const name = clean(node.name).replace(/\s*:$/, ""); // some sites write "Sauce:"
         const inner = readSteps(node.itemListElement);
         steps.push(...inner.map((step, i) => (i === 0 && name ? `${name}: ${step}` : step)));
       } else {
