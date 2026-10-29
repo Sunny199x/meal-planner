@@ -7,6 +7,50 @@ Status: **Open** (not decided), **Planned** (has a milestone), **Done**, **Dropp
 
 ## From using the app
 
+### Normalise imported recipes so they fit the suggestion rules (Planned: milestone 4)
+
+*Saketh, 29 October 2026, after milestone 3.*
+
+A layer between an imported recipe (website, Instagram caption, YouTube description, pasted
+text) and how it is stored, so every recipe has the same structure as the hand-written ones and
+the suggestion rules, shopping list and prep list work on it.
+
+Why: the rules rely on things imports usually lack or write differently.
+
+- **Make-ahead tasks** (the strongest link, +30) aren't on recipe websites at all.
+- **Language:** hellofresh.se pages are in Swedish ("basmatiris", "gurka"); the household's
+  recipes are in English, so names wouldn't match and the shopping list couldn't sort them.
+- **Fields:** "good as leftovers", "freezer-friendly" and main protein are rarely given; cuisine
+  is written in many ways ("Mexican", "Tex-Mex", "Mexican-inspired").
+
+What the layer does, before anything is saved:
+
+1. **Reads** the source into the app's recipe format (the same as the files in
+   `seed-recipes/`), keeping the original text alongside.
+2. **Normalises ingredient lines:**
+   - metric amounts and units
+   - English names: Swedish food words are translated from a word list, and names are matched
+     to ones the household's recipes already use ("baby spinach", not "spinach leaves")
+   - lines it can't read are flagged, never guessed
+3. **Fills the fields the rules need,** with a suggestion where it can and a question where it
+   can't: cuisine (picked from the existing list), main protein, diet, total time, servings,
+   good as leftovers, freezer-friendly.
+4. **Suggests make-ahead tasks** from the names already in use (it has rice → "Cook rice?"), so
+   shared prep links up. One tap to accept.
+5. **Checks** for seafood, as for every recipe.
+6. **Review screen:** shows what was changed and what is missing; the recipe is saved only
+   after you confirm. Corrections you make (a Swedish word, a name) are remembered for the
+   next import.
+
+Related:
+
+- The same checks can run on recipes added by hand or from files: a "recipe health check" in
+  Settings listing recipes with missing fields, no make-ahead tasks, or unrecognised names.
+- This also covers the near-duplicate make-ahead names item below.
+- Translation is rule-based (a word list that grows with corrections). Using the Claude API
+  instead would handle more but costs money per recipe and needs an API key; only if the word
+  list proves too limited.
+
 ### Show a photo of each dish when choosing (Planned: milestone 4)
 
 *Saketh, 29 October 2026, after milestone 2.*
