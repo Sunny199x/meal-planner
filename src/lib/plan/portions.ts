@@ -2,7 +2,7 @@
 // leftovers, the lunch boxes it provides and any portions for the freezer.
 // A lunch box is the size of that person's dinner. Lunch boxes are shared out
 // automatically over dishes that are good as leftovers, earliest in the week
-// first, unless a dish has been given its own numbers.
+// first and at most two per dish, unless a dish has been given its own numbers.
 import type { PlanRecipe } from "./suggest";
 import { MAX_FREEZER, type PlannedDish, type WeekSetup } from "./types";
 
@@ -26,16 +26,22 @@ export function dinnerPortions(setup: WeekSetup): number {
   return setup.people.reduce((sum, p) => sum + p.dinnerPortion, 0);
 }
 
+/** At most this many lunch boxes per dish are planned automatically; more can be added by hand. */
+export const AUTO_LUNCHES_PER_DISH = 2;
+
 /** Lunch boxes per person for every chosen dish, shared out where a dish has no numbers of its own. */
 function shareLunches(setup: WeekSetup, dishes: PlannedDish[], recipes: Map<string, RecipeInfo>): Map<string, number[]> {
   const boxes = new Map(dishes.map((d) => [d.recipeId, setup.people.map((_, i) => d.lunches?.[i] ?? 0)]));
   const automatic = dishes
     .filter((d) => !d.lunches && recipes.get(d.recipeId)?.goodAsLeftovers)
     .sort((a, b) => (a.day ?? 7) - (b.day ?? 7));
+  // Free places in order: one per dish, earliest first, then a second round.
+  const slots = Array.from({ length: AUTO_LUNCHES_PER_DISH }, () => automatic).flat();
+  let next = 0;
   setup.people.forEach((person, i) => {
     const fixed = dishes.reduce((sum, d) => sum + (d.lunches?.[i] ?? 0), 0);
-    for (let n = 0; n < person.lunches - fixed && automatic.length; n++) {
-      boxes.get(automatic[n % automatic.length].recipeId)![i]++;
+    for (let n = 0; n < person.lunches - fixed && next < slots.length; n++) {
+      boxes.get(slots[next++].recipeId)![i]++;
     }
   });
   return boxes;

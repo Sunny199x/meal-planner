@@ -31,11 +31,21 @@ describe("portions per dish", () => {
     expect(portions.get("chili")?.lunchBoxes).toEqual([1, 0]);
   });
 
-  it("moves a lunch box to the other dishes when one dish gets fewer", () => {
-    const fewer = changeLunchBoxes(week, planPortions(setup, week, recipes), "korma", 0, -1);
+  it("moves a lunch box to another dish when one dish gets fewer, up to two per dish", () => {
+    const three = { ...setup, people: [{ ...setup.people[0], lunches: 3 }, setup.people[1]] };
+    const fewer = changeLunchBoxes(week, planPortions(three, week, recipes), "korma", 0, -1);
     expect(fewer.find((d) => d.recipeId === "korma")?.lunches).toEqual([1, 0]);
-    expect(totals(fewer)).toEqual({ korma: 4, steak: 2.5, chili: 7 });
+    expect(planPortions(three, fewer, recipes).get("chili")?.lunchBoxes).toEqual([2, 0]);
+    expect(lunchStatus(three, planPortions(three, fewer, recipes))).toEqual([{ name: "Sunny", needed: 3, planned: 3 }]);
     expect(totals(shareLunchesAutomatically(fewer))).toEqual(totals(week));
+  });
+
+  it("plans at most two lunch boxes per dish automatically", () => {
+    const one = [dish("korma", 0)];
+    expect(planPortions(setup, one, recipes).get("korma")?.lunchBoxes).toEqual([2, 0]);
+    expect(lunchStatus(setup, planPortions(setup, one, recipes))).toEqual([{ name: "Sunny", needed: 4, planned: 2 }]);
+    const more = changeLunchBoxes(one, planPortions(setup, one, recipes), "korma", 0, 1);
+    expect(planPortions(setup, more, recipes).get("korma")?.lunchBoxes).toEqual([3, 0]);
   });
 
   it("shows more lunch boxes than needed when every dish has its own numbers", () => {

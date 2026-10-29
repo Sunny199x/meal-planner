@@ -1,8 +1,8 @@
 // Reading and saving weekly plans. Each save is a single write.
-import { desc, eq, lt, sql } from "drizzle-orm";
+import { desc, eq, lt, sql, type SQL } from "drizzle-orm";
 import { weekPlans, type WeekPlanRow } from "../db/schema";
 import type { Db } from "../db/types";
-import { DEFAULT_SETUP, type PlannedDish, type WeekSetup } from "./types";
+import { DEFAULT_SETUP, type PlannedDish, type ShoppingState, type WeekSetup } from "./types";
 
 export async function getPlan(db: Db, weekStart: string): Promise<WeekPlanRow | null> {
   const [row] = await db.select().from(weekPlans).where(eq(weekPlans.weekStart, weekStart));
@@ -45,4 +45,41 @@ export async function saveSetup(db: Db, weekStart: string, setup: WeekSetup): Pr
     .onConflictDoUpdate({ target: weekPlans.weekStart, set: { setup, updatedAt: sql`now()` } })
     .returning();
   return row;
+}
+
+// Shopping-list changes are single-key updates done inside the database, so a
+// tick on one phone never undoes a tick made on the other in the meantime.
+
+async function updateShopping(db: Db, weekStart: string, change: SQL): Promise<ShoppingState | null> {
+  const [row] = await db
+    .update(weekPlans)
+    .set({ shopping: change })
+    .where(eq(weekPlans.weekStart, weekStart))
+    .returning({ shopping: weekPlans.shopping });
+  return row?.shopping ?? null;
+}
+
+/** Ticks (amount given) or unticks (null) an item as bought or already in the house. */
+export function tickShoppingItem(
+  db: Db,
+  weekStart: string,
+  list: "bought" | "have",
+  key: string,
+  amount: string | null,
+): Promise<ShoppingState | null> {
+  const current = sql`coalesce(${weekPlans.shopping} -> ${list}::text, '{}'::jsonb)`;
+  const next = amount === null ? sql`${current} - ${key}::text` : sql`${current} || jsonb_build_object(${key}::text, ${amount}::text)`;
+  return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object(${list}::text, ${next})`);
+}
+
+export function addShoppingExtra(db: Db, weekStart: string, id: string, text: string): Promise<ShoppingState | null> {
+  const current = sql`coalesce(${weekPlans.shopping} -> 'extra', '{}'::jsonb)`;
+  const item = sql`jsonb_build_object(${id}::text, jsonb_build_object('text', ${text}::text, 'addedAt', now()))`;
+  return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object('extra', ${current} || ${item})`);
+}
+
+export function removeShoppingExtra(db: Db, weekStart: string, id: string): Promise<ShoppingState | null> {
+  const extra = sql`coalesce(${weekPlans.shopping} -> 'extra', '{}'::jsonb) - ${id}::text`;
+  const bought = sql`coalesce(${weekPlans.shopping} -> 'bought', '{}'::jsonb) - ${`extra:${id}`}::text`;
+  return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object('extra', ${extra}, 'bought', ${bought})`);
 }

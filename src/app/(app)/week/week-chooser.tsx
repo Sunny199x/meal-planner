@@ -228,8 +228,11 @@ export function WeekChooser({
           <p className="mt-1 text-sm">
             {minutes !== null && <>Chosen in {minutes} {minutes === 1 ? "minute" : "minutes"}. </>}
             Check the portions above: <strong>Change</strong> on a dish moves lunch boxes, adds freezer
-            portions or plans it again as leftovers. The shopping list and Sunday prep list are being
-            built next.
+            portions or plans it again as leftovers. Then open the{" "}
+            <Link href={`/week/shopping?week=${weekStart}`} className="text-terracotta underline">
+              shopping list
+            </Link>
+            . The Sunday prep list is being built next.
           </p>
         </section>
       )}

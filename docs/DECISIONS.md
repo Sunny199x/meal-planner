@@ -178,9 +178,11 @@ the repo, then check it for real on the Vercel preview deployment.
   - **A lunch box is the same size as that person's dinner** (Saketh's choice), so a lunch box
     for Sunny is 1.5 portions.
   - Lunch boxes are shared out automatically over dishes marked good as leftovers, one at a time,
-    earliest evening first. A dish whose lunch boxes are changed by hand keeps its numbers; the
-    automatic dishes make up the difference, so − on one dish moves a box to another. "Share
-    lunch boxes out automatically" undoes all hand changes.
+    earliest evening first, **at most two per dish** (one dish for dinner and four lunches is
+    too much of one thing; this matches the suggestion rule that asks for one leftover-friendly
+    dish per two lunch boxes). A dish whose lunch boxes are changed by hand keeps its numbers,
+    with no limit; the automatic dishes make up the difference, so − on one dish moves a box to
+    another. "Share lunch boxes out automatically" undoes all hand changes.
   - Lunch boxes are counted, not given days, and the app says nothing about how long leftovers
     keep.
   - **Freezer portions:** extra whole portions, offered for freezer-friendly recipes, 0 by default.
@@ -196,6 +198,31 @@ the repo, then check it for real on the Vercel preview deployment.
   - Packs and cans also show their scaled weight ("2¾ packs … (about 1.05 kg in total)").
   - Lines without an amount ("salt, to taste") and lines with reading problems stay as written.
     Amounts inside the steps are not scaled, and the page says so.
+
+- **Shopping list** (`src/lib/plan/shopping.ts`, Week → Shopping):
+  - Every chosen dish's ingredients, scaled to its portions (dinner, repeat dinner, lunch boxes,
+    freezer). Water is left off.
+  - **Adding up:** lines are added together when their names reduce to the same key (case,
+    plurals and words like "fresh", "baby", "chopped" ignored; "feta cheese" = "feta",
+    "2 garlic cloves" = "1 clove garlic"). Nothing looser: "red onion" and "onion", or "cooked
+    lentils" and "red lentils", stay apart because they are different things to buy.
+  - **Units:** g/kg together, ml/cl/dl/l together (spoons join them when both appear); cans,
+    packs and pieces are counted per unit. A can and grams of the same thing are shown side by
+    side ("1 can (390 g) + 200 g"), because a can's label weight isn't what the recipe measures.
+  - **Rounding up to buy:** grams and millilitres up to 5 below 100, 10 below 1,000, then 50.
+    Pieces, packs and cans up to whole ones, with the exact need shown ("2 (1¼ needed)").
+  - **Sections:** fruit and veg, bread, meat, vegetarian protein, dairy and eggs, rice/pasta/
+    grains, cans/jars/sauces, nuts/snacks/dried fruit, frozen, other, then "Check the cupboard"
+    (salt, pepper, oils, vinegar, sugar, dried spices, stock powder and cubes). Decided by
+    keyword rules; unknown items go to "Other". The order is a typical walk through a Swedish
+    supermarket; easy to change.
+  - **Ticks:** "Bought" and "Have it", plus items added by hand, are stored per week in
+    `week_plans.shopping` (an added column). Each tick is a single-key change made inside the
+    database, so ticks from two phones never overwrite each other. The other phone sees them
+    when the app comes back to the front (no live updates).
+  - A tick remembers how much was bought. If the plan later needs **more**, the item comes back
+    with a note; the same or less keeps it ticked.
+  - No prices, as the brief says.
 
 ## Product decisions
 

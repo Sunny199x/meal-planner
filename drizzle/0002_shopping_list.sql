@@ -1,0 +1,1 @@
+ALTER TABLE "week_plans" ADD COLUMN "shopping" jsonb DEFAULT '{}'::jsonb NOT NULL;

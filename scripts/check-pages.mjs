@@ -70,6 +70,8 @@ const pages = [
   ["recipes", "/"],
   ["week", "/week"],
   ["week-setup", "/week?week=2030-01-07"],
+  ["shopping", "/week/shopping"],
+  ["shopping-empty", "/week/shopping?week=2030-01-07"],
   ["recipes-filtered", "/?time=45&diet=vegetarian&protein=1"],
   ["recipe", firstRecipe],
   ["edit", `${firstRecipe}/edit`],

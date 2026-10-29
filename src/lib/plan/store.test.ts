@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openLocalDb } from "../db/local";
 import type { Db } from "../db/types";
-import { getPlan, saveDishes, saveSetup, setupForNewWeek } from "./store";
+import { addShoppingExtra, getPlan, removeShoppingExtra, saveDishes, saveSetup, setupForNewWeek, tickShoppingItem } from "./store";
 import { DEFAULT_SETUP } from "./types";
 
 let db: Db;
@@ -43,5 +43,34 @@ describe("week plan storage", () => {
     await saveSetup(db, "2026-11-02", sunnyEatsLess);
     await saveSetup(db, "2026-12-07", DEFAULT_SETUP); // a later week must not count
     expect(await setupForNewWeek(db, "2026-11-09")).toEqual({ ...sunnyEatsLess, ingredientsToUse: [] });
+  });
+});
+
+describe("shopping-list ticks", () => {
+  const week = "2026-11-02";
+  beforeEach(async () => {
+    await saveSetup(db, week, DEFAULT_SETUP);
+  });
+
+  it("ticks and unticks items without touching other ticks", async () => {
+    await tickShoppingItem(db, week, "bought", "basmati rice", "450 g");
+    await tickShoppingItem(db, week, "have", "salt", "as needed");
+    const both = await tickShoppingItem(db, week, "bought", "feta", "180 g");
+    expect(both).toEqual({ bought: { "basmati rice": "450 g", feta: "180 g" }, have: { salt: "as needed" } });
+    const after = await tickShoppingItem(db, week, "bought", "basmati rice", null);
+    expect(after).toEqual({ bought: { feta: "180 g" }, have: { salt: "as needed" } });
+  });
+
+  it("adds and removes items by hand, with their tick", async () => {
+    const id = "00000000-0000-4000-8000-000000000009";
+    const added = await addShoppingExtra(db, week, id, "Milk");
+    expect(added?.extra?.[id]).toMatchObject({ text: "Milk" });
+    await tickShoppingItem(db, week, "bought", `extra:${id}`, "");
+    const removed = await removeShoppingExtra(db, week, id);
+    expect(removed).toEqual({ extra: {}, bought: {} });
+  });
+
+  it("returns null for a week without a setup", async () => {
+    expect(await tickShoppingItem(db, "2026-11-09", "bought", "rice", "1 kg")).toBeNull();
   });
 });

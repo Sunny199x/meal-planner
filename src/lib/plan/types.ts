@@ -43,6 +43,16 @@ export type PlannedDish = {
   alsoOn?: number | null;
 };
 
+/** Ticks on the week's shopping list, shared by both phones. Keys are shopping-list item keys. */
+export type ShoppingState = {
+  /** Item key → how much was bought (see `covers` in shopping.ts), so a bigger amount later shows up. */
+  bought?: Record<string, string>;
+  /** Already in the house: item key → the amount at the time. */
+  have?: Record<string, string>;
+  /** Items added by hand, by id. */
+  extra?: Record<string, { text: string; addedAt: string }>;
+};
+
 export const PORTION_CHOICES = [0.75, 1, 1.25, 1.5, 2];
 export const MAX_LUNCHES = 7;
 export const MAX_FREEZER = 12;

@@ -115,7 +115,8 @@ export function fitsEvening(recipe: Pick<PlanRecipe, "timeTotalMin">, setup: Wee
   return max === null || recipe.timeTotalMin <= max;
 }
 
-function shortTitle(title: string): string {
+/** "Creamy lentil korma with coconut rice" → "Creamy lentil korma". */
+export function shortTitle(title: string): string {
   const cut = title.split(/ with | and |,/i)[0];
   return cut.length <= 40 ? cut : cut.slice(0, 38) + "…";
 }
