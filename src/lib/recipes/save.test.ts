@@ -5,7 +5,7 @@ import { recipes } from "../db/schema";
 import type { Db } from "../db/types";
 import { parseRecipeForm, recipeToFormValues, EMPTY_FORM } from "./form";
 import { loadRecipeFiles } from "./load-files";
-import { readRecipeFiles } from "./read-files";
+import { readTemplateFixtures } from "./test-fixtures";
 import { deleteRecipe, insertRecipe, updateRecipe } from "./save";
 
 const pasta = parseRecipeForm({
@@ -39,14 +39,14 @@ describe("saving recipes from the app", () => {
   });
 
   it("protects edits to a file recipe from the next file load, and keeps it marked as a template", async () => {
-    await loadRecipeFiles(db, await readRecipeFiles());
+    await loadRecipeFiles(db, await readTemplateFixtures());
     const [daal] = await db.select().from(recipes).where(eq(recipes.fileSlug, "_template-tadka-daal"));
 
     const form = recipeToFormValues({ ...daal, isTemplate: daal.isTemplate });
     const edited = parseRecipeForm({ ...form, title: "Our tadka daal" }).recipe!;
     await updateRecipe(db, daal.id, edited);
 
-    const report = await loadRecipeFiles(db, await readRecipeFiles());
+    const report = await loadRecipeFiles(db, await readTemplateFixtures());
     expect(report.files.find((f) => f.fileName === "_template-tadka-daal.md")?.status).toBe("skipped-edited");
     const [after] = await db.select().from(recipes).where(eq(recipes.id, daal.id));
     expect(after).toMatchObject({ title: "Our tadka daal", editedInApp: true, isTemplate: true, origin: "file" });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseRecipeFile } from "./parse-recipe-file";
-import { readRecipeFiles } from "./read-files";
+import { readTemplateFixtures } from "./test-fixtures";
 
 const minimal = (top: string, body = "## Ingredients\n\n- 1 onion\n\n## Instructions\n\n1. Cook.\n") =>
   `---\n${top}\n---\n\n${body}`;
@@ -18,7 +18,7 @@ const validTop = [
 
 describe("parseRecipeFile with the template recipes", () => {
   it("reads the tadka daal completely", async () => {
-    const files = await readRecipeFiles();
+    const files = await readTemplateFixtures();
     const daal = files.find((f) => f.fileName === "_template-tadka-daal.md")!;
     const { slug, recipe, problems } = parseRecipeFile(daal.fileName, daal.text);
 
@@ -54,7 +54,7 @@ describe("parseRecipeFile with the template recipes", () => {
   });
 
   it("finds the shared make-ahead task between the shawarma and the tacos", async () => {
-    const files = await readRecipeFiles();
+    const files = await readTemplateFixtures();
     const names = files.map((f) => parseRecipeFile(f.fileName, f.text).recipe!.makeAhead.map((m) => m.name));
     const pickled = names.filter((list) => list.includes("Quick-pickled red onions"));
     expect(pickled).toHaveLength(2);

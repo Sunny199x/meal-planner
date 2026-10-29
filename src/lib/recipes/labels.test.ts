@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { carbLabel, proteinLabel } from "./labels";
 import { parseIngredientLine } from "./parse-ingredient-line";
 import { parseRecipeFile } from "./parse-recipe-file";
-import { readRecipeFiles } from "./read-files";
+import { readTemplateFixtures } from "./test-fixtures";
 
 const lines = (...l: string[]) => l.map(parseIngredientLine);
 
@@ -69,7 +69,7 @@ describe("carbLabel", () => {
 
 describe("labels for the template recipes", () => {
   it("gives the expected labels", async () => {
-    const files = await readRecipeFiles();
+    const files = await readTemplateFixtures();
     const labels = Object.fromEntries(
       files.map((file) => {
         const recipe = parseRecipeFile(file.fileName, file.text).recipe!;

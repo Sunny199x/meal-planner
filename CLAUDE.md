@@ -50,6 +50,10 @@ import, multi-user accounts beyond the shared household passcode, a large recomm
 - Unit-test the parts that can be silently wrong: ingredient-line parsing, unit conversion and
   combining, portion scaling, and recommendation scoring/explanations.
 - Test the URL importer against saved HTML fixtures (cloud sessions can't reach most websites).
+- Tests that expect exact results for particular recipes read the copies in
+  `src/lib/recipes/__fixtures__/` (via `readTemplateFixtures`), never `seed-recipes/`, which holds
+  the household's real recipes and changes often. Only generic checks (every file loads, form
+  round-trip) should read `seed-recipes/`.
 - Check layouts at phone width (about 375 px) as well as desktop.
 
 ## Commands

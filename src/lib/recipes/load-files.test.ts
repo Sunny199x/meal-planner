@@ -142,8 +142,8 @@ describe("loadRecipeFiles", () => {
   });
 
   it("loads the real template files", async () => {
-    const { readRecipeFiles } = await import("./read-files");
-    const report = await loadRecipeFiles(db, await readRecipeFiles());
+    const { readTemplateFixtures } = await import("./test-fixtures");
+    const report = await loadRecipeFiles(db, await readTemplateFixtures());
     expect(report.files.every((f) => f.status === "added" && f.problems.length === 0)).toBe(true);
     const rows = await db.select().from(recipes);
     expect(rows.every((r) => r.isTemplate)).toBe(true);
