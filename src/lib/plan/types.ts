@@ -49,8 +49,6 @@ export type ShoppingState = {
   bought?: Record<string, string>;
   /** Already in the house: item key → the amount at the time. */
   have?: Record<string, string>;
-  /** Items added by hand, by id. */
-  extra?: Record<string, { text: string; addedAt: string }>;
 };
 
 /** Sunday prep tasks ticked off, by task key. */

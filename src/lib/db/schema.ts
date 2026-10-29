@@ -53,3 +53,18 @@ export const weekPlans = pgTable("week_plans", {
 });
 
 export type WeekPlanRow = typeof weekPlans.$inferSelect;
+
+/**
+ * The household grocery list: things added by hand on any day ("milk").
+ * The planned weeks' ingredients join them on the list but are stored with
+ * each week (`week_plans.shopping`).
+ */
+export const groceryItems = pgTable("grocery_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Set when ticked as bought; bought items stay until "Clear bought items". */
+  boughtAt: timestamp("bought_at", { withTimezone: true }),
+});
+
+export type GroceryItemRow = typeof groceryItems.$inferSelect;

@@ -32,7 +32,11 @@ export function PrepList({ weekStart, initial, recipes }: { weekStart: string; i
         else delete prep[key];
         return { ...w, prep };
       },
-      () => tickPrepAction(weekStart, key, done).then((r) => ({ error: r.error, update: r.prep && { prep: r.prep } })),
+      () =>
+        tickPrepAction(weekStart, key, done).then((r) => ({
+          error: r.error,
+          apply: r.prep ? (w: SavedWeek) => ({ ...w, prep: r.prep! }) : undefined,
+        })),
     );
   }
   const doneCount = tasks.filter((t) => isDone(t.key)).length;

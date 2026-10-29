@@ -9,5 +9,5 @@ export function lastListUrl(): string {
   } catch {
     // Private browsing can block storage; fall back to the full list.
   }
-  return query ? `/?${query}` : "/";
+  return query ? `/recipes?${query}` : "/recipes";
 }

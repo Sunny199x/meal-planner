@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireSignedIn } from "../auth/server";
 import { describeDatabaseError, getDb } from "../db";
 import { readWeekStart } from "./dates";
-import { addShoppingExtra, getPlan, removeShoppingExtra, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
+import { getPlan, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
 export async function saveWeekSetupAction(
@@ -43,7 +43,6 @@ export async function saveWeekDishesAction(
 }
 
 type ShoppingResult = { shopping?: ShoppingState; error?: string };
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function changeShopping(weekStart: string, run: (week: string) => Promise<ShoppingState | null>): Promise<ShoppingResult> {
   await requireSignedIn();
@@ -70,17 +69,6 @@ export async function tickShoppingAction(
     (amount === null || (typeof amount === "string" && amount.length <= 160));
   if (!valid) return { error: "Something wasn't valid. Please reload and try again." };
   return changeShopping(weekStart, async (week) => tickShoppingItem(await getDb(), week, list, key, amount));
-}
-
-export async function addShoppingItemAction(weekStart: string, id: string, text: string): Promise<ShoppingResult> {
-  const clean = typeof text === "string" ? text.trim().slice(0, 80) : "";
-  if (!clean || typeof id !== "string" || !UUID.test(id)) return { error: "Type what to add first." };
-  return changeShopping(weekStart, async (week) => addShoppingExtra(await getDb(), week, id, clean));
-}
-
-export async function removeShoppingItemAction(weekStart: string, id: string): Promise<ShoppingResult> {
-  if (typeof id !== "string" || !UUID.test(id)) return { error: "Something wasn't valid. Please reload and try again." };
-  return changeShopping(weekStart, async (week) => removeShoppingExtra(await getDb(), week, id));
 }
 
 /** Ticks a Sunday prep task off or back on. */

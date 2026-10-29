@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ErrorBox } from "@/components/ui";
 import { describeDatabaseError, getDb } from "@/lib/db";
 import type { RecipeRow, WeekPlanRow } from "@/lib/db/schema";
+import { listWeeks } from "@/lib/groceries/list";
 import { defaultWeekStart, readWeekStart, stockholmToday } from "@/lib/plan/dates";
 import { getPlan } from "@/lib/plan/store";
 import { toPlanRecipe } from "@/lib/plan/suggest";
@@ -51,6 +52,7 @@ async function Shopping({ searchParams }: Pick<PageProps<"/week/shopping">, "sea
           key={weekStart}
           weekStart={weekStart}
           initial={{ setup: plan.setup, dishes: plan.dishes, shopping: plan.shopping, prep: plan.prep }}
+          onGroceryList={Object.values(listWeeks(stockholmToday())).includes(weekStart)}
           recipes={recipeRows.map(toPlanRecipe)}
         />
       )}

@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { openLocalDb } from "../db/local";
 import type { Db } from "../db/types";
 import {
-  addShoppingExtra,
   getPlan,
-  removeShoppingExtra,
   saveDishes,
   saveSetup,
   setupForNewWeek,
@@ -68,15 +66,6 @@ describe("shopping-list ticks", () => {
     expect(both).toEqual({ bought: { "basmati rice": "450 g", feta: "180 g" }, have: { salt: "as needed" } });
     const after = await tickShoppingItem(db, week, "bought", "basmati rice", null);
     expect(after).toEqual({ bought: { feta: "180 g" }, have: { salt: "as needed" } });
-  });
-
-  it("adds and removes items by hand, with their tick", async () => {
-    const id = "00000000-0000-4000-8000-000000000009";
-    const added = await addShoppingExtra(db, week, id, "Milk");
-    expect(added?.extra?.[id]).toMatchObject({ text: "Milk" });
-    await tickShoppingItem(db, week, "bought", `extra:${id}`, "");
-    const removed = await removeShoppingExtra(db, week, id);
-    expect(removed).toEqual({ extra: {}, bought: {} });
   });
 
   it("returns null for a week without a setup", async () => {

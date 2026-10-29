@@ -72,18 +72,6 @@ export function tickShoppingItem(
   return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object(${list}::text, ${next})`);
 }
 
-export function addShoppingExtra(db: Db, weekStart: string, id: string, text: string): Promise<ShoppingState | null> {
-  const current = sql`coalesce(${weekPlans.shopping} -> 'extra', '{}'::jsonb)`;
-  const item = sql`jsonb_build_object(${id}::text, jsonb_build_object('text', ${text}::text, 'addedAt', now()))`;
-  return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object('extra', ${current} || ${item})`);
-}
-
-export function removeShoppingExtra(db: Db, weekStart: string, id: string): Promise<ShoppingState | null> {
-  const extra = sql`coalesce(${weekPlans.shopping} -> 'extra', '{}'::jsonb) - ${id}::text`;
-  const bought = sql`coalesce(${weekPlans.shopping} -> 'bought', '{}'::jsonb) - ${`extra:${id}`}::text`;
-  return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object('extra', ${extra}, 'bought', ${bought})`);
-}
-
 /** Ticks a Sunday prep task off (true) or back on (false), leaving other ticks alone. */
 export async function tickPrepTask(db: Db, weekStart: string, key: string, done: boolean): Promise<PrepState | null> {
   const [row] = await db

@@ -50,6 +50,12 @@ Options:
 
 Options 1 and 2 together keep the rule strict and the names tidy.
 
+### The grocery list as the home page, fed by the weekly plan (Done)
+
+*Saketh, 29 October 2026.* The app opens on the grocery list: things added through the week
+plus this week's and next week's dinner ingredients, with ticks shared with Week → Shopping.
+See `docs/DECISIONS.md`.
+
 ### Scale the amounts in the recipe steps (Done)
 
 *Saketh, 29 October 2026.* Amounts with a metric unit in the steps ("300 ml water", "½ tsp

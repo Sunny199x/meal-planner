@@ -14,9 +14,17 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 
 ## What works
 
+- **Grocery list (the home page):** what to buy now, in one list by supermarket section.
+  - Add anything on any day ("milk", "2 l milk"); it lands in the right section and stays until
+    you remove it. Bought items you added can be cleared in one tap.
+  - The ingredients of this week's and next week's chosen dinners are on it too, with the same
+    ticks as Week → Shopping: tick in either place and both show it. This week's ingredients
+    leave once their dinners have passed.
+  - Shared by both phones; the other phone sees changes when the app comes back to the front.
+
 - **Passcode sign-in.** Each phone stays signed in for 90 days. Changing the passcode or
   `SESSION_SECRET` in Vercel signs everyone out.
-- **Recipe collection:**
+- **Recipe collection** (the Recipes tab):
   - Cards show time, cuisine, diet and labels.
   - Instant search over titles, cuisines, tags and ingredients.
   - Filters:
@@ -66,15 +74,15 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
     freezer portions (freezer-friendly dishes) or plans the dish again as leftovers on a later
     open evening.
   - Choices save as you go; both phones see the same week.
-- **Shopping:**
+- **Shopping** (one week's dinners; also on the grocery list for this week and next):
   - Ingredients of all chosen dishes, scaled to their portions and added up per ingredient,
     grouped by supermarket section, with a "Check the cupboard" group for salt, oils and spices.
   - Rounded up to what you can buy ("2 (1¼ needed)"); a can and grams of the same thing are
     shown side by side.
   - *For Mon, Wed* on an item shows which dishes need how much.
-  - Tick **Bought**, or **Have it** for things already at home; add your own items (milk,
-    coffee). Ticks are shared by both phones. If the plan later needs more of something ticked,
-    it comes back with a note.
+  - Tick **Bought**, or **Have it** for things already at home. Ticks are shared by both phones
+    and with the grocery list. If the plan later needs more of something ticked, it comes back
+    with a note. Other things to buy are added on the grocery list.
 - **Sunday prep:**
   - Make-ahead tasks of the chosen dishes; the same task in several dishes is one batch, with the
     amounts each dish needs ("410 g basmati rice (Mon) + 300 g basmati rice (Tue)").
@@ -118,6 +126,8 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   together, so "red onion" and "onion" stay apart, and a few lines you'd merge by hand may stay
   separate. Sections come from keyword rules; anything unknown goes to "Other". Pack sizes are
   not known, so small amounts (20 g curry paste) are shown as written.
+- **Grocery list:** the same ingredient from a dinner and from something you typed ("rice")
+  shows as two lines. Only this week and next week feed the list.
 - **Shopping and prep ticks** reach the other phone when the app is opened or comes back to the
   front, not live while both are looking at it.
 - **Scaled recipe steps:** amounts with a unit ("300 ml", "½ tsp") are scaled and highlighted;
@@ -153,9 +163,9 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 
 ### Sunday (shopping and prep)
 
-1. **Shopping** tab: tap **Have it** for what's already at home (start with "Check the
-   cupboard"). In the shop, tick items as they go in the basket. The other phone sees the ticks
-   when it is opened.
+1. **Groceries** (the home page): tap **Have it** for what's already at home (start with "Check
+   the cupboard"), and add anything else you need. In the shop, tick items as they go in the
+   basket. The other phone sees the ticks when it is opened.
 2. **Sunday prep** tab: work down the list; shared tasks come first. Tick each one off.
 3. During the week, open **Sunday prep** → *Each evening* to see what's left to do tonight and
    which lunch boxes to pack.

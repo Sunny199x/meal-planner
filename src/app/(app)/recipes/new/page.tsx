@@ -43,7 +43,7 @@ async function NewRecipeForm() {
       initial={EMPTY_FORM}
       action={createRecipeAction}
       submitLabel="Save recipe"
-      cancelHref="/"
+      cancelHref="/recipes"
       cuisines={suggestions.cuisines}
       prepNames={suggestions.prepNames}
     />

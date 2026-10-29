@@ -243,6 +243,32 @@ the repo, then check it for real on the Vercel preview deployment.
     the shopping ticks.
   - **No storage times:** the page says the app doesn't know how long prepared food keeps.
 
+## The grocery list as the home page (29 October 2026)
+
+Saketh asked for the grocery list to be the first thing the app opens, because it's used more
+often than the planner and things get added through the week. The weekly list should feed it,
+and a change in one should show in the other.
+
+- **One list, two views** rather than two lists that copy into each other (copies drift and
+  duplicate).
+  - **Grocery list (home page, `/`):** things added by hand on any day, plus the ingredients of
+    this week's and next week's planned dinners, in one list by supermarket section.
+  - **Week → Shopping:** the same dinner ingredients for one week only.
+  - The dinner ingredients' "Bought" and "Have it" ticks are stored once per week
+    (`week_plans.shopping`), so a tick in either place shows in both.
+- **Things added by hand** live in a new household table, `grocery_items`, not in a week. They
+  are sorted into sections by the same keyword rules (typed "2 l milk" goes to Dairy), stay
+  until removed, and "Remove the bought items you added" clears the ticked ones. Adding is only
+  on the home page; the week's Shopping tab points there.
+  - The migration copies items already added on a week's Shopping tab into the new table (the
+    old data is left in place).
+- **Which dinners feed the list:** the week we're in and the next one (Monday to Sunday,
+  Stockholm time). This week's ingredients leave the list once all the dinners needing them have
+  passed; amounts stay the whole week's, so ticks match the week's Shopping tab. When both weeks
+  have items, each line says "This week" or "Next week".
+- **Recipes moved** to `/recipes` (a Recipes link in the menu). On phones the menu shows the
+  app icon instead of the words "Meal Planner" so four links fit.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

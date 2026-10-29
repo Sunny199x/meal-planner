@@ -54,7 +54,7 @@ await page.waitForURL(base + "/");
 await page.goto(base + "/settings");
 await page.click("text=Load recipes from files");
 await page.waitForSelector("text=The database now holds");
-await page.goto(base + "/");
+await page.goto(base + "/recipes");
 await page.waitForSelector("main article");
 const firstRecipe = await page.getAttribute("main article h2 a", "href");
 
@@ -67,13 +67,14 @@ if (await page.locator("button:has-text('Save setup')").count()) {
 }
 
 const pages = [
-  ["recipes", "/"],
+  ["groceries", "/"],
+  ["recipes", "/recipes"],
   ["week", "/week"],
   ["week-setup", "/week?week=2030-01-07"],
   ["shopping", "/week/shopping"],
   ["shopping-empty", "/week/shopping?week=2030-01-07"],
   ["prep", "/week/prep"],
-  ["recipes-filtered", "/?time=45&diet=vegetarian&protein=1"],
+  ["recipes-filtered", "/recipes?time=45&diet=vegetarian&protein=1"],
   ["recipe", firstRecipe],
   ["edit", `${firstRecipe}/edit`],
   ["add", "/recipes/new"],
