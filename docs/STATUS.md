@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from the food-safety guidance.
+Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 
 ## Where the app is
 
@@ -101,8 +101,10 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
   - Prep days are set in the week setup (default Sunday before the week and Wednesday). Each
     make-ahead task goes on the latest prep day within how far ahead it may be done, or on the day
     of the dinner; the same task on the same day is one batch, with the amounts each dish needs.
-  - "How far ahead" limits are set per task in Settings → Prep limits. Until a task has one, it is
-    done on the day. Published guidance isn't in the app yet (see Known limitations).
+  - "How far ahead" limits come from published food-safety guidance for cooked food (cooked rice:
+    1 day; other cooked food: 2 days; UK Food Standards Agency, linked), or are set per task in
+    Settings → Prep limits, never longer than the guidance. A task with neither is done on the
+    day.
   - Tick tasks off; ticks are shared by both phones.
   - Each evening: what was prepped and when, what's done that day and why, lunch boxes to pack
     and portions to freeze, or an evening of leftovers with no cooking.
@@ -111,8 +113,6 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
 ## Not built yet (and labelled in the app where it shows)
 
 - Saved meal combinations and past weeks ("repeat a past week"): milestone 5.
-- Food-safety guidance for prep limits (Livsmedelsverket): waiting for the site to be allowed in
-  the session's network settings; until then limits are the household's own.
 - Instagram posts can't be read by the app yet: the caption is pasted (see `docs/IDEAS.md`).
 - YouTube recipes that are only said out loud in the video, not written in its description.
 - TikTok: not supported (not used).
@@ -146,11 +146,12 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
 - **Scaled recipe steps:** amounts with a unit ("300 ml", "½ tsp") are scaled and highlighted;
   times, temperatures and counts ("10 minutes", "4 tortillas") stay as written, and pan sizes
   aren't adjusted.
-- **No food-safety guidance in the app yet:** the prep limits are the household's own until
-  Livsmedelsverket's guidance can be read and added with its source (this session can't reach the
-  site). Until then, a task without a limit is planned for the day of the dinner.
+- **Food-safety guidance** covers only cooked food, and only when the task's name says so
+  ("Cook…", "Roast…"). Livsmedelsverket gives no limit per food, so the day limits are the UK Food
+  Standards Agency's (stricter). Raw prep (pickling, marinating, sauces) is done on the day until
+  you set a limit. "1 day ahead" means the day before, which can be a little over 24 hours.
 - **Prep amounts** for a shared task are found by its main word ("rice" in "Cook rice"); a task
-  like "Chop aromatics" shows no amounts. The app never says how long prepared food keeps.
+  like "Chop aromatics" shows no amounts. The app never makes up how long prepared food keeps.
 - **First load after a quiet spell** can take a second or two (the free Neon database sleeps).
 - **The passcode** keeps strangers out; it is not bank-level security.
 - **Importing needs `ANTHROPIC_API_KEY`** in Vercel, and costs about 1–3 öre per recipe. Some
@@ -192,15 +193,14 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
    Wednesday, do Wednesday's list.
 3. During the week, open **Prep** → *Each evening* to see what's left to do tonight and which
    lunch boxes to pack.
-4. Once: Settings → **Prep limits**, set how far ahead each task may be done. Until then, every
-   task is planned for the day of its dinner.
+4. Once: Settings → **Prep limits**, set how far ahead the raw prep may be done (pickled onions,
+   pomegranate, sauces). Cooked rice and other cooked food already follow the guidance shown
+   there.
 
 ## Next
 
 1. ~~Add `ANTHROPIC_API_KEY` in Vercel~~ Done 29 October; try importing a few real recipes on
    the preview.
-2. Allow `www.livsmedelsverket.se` in the session's network settings so the published guidance
-   can be added to the prep limits, with its source.
-3. Merge milestone 4 into `main`.
-4. Milestone 5 (history): past weeks, "repeat a past week" and liked meal combinations feeding
+2. Merge milestone 4 into `main`.
+3. Milestone 5 (history): past weeks, "repeat a past week" and liked meal combinations feeding
    the suggestions. Before weekly use, revisit the shared preview/production database.

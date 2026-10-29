@@ -54,24 +54,37 @@ export function PrepLimits({ rows }: { rows: PrepLimitRow[] }) {
       )}
       <ul className="divide-y divide-line">
         {rows.map((row) => {
-          const max = row.guidance?.days ?? MAX_PREP_DAYS;
+          const { guidance } = row;
+          // Without guidance the empty choice is "On the day"; with it, the empty choice is the guidance
+          // and only stricter limits are offered.
+          const choices = guidance
+            ? Array.from({ length: guidance.days }, (_, i) => i)
+            : Array.from({ length: MAX_PREP_DAYS }, (_, i) => i + 1);
+          const value = own[row.key];
           return (
             <li key={row.key} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2">
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-48">
                 <p className="font-medium">{row.name}</p>
                 <p className="text-xs text-muted">
                   In {row.recipes} {row.recipes === 1 ? "recipe" : "recipes"}
-                  {row.guidance ? <> · Guidance: {label(row.guidance.days).toLowerCase()} ({row.guidance.note})</> : " · No published guidance in the app yet"}
+                  {guidance ? (
+                    <>
+                      {" "}
+                      · {guidance.source}: {guidance.note}
+                    </>
+                  ) : (
+                    " · Not covered by the guidance below"
+                  )}
                 </p>
               </div>
               <select
                 aria-label={`How far ahead: ${row.name}`}
-                value={own[row.key] ?? ""}
+                value={value !== undefined && choices.includes(value) ? value : ""}
                 onChange={(e) => choose(row, e.target.value)}
                 className="rounded-xl border border-line bg-cream px-2 py-1 text-sm"
               >
-                <option value="">{row.guidance ? `Guidance (${label(row.guidance.days).toLowerCase()})` : "On the day"}</option>
-                {Array.from({ length: max }, (_, i) => i + 1).map((days) => (
+                <option value="">{guidance ? `Guidance: ${guidance.days} ${guidance.days === 1 ? "day" : "days"}` : "On the day"}</option>
+                {choices.map((days) => (
                   <option key={days} value={days}>
                     {label(days)}
                   </option>

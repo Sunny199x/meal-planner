@@ -339,10 +339,26 @@ and a change in one should show in the other.
   before its dinner that is within its "at most N days ahead" limit, otherwise on the day of the
   dinner; the same task on the same prep day is one batch. Limits are set per task name in
   Settings → Prep limits (on the day, or 1–6 days ahead), checked on the server, and can never be
-  longer than published guidance. The guidance table (`src/lib/plan/food-safety.ts`) is empty
-  until Livsmedelsverket's pages can be read from a session (the site is blocked by the session's
-  network settings); nothing is filled in from memory. Old ticks from before prep days don't
-  carry over.
+  longer than published guidance. Old ticks from before prep days don't carry over.
+- **Food-safety guidance for prep limits** (29 October 2026, read from the sources themselves; the
+  table is `src/lib/plan/food-safety.ts`):
+  - **Livsmedelsverket gives no limit per food.** Its pages say cooked food in the fridge "often
+    keeps several days, sometimes up to about a week", mainly depending on the fridge's
+    temperature (4 °C), if it is cooled quickly and kept covered. That can't be planned with.
+  - **So the day limits come from the UK Food Standards Agency** ("a similar official source", as
+    agreed), which gives them: cooked rice no more than one day in the fridge (Home food fact
+    checker), and other cooked leftovers within two days (How to chill, freeze and defrost food
+    safely). Both are stricter than Livsmedelsverket's advice. Settings shows both agencies' own
+    words with links.
+  - **Which tasks they cover is decided from the task's name:** a cooking word (cook, roast, bake,
+    simmer, fry, boil, steam, grill…) means cooked food; with "rice" as well, the rice rule. Raw
+    prep (chopping, pickling, marinating, mixing mince, sauces like tzatziki) isn't covered by
+    either rule and stays "on the day" until the household sets a limit. A cooked task whose name
+    doesn't say so ("Harissa bulgur") is also left to the household; renaming it "Cook harissa
+    bulgur" would bring it under the guidance.
+  - **"1 day ahead" means the day before the dinner,** so rice cooked on Sunday afternoon for
+    Monday's dinner can pass 24 hours; Settings suggests cooking it late on the prep day.
+  - The household can choose stricter limits than the guidance, never longer ones.
 - **Recipe check** (Settings → Recipe check, `src/lib/recipes/health.ts`): lists recipes with no
   make-ahead tasks, lines the app can't fully read, no cuisine or main protein, seafood, or that
   are illustrative templates; and make-ahead tasks that work on the same things under different
@@ -352,9 +368,9 @@ and a change in one should show in the other.
   duplicates appear.
 - **Prep timing (plan):** Sunday and Wednesday are prep days by default (a setting). Each make-ahead task
   has a "done at most N days ahead" limit, taken from published food-safety guidance
-  (Livsmedelsverket, the Swedish Food Agency) with the source shown; tasks the guidance doesn't
-  cover default to "on the day" until the household sets them. The app never makes up storage
-  times.
+  (Livsmedelsverket, the Swedish Food Agency, or a similar official source) with the source shown;
+  tasks the guidance doesn't cover default to "on the day" until the household sets them. The app
+  never makes up storage times. (Built as above; the limits ended up from the UK agency.)
 
 ## Product decisions
 

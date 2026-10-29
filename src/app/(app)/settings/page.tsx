@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { signOut } from "@/lib/auth/actions";
 import { databaseKind, describeDatabaseError, getDb } from "@/lib/db";
 import { recipes } from "@/lib/db/schema";
-import { limitFor } from "@/lib/plan/food-safety";
+import { GUIDANCE, guidanceFor, SWEDISH_ADVICE } from "@/lib/plan/food-safety";
 import { prepKey } from "@/lib/plan/ingredients";
 import { getPrepLimits } from "@/lib/plan/prep-limits";
 import { checkRecipes } from "@/lib/recipes/health";
@@ -27,13 +27,14 @@ export default function SettingsPage() {
       <Section title="Prep limits" id="prep-limits">
         <p className="mb-3 text-sm text-muted">
           How far ahead each make-ahead task may be done. The prep list puts a task on the latest prep day within its
-          limit, or on the day of the dinner. Published food-safety guidance is shown with its source when the app
-          has it, and you can only choose the same or stricter. A task with no limit is done on the day. The app
-          never makes up how long food keeps.
+          limit, or on the day of the dinner. Where the guidance below covers a task, you can only choose the same or
+          stricter. A task it doesn&apos;t cover is done on the day until you set a limit. The app never makes up how
+          long food keeps.
         </p>
         <Suspense fallback={<p className="text-muted">Loading…</p>}>
           <PrepLimitsSection />
         </Suspense>
+        <PrepGuidance />
       </Section>
 
       <Section title="Recipe check" id="recipe-check">
@@ -111,7 +112,7 @@ async function PrepLimitsSection() {
     rows = household.makeAhead
       .map((task) => {
         const key = prepKey(task.name);
-        return { key, name: task.name, recipes: task.recipes, own: limits[key] ?? null, guidance: limitFor(task.name, new Map()) };
+        return { key, name: task.name, recipes: task.recipes, own: limits[key] ?? null, guidance: guidanceFor(task.name) };
       })
       .sort((a, b) => b.recipes - a.recipes || a.name.localeCompare(b.name));
   } catch (error) {
@@ -122,6 +123,40 @@ async function PrepLimitsSection() {
     );
   }
   return <PrepLimits rows={rows} />;
+}
+
+/** The guidance behind the limits, in its own words with links. */
+function PrepGuidance() {
+  const link = (url: string, text: string) => (
+    <a href={url} target="_blank" rel="noopener noreferrer" className="text-terracotta underline">
+      {text}
+    </a>
+  );
+  return (
+    <div className="mt-4 space-y-2 border-t border-line pt-3 text-sm">
+      <h3 className="font-medium">The guidance</h3>
+      <p className="text-muted">
+        Applied to make-ahead tasks whose name says the food is cooked (cook, roast, bake, simmer, fry…). Raw prep
+        such as chopping, pickling or marinating isn&apos;t covered.
+      </p>
+      <ul className="space-y-2">
+        {GUIDANCE.map((rule) => (
+          <li key={rule.sourceUrl}>
+            <span className="font-medium">
+              {rule.days} {rule.days === 1 ? "day" : "days"} ahead:
+            </span>{" "}
+            &ldquo;{rule.quote}&rdquo; ({link(rule.sourceUrl, rule.source)})
+            {rule.tip && <span className="block text-muted">{rule.tip}</span>}
+          </li>
+        ))}
+      </ul>
+      <p className="text-muted">
+        {link(SWEDISH_ADVICE.sourceUrl, SWEDISH_ADVICE.source)}, the Swedish Food Agency, gives no limit per food:
+        &ldquo;{SWEDISH_ADVICE.quote}&rdquo; (&ldquo;{SWEDISH_ADVICE.translation}&rdquo;) {SWEDISH_ADVICE.more} The app
+        uses the UK agency&apos;s stricter day limits because they can be planned with.
+      </p>
+    </div>
+  );
 }
 
 async function RecipeCheck() {

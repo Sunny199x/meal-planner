@@ -20,10 +20,19 @@ export function prepDayName(offset: number): string {
   return offset < 0 ? `${DAY_NAMES[offset + 7]}, before the week` : DAY_NAMES[offset];
 }
 
-function limitText(limit: PrepLimit | null): string {
-  if (!limit) return "no limit set yet";
+function LimitText({ limit }: { limit: PrepLimit | null }) {
+  if (!limit) return <>no limit set yet</>;
   const days = limit.days === 0 ? "on the day only" : `at most ${limit.days} ${limit.days === 1 ? "day" : "days"} ahead`;
-  return limit.by === "household" ? `${days}, your limit` : `${days}, ${limit.note}`;
+  if (limit.by === "household") return <>{days}, your limit</>;
+  return (
+    <>
+      {days}:{" "}
+      <a href={limit.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+        {limit.source}
+      </a>{" "}
+      says {limit.note}
+    </>
+  );
 }
 
 export function PrepList({
@@ -131,8 +140,12 @@ export function PrepList({
       <p className="text-xs text-muted">
         Each task goes on the latest prep day that is within how far ahead it may be done; otherwise it&apos;s done on
         the evening. The same task on the same day is one batch. Limits are yours, or from published food-safety
-        guidance with its source named: the app never makes up how long food keeps. Prep days are set in the
-        week&apos;s setup.
+        guidance with its source named: the app never makes up how long food keeps. Cool cooked food quickly and keep
+        it covered in the fridge. Prep days are set in the week&apos;s setup;{" "}
+        <Link href="/settings#prep-limits" className="underline hover:text-ink">
+          limits and their sources are in Settings
+        </Link>
+        .
       </p>
     </div>
   );
@@ -181,7 +194,11 @@ function TaskRow({
             </span>
           ))}
         </p>
-        {task.limit && <p className="text-xs text-muted">Done ahead: {limitText(task.limit)}.</p>}
+        {task.limit && (
+          <p className="text-xs text-muted">
+            Done ahead: <LimitText limit={task.limit} />.
+          </p>
+        )}
         {!done &&
           (descriptions.length === 1 ? (
             <p className="text-sm">{sentence(descriptions[0])}</p>
@@ -250,8 +267,12 @@ function EveningRow({
               <span className="text-muted">Do this evening: </span>
               {cook.tasks
                 .filter((t) => t.prepDay === null)
-                .map((t) => `${t.name} (${limitText(t.limit)})`)
-                .join(", ")}
+                .map((t, i) => (
+                  <span key={t.name}>
+                    {i > 0 && ", "}
+                    {t.name} (<LimitText limit={t.limit} />)
+                  </span>
+                ))}
             </p>
           )}
           {after.length > 0 && <p className="text-sm">After dinner: {after.join("; ")}.</p>}

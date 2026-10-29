@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireSignedIn } from "../auth/server";
 import { describeDatabaseError, getDb } from "../db";
 import { readWeekStart } from "./dates";
-import { limitFor, MAX_PREP_DAYS } from "./food-safety";
+import { guidanceFor, MAX_PREP_DAYS } from "./food-safety";
 import { setPrepLimit } from "./prep-limits";
 import { getPlan, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
@@ -112,9 +112,9 @@ export async function setPrepLimitAction(name: string, days: number | null): Pro
   if (days !== null && !(Number.isInteger(days) && days >= 0 && days <= MAX_PREP_DAYS)) {
     return { error: "Something wasn't valid. Please reload and try again." };
   }
-  const guidance = limitFor(name, new Map());
+  const guidance = guidanceFor(name);
   if (days !== null && guidance && days > guidance.days) {
-    return { error: `The guidance allows at most ${guidance.days} days ahead for this.` };
+    return { error: `The guidance allows at most ${guidance.days} ${guidance.days === 1 ? "day" : "days"} ahead for this.` };
   }
   try {
     const limits = await setPrepLimit(await getDb(), name.trim(), days);

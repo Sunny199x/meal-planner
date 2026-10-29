@@ -59,24 +59,34 @@ describe("when prep is done", () => {
 
 describe("the prep list", () => {
   it("merges the same task on the same prep day into one batch, with the amounts", () => {
-    const tasks = buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({ "cook rice": 2, "deseed pomegranate": 2 }));
+    const mondayPrep = { ...DEFAULT_SETUP, prepDays: [0] };
+    const tasks = buildPrepList(mondayPrep, week, recipes, portions, limits({ "deseed pomegranate": 2 }));
     expect(tasks.map((t) => [t.key, t.dishes.map((d) => d.recipeId)])).toEqual([
-      ["cook rice@-1", ["korma", "butter chicken"]],
-      ["deseed pomegranate@-1", ["korma", "butter chicken"]],
+      ["cook rice@0", ["korma", "butter chicken"]],
+      ["deseed pomegranate@0", ["korma", "butter chicken"]],
     ]);
     // korma: 2½ dinner + 2 lunch boxes (3) = 5½ portions; butter chicken: 2½ + 2½ again + 2 boxes (3) = 8.
     expect(tasks[0].amounts.map((a) => a.line)).toEqual(["410 g basmati rice", "1.2 kg basmati rice"]);
-    expect(tasks[0].limit).toEqual({ days: 2, by: "household" });
+    expect(tasks[0].limit).toMatchObject({ days: 1, by: "guidance" });
+    expect(tasks[1].limit).toEqual({ days: 2, by: "household" });
   });
 
   it("leaves a task for the evening when the prep day is too early for its limit", () => {
-    const tasks = buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({ "cook rice": 1 }));
-    expect(tasks.map((t) => t.key)).toEqual(["cook rice@-1"]);
-    expect(tasks[0].dishes.map((d) => d.recipeId)).toEqual(["korma"]);
+    const tasks = buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({ "deseed pomegranate": 1 }));
+    expect(tasks.map((t) => [t.key, t.dishes.map((d) => d.recipeId)])).toEqual([
+      ["cook rice@-1", ["korma"]],
+      ["deseed pomegranate@-1", ["korma"]],
+    ]);
   });
 
-  it("plans nothing ahead for tasks without a limit, unless a prep day is the dinner's own day", () => {
-    expect(buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({}))).toEqual([]);
+  it("never plans further ahead than the guidance allows, whatever the household set", () => {
+    const tasks = buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({ "cook rice": 2 }));
+    expect(tasks.map((t) => [t.key, t.dishes.map((d) => d.recipeId)])).toEqual([["cook rice@-1", ["korma"]]]);
+  });
+
+  it("plans nothing ahead for tasks with no limit and no guidance, unless a prep day is the dinner's own day", () => {
+    // Cooked rice is covered by the guidance; the pomegranate and pickled onions aren't.
+    expect(buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({})).map((t) => t.key)).toEqual(["cook rice@-1"]);
     const tuesdayPrep = { ...DEFAULT_SETUP, prepDays: [1] };
     expect(buildPrepList(tuesdayPrep, week, recipes, portions, limits({})).map((t) => t.key)).toEqual([
       "cook rice@1",
