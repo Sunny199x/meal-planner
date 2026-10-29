@@ -290,6 +290,12 @@ and a change in one should show in the other.
 - **After Claude, the app's own rules** check and tidy the result the same way for every source:
   units, names matched to ones already used, the seafood check, suggested make-ahead tasks from
   existing names, and the fields the suggestion rules need.
+- **Import screen** (Recipes → Import): paste text in any language plus where it's from; Claude
+  reads it; the normalising rules run; the normal recipe form opens pre-filled under a "Check
+  before saving" box (what to fill in, what to check, seafood, what the app changed). Suggested
+  make-ahead tasks are one tap in the form. Nothing is saved until "Save recipe".
+  - Remembering corrections made in the review was planned, but with Claude translating it only
+    pays off if the same fix keeps coming up; it is in `docs/IDEAS.md` until then.
 - **The normalising rules** (`src/lib/import/normalise.ts`), applied to every import after it is
   read, listing each change, guess and gap for the review screen:
   - US units to metric: cups (taken as 240 ml, flagged: sizes vary and dry food is better

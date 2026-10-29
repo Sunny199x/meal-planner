@@ -106,6 +106,12 @@ See `docs/DECISIONS.md`.
 salt") now follow the portions control and are highlighted. Times, temperatures and counts stay
 as written.
 
+## Noticed while building milestone 4 (Open)
+
+- **Remember corrections from the review screen:** if Claude keeps translating a word the same
+  wrong way, or a name keeps needing the same fix, remember the fix and pass it to Claude next
+  time. Worth building only once the same fix repeats.
+
 ## Noticed while building milestone 3 (Open)
 
 Small things that may or may not matter once the app is used for real weeks:

@@ -68,6 +68,9 @@ import, multi-user accounts beyond the shared household passcode, a large recomm
 - Layout check at phone and desktop width (needs a running app):
   `HOUSEHOLD_PASSCODE=... node scripts/check-pages.mjs http://localhost:3000`
   (screenshots go to `.screenshots/`)
+- Importing reads recipes with Claude and needs `ANTHROPIC_API_KEY`. Cloud sessions have no key:
+  start a local server with `IMPORT_TEST_READER=1` to use a stand-in that answers like Claude for a
+  sample recipe (`src/lib/import/test-reader.ts`). Never set it on Vercel.
 - Local database: without `DATABASE_URL` the app uses PGlite in `.data/pglite` (delete the folder
   to start fresh). Cloud sessions can't reach Neon, so test against this. For the dev server, set
   `HOUSEHOLD_PASSCODE` and `SESSION_SECRET` (32+ characters) in `.env.local`.

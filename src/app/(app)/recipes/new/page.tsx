@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { RecipeForm } from "@/components/recipe-form";
@@ -22,8 +23,11 @@ export default function NewRecipePage() {
           page.
         </p>
         <p>
-          <strong className="text-ink">Not available yet:</strong> reading a recipe automatically from a link or
-          from pasted text. It is being built now (milestone 4).
+          Have the recipe as text, in any language? Use{" "}
+          <Link href="/recipes/import" className="text-terracotta underline">
+            Import
+          </Link>{" "}
+          instead: Claude reads it and fills in this form for you to check.
         </p>
       </div>
       <Suspense fallback={<p className="text-muted">Loading the form…</p>}>
