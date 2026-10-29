@@ -20,19 +20,23 @@ const ID = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
 const now = new Date("2026-11-01T10:00:00Z");
 
 describe("placing dishes on evenings", () => {
-  it("puts a quick dish on the first Quick evening", () => {
-    expect(pickEvening({ timeTotalMin: 20 }, setup, [])).toBe(1);
+  it("puts a dish on the next open evening it fits", () => {
+    expect(pickEvening({ timeTotalMin: 20 }, setup, [])).toBe(0);
+    expect(pickEvening({ timeTotalMin: 90 }, setup, [])).toBe(5); // only the Relaxed evening is long enough
   });
 
-  it("puts a 40-minute dish on the first Normal evening, and a long one on the Relaxed evening", () => {
-    expect(pickEvening({ timeTotalMin: 40 }, setup, [])).toBe(0);
-    expect(pickEvening({ timeTotalMin: 90 }, setup, [])).toBe(5);
+  it("goes to the next empty day, skipping evenings that are too short", () => {
+    // Victoria's report: Monday taken, Tuesday is the next empty day, so a 25-minute dish goes there, not to a later Quick evening.
+    const monday = [{ recipeId: ID(1), day: 0, addedAt: "", via: "start" as const }];
+    expect(pickEvening({ timeTotalMin: 25 }, setup, monday)).toBe(1);
+    // Tuesday and Wednesday are Quick (up to 25 min), so a 40-minute dish skips to Thursday.
+    expect(pickEvening({ timeTotalMin: 40 }, setup, monday)).toBe(3);
   });
 
   it("skips taken evenings and returns null when nothing fits", () => {
     let dishes = addDish([], { id: ID(1), timeTotalMin: 20 }, setup, "start", now);
     dishes = addDish(dishes, { id: ID(2), timeTotalMin: 20 }, setup, "suggestion", now);
-    expect(dishes.map((d) => d.day)).toEqual([1, 2]);
+    expect(dishes.map((d) => d.day)).toEqual([0, 1]);
     expect(pickEvening({ timeTotalMin: 90 }, setup, [...dishes, { recipeId: ID(3), day: 5, addedAt: "", via: "browse" }])).toBeNull();
   });
 

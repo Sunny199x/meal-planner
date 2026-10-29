@@ -3,20 +3,16 @@
 import { fitsEvening, openEvenings, type PlanRecipe } from "./suggest";
 import { TIME_SLOTS, type PlannedDish, type WeekSetup } from "./types";
 
-const TIGHTNESS = { quick: 0, normal: 1, relaxed: 2 } as const;
-
 /**
- * The evening a new dish goes to: the tightest open evening it fits (a quick
- * dish goes to a Quick evening first), earliest in the week on a tie.
+ * The evening a new dish goes to: the earliest open evening it fits by time
+ * (the next empty day, or the one after if the dish is too long for it).
  */
 export function pickEvening(
   recipe: Pick<PlanRecipe, "timeTotalMin">,
   setup: WeekSetup,
   dishes: PlannedDish[],
 ): number | null {
-  const fitting = openEvenings({ setup, dishes, dismissed: [] }).filter((day) => fitsEvening(recipe, setup, day));
-  fitting.sort((a, b) => TIGHTNESS[setup.evenings[a].time] - TIGHTNESS[setup.evenings[b].time] || a - b);
-  return fitting[0] ?? null;
+  return openEvenings({ setup, dishes, dismissed: [] }).find((day) => fitsEvening(recipe, setup, day)) ?? null;
 }
 
 export function addDish(

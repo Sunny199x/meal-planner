@@ -141,7 +141,7 @@ the repo, then check it for real on the Vercel preview deployment.
   | Uses the rest of a part-used item ("the other half of the pomegranate") | +20 |
   | A fresh ingredient in a real amount that a chosen dish also uses (at most 3) | +8 each |
   | Uses something from "ingredients to use up" (at most 2) | +25 each |
-  | Fits a Quick evening that is still open | +10 |
+  | Goes to a Quick evening (the next open evening it fits is Quick) | +10 |
   | Good as leftovers, while lunch boxes still need covering | +10 |
   | A favourite | +6 |
   | A cuisine the week doesn't have yet | +6 |
@@ -159,8 +159,12 @@ the repo, then check it for real on the Vercel preview deployment.
   - "May contain fish" and "Needs a Relaxed evening" are shown as notes, not points.
   - The shortlist shows three, avoiding two of the same cuisine where possible. Ties are broken by
     a fixed shuffle per week, so the order doesn't jump around on reload.
-  - A new dish goes to the tightest open evening it fits (a quick dish takes a Quick evening first).
-    Moving a dish onto a taken evening swaps the two.
+  - A new dish goes to the earliest open evening it fits by time (the next empty day, or later
+    if that evening is too short). Changed 29 October 2026 after Victoria's feedback: the first
+    version sent quick dishes to the tightest (Quick) evening first, which looked like a bug
+    ("Add to Friday" when Tuesday was empty). "Quick enough for <day>" (+10) now only shows
+    when the dish actually goes to a Quick evening. Moving a dish onto a taken evening swaps
+    the two.
 - **"Not this one"** lasts until the page is left. It isn't saved, so a dismissed recipe can
   come back next visit. Saving it is cheap to add if it proves annoying.
 - **Time to choose** is measured from the first saved dish to the last one added, and shown only
