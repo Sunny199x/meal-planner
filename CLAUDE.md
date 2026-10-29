@@ -11,6 +11,7 @@ dishes fit together.
 - `docs/DECISIONS.md` — decisions made since the brief: stack, build order, changes. It overrides the
   brief where they differ.
 - `seed-recipes/README.md` — the recipe file format.
+- `docs/STATUS.md` — what the app does today, what is missing, and known limitations.
 
 ## Working with Saketh
 
@@ -58,6 +59,9 @@ import, multi-user accounts beyond the shared household passcode, a large recomm
 - Lint / type check / unit tests: `npm run lint`, `npm run typecheck`, `npm test`
 - Production build: `npm run build` (runs database migrations first when `DATABASE_URL` is set)
 - After changing `src/lib/db/schema.ts`: `npm run db:generate` to create a migration in `drizzle/`
+- Layout check at phone and desktop width (needs a running app):
+  `HOUSEHOLD_PASSCODE=... node scripts/check-pages.mjs http://localhost:3000`
+  (screenshots go to `.screenshots/`)
 - Local database: without `DATABASE_URL` the app uses PGlite in `.data/pglite` (delete the folder
   to start fresh). Cloud sessions can't reach Neon, so test against this. For the dev server, set
   `HOUSEHOLD_PASSCODE` and `SESSION_SECRET` (32+ characters) in `.env.local`.

@@ -16,6 +16,7 @@ import {
 import { parseIngredientLine, splitNote, type ParsedIngredient } from "@/lib/recipes/parse-ingredient-line";
 import { getRecipe } from "@/lib/recipes/queries";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
+import { describeSourceLink } from "@/lib/recipes/source-link";
 import { BackToRecipes } from "./back-link";
 import { SavedNotice } from "./saved-notice";
 
@@ -44,6 +45,7 @@ async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params
   const seafood = checkRecipeForSeafood({ title: recipe.title, ingredients: parsed });
   const protein = proteinLabel(parsed, recipe.servings);
   const carb = carbLabel(parsed, recipe.servings);
+  const sourceLink = recipe.sourceUrl ? describeSourceLink(recipe.sourceUrl) : null;
 
   return (
     <article className="space-y-5">
@@ -103,11 +105,11 @@ async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params
 
       <p className="text-sm text-muted">
         Source: {recipe.source}
-        {recipe.sourceUrl && (
+        {sourceLink && (
           <>
             {" · "}
-            <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-terracotta underline">
-              Open original
+            <a href={recipe.sourceUrl!} target="_blank" rel="noopener noreferrer" className="text-terracotta underline">
+              {sourceLink.label}
             </a>
           </>
         )}

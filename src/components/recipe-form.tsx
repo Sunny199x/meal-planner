@@ -88,7 +88,12 @@ export function RecipeForm({ initial, action, submitLabel, cancelHref, cuisines,
         >
           <input {...text("source")} className={inputClass} />
         </Field>
-        <Field label="Link to the original (optional)" error={errors.sourceUrl} id="sourceUrl">
+        <Field
+          label="Link to the original (optional)"
+          hint="A website, Instagram post or YouTube video."
+          error={errors.sourceUrl}
+          id="sourceUrl"
+        >
           <input {...text("sourceUrl")} type="url" inputMode="url" placeholder="https://" className={inputClass} />
         </Field>
       </Section>

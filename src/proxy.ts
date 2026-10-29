@@ -20,6 +20,8 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
+// Icons and the home-screen manifest stay reachable without signing in, so the
+// sign-in page shows the icon and "Add to Home Screen" works.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|icon.svg|apple-icon.png|manifest.webmanifest|icons/).*)"],
 };

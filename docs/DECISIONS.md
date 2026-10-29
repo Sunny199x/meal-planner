@@ -22,7 +22,9 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
 | Database | Postgres from Neon, added through Vercel's Storage / Marketplace | No separate account to manage; the database URL is injected automatically. |
 | Sign-in | One shared household passcode (environment variable), cookie session | Two people, one household. Real user accounts are out of scope. |
 | Recipe URL import | Server-side fetch, parse schema.org `Recipe` JSON-LD, then a review screen | Works for most food blogs. Falls back to "save link + manual entry" when there is no structured data. |
-| Instagram / TikTok | Save link + notes only, clearly labelled | These cannot be parsed reliably. |
+| Instagram | Save link (as the recipe's source) + type the recipe, clearly labelled | Instagram doesn't let apps read posts without a business developer account. |
+| YouTube | Save link now. Milestone 4: also fetch title, channel and thumbnail automatically (YouTube's public oEmbed, no key needed) | The recipe text is usually in the video description, which needs a YouTube Data API key; only with Saketh's OK. |
+| TikTok | Not supported | Saketh and Victoria don't use it (decided 29 October 2026). |
 | Photo import | Attach a photo to a recipe as a reference, then type the recipe manually | No OCR in the MVP. Label it honestly. |
 | Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Saketh writes his own recipes there. See `seed-recipes/README.md`. |
 
@@ -103,6 +105,13 @@ the repo, then check it for real on the Vercel preview deployment.
   page with a normal page load (a fraction of a second slower, always current). Other changes
   (favourites, loading files) mark every page for a refresh, and a briefly outdated view of a page
   you go back to is accepted there.
+- **Source links are recognised by address** (YouTube, Instagram or a website name). The recipe
+  page says "Watch on YouTube", "Open on Instagram" or "Open on bbcgoodfood.com". Nothing is
+  fetched from those sites yet.
+- **Phone home screen:** the app has an icon and a web app manifest, so "Add to Home Screen"
+  gives it its own name and icon. Pages ask search engines not to index them.
+- **Layout check:** `scripts/check-pages.mjs` visits every page at 375 px and 1280 px, reports
+  sideways scrolling and errors, and saves screenshots. Run it before pushing changes to pages.
 
 ## Product decisions
 

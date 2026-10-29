@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local stand-in database
 /.data/
+
+# page check screenshots (scripts/check-pages.mjs)
+/.screenshots/

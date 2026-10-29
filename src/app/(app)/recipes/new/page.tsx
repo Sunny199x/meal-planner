@@ -11,11 +11,18 @@ export default function NewRecipePage() {
   return (
     <div className="space-y-4">
       <h1 className="font-display text-3xl font-semibold">Add a recipe</h1>
-      <p className="rounded-xl border border-line bg-paper px-4 py-3 text-sm text-muted">
-        Type or paste the recipe below. <strong className="text-ink">Not available yet:</strong> importing from
-        a web link, saving Instagram or TikTok links, and attaching photos. These are planned for a later
-        milestone.
-      </p>
+      <div className="space-y-2 rounded-xl border border-line bg-paper px-4 py-3 text-sm text-muted">
+        <p>
+          Type or paste the recipe below. For a recipe from a website, an Instagram post or a YouTube video,
+          paste its link under <strong className="text-ink">Link to the original</strong>; the recipe page
+          then links back to it.
+        </p>
+        <p>
+          <strong className="text-ink">Not available yet:</strong> reading the recipe automatically from a
+          website link, and attaching photos. Both are planned for a later milestone. Instagram posts can&apos;t
+          be read automatically, so for those the link plus typing is how it will stay.
+        </p>
+      </div>
       <Suspense fallback={<p className="text-muted">Loading the form…</p>}>
         <NewRecipeForm />
       </Suspense>
