@@ -1,9 +1,10 @@
-# Runs on every push and pull request. A red ✗ on GitHub means one of these
+# Runs on pull requests and on pushes to main. A red ✗ on GitHub means one of these
 # checks failed; open the "Details" link to see which one.
 name: Check
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:

@@ -1,6 +1,6 @@
 const steps = [
   { label: "App skeleton on Vercel", done: true },
-  { label: "Household passcode", done: false },
+  { label: "Household passcode", done: true },
   { label: "Database and loading recipes from files", done: false },
   { label: "Browse, search and filter recipes", done: false },
   { label: "Add and edit recipes by hand", done: false },
