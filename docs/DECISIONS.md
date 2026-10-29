@@ -87,6 +87,22 @@ the repo, then check it for real on the Vercel preview deployment.
     and the recipe page says so instead of guessing. Bread, tortillas and flatbreads aren't counted.
 - **Search and filters run in the browser** over all recipes, and the filters are kept in the page
   address. Favourites are shared by the household, not per person.
+- **Adding and editing recipes in the app** uses the same text format as the recipe files:
+  - Ingredients go one per line, with `### Group` headings; steps one per line; make-ahead
+    tasks as `Name: what to do`.
+  - A live preview shows how each ingredient line is read. Seafood is flagged while typing.
+  - Make-ahead names already used in other recipes can be added with a tap, so shared prep
+    matches.
+  - Editing a recipe that came from a file marks it "edited in the app"; it stays marked as an
+    illustrative template if it was one.
+  - Deleting asks for confirmation. A deleted file recipe comes back on the next "Load recipes
+    from files" unless its file is deleted too; the delete screen says so.
+- **A full page load after saving or deleting.** Next.js 16 keeps recently visited pages alive and
+  shows them instantly when you return, then swaps in fresh data. Straight after a save that showed
+  the old version for a moment, which looks as if the save failed. So save and delete open the next
+  page with a normal page load (a fraction of a second slower, always current). Other changes
+  (favourites, loading files) mark every page for a refresh, and a briefly outdated view of a page
+  you go back to is accepted there.
 
 ## Product decisions
 

@@ -1,8 +1,8 @@
 "use server";
 
-import { refresh } from "next/cache";
 import { requireSignedIn } from "@/lib/auth/server";
 import { describeDatabaseError, getDb } from "@/lib/db";
+import { recipesChanged } from "@/lib/recipes/changed";
 import { loadRecipeFiles, type LoadReport } from "@/lib/recipes/load-files";
 import { readRecipeFiles } from "@/lib/recipes/read-files";
 
@@ -31,7 +31,7 @@ async function run(reset: boolean): Promise<LoadState> {
   }
   try {
     const report = await loadRecipeFiles(await getDb(), files, { reset });
-    refresh();
+    recipesChanged();
     return { report, reset };
   } catch (error) {
     return { error: describeDatabaseError(error), reset };

@@ -11,7 +11,15 @@ import { RecipeBrowser } from "./recipe-browser";
 export default function RecipesPage() {
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-3xl font-semibold">Recipes</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-semibold">Recipes</h1>
+        <Link
+          href="/recipes/new"
+          className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
+        >
+          + Add recipe
+        </Link>
+      </div>
       <Suspense fallback={<CollectionSkeleton />}>
         <Collection />
       </Suspense>
@@ -37,7 +45,11 @@ async function Collection() {
           <Link href="/settings" className="text-terracotta underline">
             Settings
           </Link>{" "}
-          and press <strong>Load recipes from files</strong>.
+          and press <strong>Load recipes from files</strong>, or{" "}
+          <Link href="/recipes/new" className="text-terracotta underline">
+            add one by hand
+          </Link>
+          .
         </p>
       </div>
     );

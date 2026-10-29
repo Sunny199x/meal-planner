@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { FavouriteButton } from "@/components/favourite-button";
@@ -16,6 +17,7 @@ import { parseIngredientLine, splitNote, type ParsedIngredient } from "@/lib/rec
 import { getRecipe } from "@/lib/recipes/queries";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
 import { BackToRecipes } from "./back-link";
+import { SavedNotice } from "./saved-notice";
 
 export default function RecipePage({ params }: PageProps<"/recipes/[id]">) {
   return (
@@ -45,6 +47,7 @@ async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params
 
   return (
     <article className="space-y-5">
+      <SavedNotice />
       <header className="flex gap-4">
         <RecipeTile title={recipe.title} cuisine={recipe.cuisine} size="lg" />
         <div className="min-w-0 flex-1">
@@ -55,6 +58,12 @@ async function RecipeDetail({ params }: Pick<PageProps<"/recipes/[id]">, "params
           <p className="mt-1 text-muted">
             {recipe.cuisine} · {DIET_LABEL[recipe.diet]}
           </p>
+          <Link
+            href={`/recipes/${recipe.id}/edit`}
+            className="mt-2 inline-block rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50"
+          >
+            Edit
+          </Link>
         </div>
       </header>
 
