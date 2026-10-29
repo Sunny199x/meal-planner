@@ -48,8 +48,9 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   is shrunk on the phone (about 1,200 px) before it is saved, and shows on the recipe cards, the
   recipe page, the week's suggestion cards and *Browse all recipes*. Photos are behind the
   passcode like everything else.
-- **Importing a recipe** (Recipes → Import): paste a recipe in any language (website text, an
-  Instagram caption, a YouTube description, the text of a photo). Claude reads it and writes it
+- **Importing a recipe** (Recipes → Import): paste a link to a recipe website (read from the page
+  directly), a YouTube link plus its description, an Instagram link plus its caption, or any
+  recipe text, in any language. The website's or video's photo can come along. Claude reads it and writes it
   in English with metric units (about 1–3 öre per recipe); the app's own rules then match units,
   names, cuisine and make-ahead tasks to the household's recipes. You check everything in the
   normal recipe form before saving. Needs `ANTHROPIC_API_KEY` in Vercel.

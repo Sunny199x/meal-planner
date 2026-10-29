@@ -296,6 +296,17 @@ and a change in one should show in the other.
   make-ahead tasks are one tap in the form. Nothing is saved until "Save recipe".
   - Remembering corrections made in the review was planned, but with Claude translating it only
     pays off if the same fix keeps coming up; it is in `docs/IDEAS.md` until then.
+- **Links** (`src/lib/import/sources.ts`): a website link is fetched by the server and the
+  recipe is read from the page's schema.org Recipe block (JSON-LD), sent to Claude as short clean
+  text; without such a block, the page's visible text is sent instead. Pasted text always wins
+  over fetching. YouTube and Instagram don't let apps read descriptions or captions, so those are
+  pasted; YouTube's public oEmbed gives the video title, channel and thumbnail.
+  - **Fetching safely** (`src/lib/import/fetch-page.ts`): only plain http(s) addresses on the
+    public internet, checked again after every redirect (no localhost, home networks or cloud
+    metadata addresses); 10 seconds and 3 MB per page, 8 MB per picture.
+  - **Photos from imports:** the page's or video's photo is shown in the review with "Use this
+    photo". After saving, the server fetches it and the phone shrinks it like any other photo
+    (no image library on the server, so nothing new to break on Vercel).
 - **The normalising rules** (`src/lib/import/normalise.ts`), applied to every import after it is
   read, listing each change, guess and gap for the review screen:
   - US units to metric: cups (taken as 240 ml, flagged: sizes vary and dry food is better

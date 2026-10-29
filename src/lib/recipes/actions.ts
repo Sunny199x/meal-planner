@@ -29,7 +29,11 @@ export async function setRecipePhotoAction(formData: FormData): Promise<{ error?
   const bytes = new Uint8Array(await photo.arrayBuffer());
   if (!photoType(bytes)) return { error: "That file isn't a photo the app can use (JPEG, PNG or WebP)." };
   try {
-    const saved = await saveRecipePhoto(await getDb(), id, bytes, "upload");
+    const from = formData.get("from");
+    const fromUrl = formData.get("fromUrl");
+    const source = from === "website" || from === "video" ? from : "upload";
+    const sourceUrl = source !== "upload" && typeof fromUrl === "string" ? fromUrl.slice(0, 2000) : null;
+    const saved = await saveRecipePhoto(await getDb(), id, bytes, source, sourceUrl);
     if (!saved) return { error: "This recipe no longer exists." };
   } catch (error) {
     return { error: describeDatabaseError(error) };

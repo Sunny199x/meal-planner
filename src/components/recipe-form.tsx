@@ -18,6 +18,8 @@ type Props = {
   prepNames: string[];
   /** Make-ahead tasks offered for this recipe, e.g. by an import (one tap adds the whole line). */
   suggestedMakeAhead?: MakeAheadTask[];
+  /** Runs after a successful save, before the saved recipe opens (e.g. to attach an imported photo). */
+  afterSave?: (savedPath: string) => Promise<void>;
 };
 
 const inputClass =
@@ -31,6 +33,7 @@ export function RecipeForm({
   cuisines,
   prepNames,
   suggestedMakeAhead = [],
+  afterSave,
 }: Props) {
   const [values, setValues] = useState(initial);
   const [state, formAction, saving] = useActionState(action, {});
@@ -40,8 +43,11 @@ export function RecipeForm({
   // shows the saved version straight away (see form-actions.ts). This also
   // leaves the form empty for the next recipe.
   useEffect(() => {
-    if (state.openNext) window.location.assign(state.openNext);
-  }, [state.openNext]);
+    const next = state.openNext;
+    if (!next) return;
+    if (afterSave) afterSave(next).finally(() => window.location.assign(next));
+    else window.location.assign(next);
+  }, [state.openNext, afterSave]);
 
   // Errors come from the last save attempt; each one disappears as soon as its
   // field is changed, so a fixed field doesn't keep showing an old message.
