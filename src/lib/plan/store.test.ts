@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openLocalDb } from "../db/local";
 import type { Db } from "../db/types";
-import { getPlan, saveSetup, setupForNewWeek } from "./store";
+import { getPlan, saveDishes, saveSetup, setupForNewWeek } from "./store";
 import { DEFAULT_SETUP } from "./types";
 
 let db: Db;
@@ -21,6 +21,17 @@ describe("week plan storage", () => {
     const row = await saveSetup(db, "2026-11-02", changed);
     expect(row).toMatchObject({ weekStart: "2026-11-02", setup: changed, dishes: [] });
     expect((await getPlan(db, "2026-11-02"))?.setup.ingredientsToUse).toEqual(["spinach"]);
+  });
+
+  it("saves dishes and remembers when choosing started", async () => {
+    const dish = { recipeId: "00000000-0000-4000-8000-000000000001", day: 0, addedAt: "2026-11-01T10:00:00.000Z", via: "start" as const };
+    expect(await saveDishes(db, "2026-11-02", [dish])).toBeNull(); // no setup yet
+    await saveSetup(db, "2026-11-02", DEFAULT_SETUP);
+    const first = await saveDishes(db, "2026-11-02", [dish]);
+    expect(first?.dishes).toEqual([dish]);
+    expect(first?.choosingStartedAt).toBeInstanceOf(Date);
+    const second = await saveDishes(db, "2026-11-02", []);
+    expect(second?.choosingStartedAt).toEqual(first?.choosingStartedAt);
   });
 
   it("starts a new week from the previous week's setup, without its ingredients", async () => {

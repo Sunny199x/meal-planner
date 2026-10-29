@@ -2,7 +2,7 @@
 import { desc, eq, lt, sql } from "drizzle-orm";
 import { weekPlans, type WeekPlanRow } from "../db/schema";
 import type { Db } from "../db/types";
-import { DEFAULT_SETUP, type WeekSetup } from "./types";
+import { DEFAULT_SETUP, type PlannedDish, type WeekSetup } from "./types";
 
 export async function getPlan(db: Db, weekStart: string): Promise<WeekPlanRow | null> {
   const [row] = await db.select().from(weekPlans).where(eq(weekPlans.weekStart, weekStart));
@@ -18,6 +18,24 @@ export async function setupForNewWeek(db: Db, weekStart: string): Promise<WeekSe
     .orderBy(desc(weekPlans.weekStart))
     .limit(1);
   return previous ? { ...previous.setup, ingredientsToUse: [] } : DEFAULT_SETUP;
+}
+
+/**
+ * Saves the chosen dishes. The first save also records when choosing started,
+ * to measure how long agreeing on a week takes. Returns null if the week has
+ * no setup yet.
+ */
+export async function saveDishes(db: Db, weekStart: string, dishes: PlannedDish[]): Promise<WeekPlanRow | null> {
+  const [row] = await db
+    .update(weekPlans)
+    .set({
+      dishes,
+      choosingStartedAt: sql`coalesce(${weekPlans.choosingStartedAt}, now())`,
+      updatedAt: sql`now()`,
+    })
+    .where(eq(weekPlans.weekStart, weekStart))
+    .returning();
+  return row ?? null;
 }
 
 export async function saveSetup(db: Db, weekStart: string, setup: WeekSetup): Promise<WeekPlanRow> {

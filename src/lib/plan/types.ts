@@ -61,6 +61,27 @@ export function portionsNeeded(setup: WeekSetup) {
   return { perDinner, dinners, lunches, total: dinners + lunches };
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const VIA = ["start", "suggestion", "browse"];
+
+/** Checks the chosen dishes sent from the browser; returns null if anything is off. */
+export function readDishes(input: unknown): PlannedDish[] | null {
+  if (!Array.isArray(input) || input.length > 14) return null;
+  const seen = new Set<string>();
+  const dishes: PlannedDish[] = [];
+  for (const d of input) {
+    const dish = d as Record<string, unknown>;
+    const day = dish?.day;
+    if (typeof dish?.recipeId !== "string" || !UUID.test(dish.recipeId) || seen.has(dish.recipeId)) return null;
+    if (day !== null && !(Number.isInteger(day) && (day as number) >= 0 && (day as number) <= 6)) return null;
+    if (typeof dish.addedAt !== "string" || Number.isNaN(Date.parse(dish.addedAt))) return null;
+    if (!VIA.includes(String(dish.via))) return null;
+    seen.add(dish.recipeId);
+    dishes.push({ recipeId: dish.recipeId, day: day as number | null, addedAt: dish.addedAt, via: dish.via as PlannedDish["via"] });
+  }
+  return dishes;
+}
+
 /** Checks a setup sent from the browser; returns null if anything is off. */
 export function readSetup(input: unknown): WeekSetup | null {
   if (!input || typeof input !== "object") return null;

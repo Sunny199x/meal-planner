@@ -27,10 +27,12 @@ export function WeekSetupPanel({
   weekStart,
   savedSetup,
   startingSetup,
+  onSaved,
 }: {
   weekStart: string;
   savedSetup: WeekSetup | null;
   startingSetup: WeekSetup;
+  onSaved: (setup: WeekSetup) => void;
 }) {
   const [saved, setSaved] = useState(savedSetup);
   const [editing, setEditing] = useState(savedSetup === null);
@@ -82,6 +84,7 @@ export function WeekSetupPanel({
       }
       setSaved(result.setup);
       setEditing(false);
+      onSaved(result.setup);
     });
   }
 

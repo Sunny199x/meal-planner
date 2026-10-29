@@ -3,11 +3,13 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { ErrorBox } from "@/components/ui";
 import { describeDatabaseError, getDb } from "@/lib/db";
-import type { WeekPlanRow } from "@/lib/db/schema";
+import type { RecipeRow, WeekPlanRow } from "@/lib/db/schema";
 import { addDays, defaultWeekStart, formatWeek, readWeekStart, stockholmToday } from "@/lib/plan/dates";
 import { getPlan, setupForNewWeek } from "@/lib/plan/store";
+import { toPlanRecipe } from "@/lib/plan/suggest";
 import type { WeekSetup } from "@/lib/plan/types";
-import { WeekSetupPanel } from "./week-setup";
+import { getAllRecipes } from "@/lib/recipes/queries";
+import { WeekView } from "./week-view";
 
 export default function WeekPage({ searchParams }: PageProps<"/week">) {
   return (
@@ -27,9 +29,10 @@ async function Week({ searchParams }: Pick<PageProps<"/week">, "searchParams">) 
 
   let plan: WeekPlanRow | null;
   let startingSetup: WeekSetup;
+  let recipeRows: RecipeRow[];
   try {
     const db = await getDb();
-    plan = await getPlan(db, weekStart);
+    [plan, recipeRows] = await Promise.all([getPlan(db, weekStart), getAllRecipes()]);
     startingSetup = plan?.setup ?? (await setupForNewWeek(db, weekStart));
   } catch (error) {
     return <ErrorBox>{describeDatabaseError(error)}</ErrorBox>;
@@ -66,16 +69,18 @@ async function Week({ searchParams }: Pick<PageProps<"/week">, "searchParams">) 
           ›
         </Link>
       </header>
-      <WeekSetupPanel
-        key={weekStart}
-        weekStart={weekStart}
-        savedSetup={plan?.setup ?? null}
-        startingSetup={startingSetup}
-      />
-      {plan && (
-        <p className="rounded-xl border border-dashed border-line px-4 py-3 text-sm text-muted">
-          Choosing dinners with suggestions is the next step of this milestone and isn&apos;t built yet.
-        </p>
+      {recipeRows.length === 0 ? (
+        <ErrorBox>There are no recipes yet. Add some under Recipes, or load them in Settings.</ErrorBox>
+      ) : (
+        <WeekView
+          key={weekStart}
+          weekStart={weekStart}
+          savedSetup={plan?.setup ?? null}
+          startingSetup={startingSetup}
+          dishes={plan?.dishes ?? []}
+          choosingStartedAt={plan?.choosingStartedAt?.toISOString() ?? null}
+          recipes={recipeRows.map(toPlanRecipe)}
+        />
       )}
     </>
   );
