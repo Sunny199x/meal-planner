@@ -27,7 +27,19 @@ export type WeekSetup = {
   people: Person[];
   /** "What would you like to use?" Free text, one ingredient per entry. */
   ingredientsToUse: string[];
+  /**
+   * Days with time for bigger prep, as weekdays (0 = Monday … 6 = Sunday).
+   * Saturday and Sunday mean the weekend before the week. Unset means the
+   * default, Sunday and Wednesday.
+   */
+  prepDays?: number[];
 };
+
+export const DEFAULT_PREP_DAYS = [6, 2];
+
+export function prepDaysOf(setup: WeekSetup): number[] {
+  return setup.prepDays ?? DEFAULT_PREP_DAYS;
+}
 
 export type PlannedDish = {
   recipeId: string;
@@ -146,5 +158,11 @@ export function readSetup(input: unknown): WeekSetup | null {
   const cleanIngredients = ingredients
     .map((i) => (typeof i === "string" ? i.trim().slice(0, 60) : ""))
     .filter(Boolean);
-  return { evenings: cleanEvenings, people: cleanPeople, ingredientsToUse: cleanIngredients };
+  const setup: WeekSetup = { evenings: cleanEvenings, people: cleanPeople, ingredientsToUse: cleanIngredients };
+  if (value.prepDays !== undefined) {
+    const days = value.prepDays;
+    if (!Array.isArray(days) || days.length > 7 || !days.every(isDay) || new Set(days).size !== days.length) return null;
+    setup.prepDays = [...days].sort((a, b) => a - b) as number[];
+  }
+  return setup;
 }

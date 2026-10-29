@@ -86,3 +86,15 @@ export const groceryItems = pgTable("grocery_items", {
 });
 
 export type GroceryItemRow = typeof groceryItems.$inferSelect;
+
+/**
+ * How far ahead a make-ahead task may be done, as the household set it, by
+ * task name (matched like shared prep). See src/lib/plan/food-safety.ts.
+ */
+export const prepLimits = pgTable("prep_limits", {
+  key: text("key").primaryKey(),
+  name: text("name").notNull(),
+  /** At most this many days before the dinner; 0 = on the day itself. */
+  days: integer("days").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

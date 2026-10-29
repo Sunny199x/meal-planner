@@ -327,7 +327,16 @@ and a change in one should show in the other.
 - **Photos are stored in the database,** shrunk on the phone first (about 1,200 px, roughly
   150 KB), so there is no extra service to set up. A few hundred photos fit easily in the free
   database.
-- **Prep timing:** Sunday and Wednesday are prep days by default (a setting). Each make-ahead task
+- **Prep timing (built):** prep days are chosen in the week setup (Saturday/Sunday mean the weekend
+  before the week; default Sunday and Wednesday). Each task goes on the latest prep day on or
+  before its dinner that is within its "at most N days ahead" limit, otherwise on the day of the
+  dinner; the same task on the same prep day is one batch. Limits are set per task name in
+  Settings → Prep limits (on the day, or 1–6 days ahead), checked on the server, and can never be
+  longer than published guidance. The guidance table (`src/lib/plan/food-safety.ts`) is empty
+  until Livsmedelsverket's pages can be read from a session (the site is blocked by the session's
+  network settings); nothing is filled in from memory. Old ticks from before prep days don't
+  carry over.
+- **Prep timing (plan):** Sunday and Wednesday are prep days by default (a setting). Each make-ahead task
   has a "done at most N days ahead" limit, taken from published food-safety guidance
   (Livsmedelsverket, the Swedish Food Agency) with the source shown; tasks the guidance doesn't
   cover default to "on the day" until the household sets them. The app never makes up storage

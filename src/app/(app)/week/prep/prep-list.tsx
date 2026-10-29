@@ -4,24 +4,50 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { Chip } from "@/components/ui";
 import { tickPrepAction, type SavedWeek } from "@/lib/plan/actions";
-import { prepKey } from "@/lib/plan/ingredients";
 import { planPortions } from "@/lib/plan/portions";
-import { buildPrepList, eveningPlans, type EveningPlan, type PrepTask } from "@/lib/plan/prep";
+import type { PrepLimit } from "@/lib/plan/food-safety";
+import { buildPrepList, eveningPlans, prepDayOffset, type EveningPlan, type PrepTask } from "@/lib/plan/prep";
 import { shortTitle, type PlanRecipe } from "@/lib/plan/suggest";
-import { DAY_NAMES, DAY_SHORT, type PrepState } from "@/lib/plan/types";
+import { DAY_NAMES, DAY_SHORT, prepDaysOf, type PrepState } from "@/lib/plan/types";
 import { formatQuantity } from "@/lib/recipes/format";
 import { useLiveWeek } from "../use-live-week";
 
 const dayShort = (day: number | null) => (day === null ? "No evening" : DAY_SHORT[day]);
 const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-export function PrepList({ weekStart, initial, recipes }: { weekStart: string; initial: SavedWeek; recipes: PlanRecipe[] }) {
+/** "Sunday, before the week" for the weekend before; the day's name otherwise. */
+export function prepDayName(offset: number): string {
+  return offset < 0 ? `${DAY_NAMES[offset + 7]}, before the week` : DAY_NAMES[offset];
+}
+
+function limitText(limit: PrepLimit | null): string {
+  if (!limit) return "no limit set yet";
+  const days = limit.days === 0 ? "on the day only" : `at most ${limit.days} ${limit.days === 1 ? "day" : "days"} ahead`;
+  return limit.by === "household" ? `${days}, your limit` : `${days}, ${limit.note}`;
+}
+
+export function PrepList({
+  weekStart,
+  initial,
+  recipes,
+  limits,
+}: {
+  weekStart: string;
+  initial: SavedWeek;
+  recipes: PlanRecipe[];
+  /** The household's own limits, by task key. */
+  limits: Record<string, number>;
+}) {
   const { week, error, send } = useLiveWeek(weekStart, initial);
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   const known = useMemo(() => week.dishes.filter((d) => byId.has(d.recipeId)), [week.dishes, byId]);
+  const household = useMemo(() => new Map(Object.entries(limits)), [limits]);
   const portions = useMemo(() => planPortions(week.setup, known, byId), [week.setup, known, byId]);
-  const tasks = useMemo(() => buildPrepList(known, byId, portions), [known, byId, portions]);
-  const evenings = useMemo(() => eveningPlans(week.setup, known, byId, portions), [week.setup, known, byId, portions]);
+  const tasks = useMemo(() => buildPrepList(week.setup, known, byId, portions, household), [week.setup, known, byId, portions, household]);
+  const evenings = useMemo(
+    () => eveningPlans(week.setup, known, byId, portions, household),
+    [week.setup, known, byId, portions, household],
+  );
 
   const isDone = (key: string) => week.prep[key] === true;
   function toggle(key: string, done: boolean) {
@@ -39,55 +65,74 @@ export function PrepList({ weekStart, initial, recipes }: { weekStart: string; i
         })),
     );
   }
+
+  const allTasks = evenings.flatMap((e) => e.cook?.tasks ?? []);
+  const onTheEvening = allTasks.filter((t) => t.prepDay === null).length;
+  const noLimit = [...new Set(allTasks.filter((t) => !t.limit).map((t) => t.name))];
+  const prepDays = [...new Set(prepDaysOf(week.setup).map(prepDayOffset))].sort((a, b) => a - b);
   const doneCount = tasks.filter((t) => isDone(t.key)).length;
-  const shared = tasks.filter((t) => t.dishes.length > 1).length;
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">
-        {tasks.length} {tasks.length === 1 ? "task" : "tasks"} for Sunday
-        {shared > 0 && <>, {shared} shared between dishes</>}. {doneCount} done.
+        {tasks.length} {tasks.length === 1 ? "task" : "tasks"} on prep days ({prepDays.map((d) => prepDayName(d).split(",")[0]).join(" and ") || "none set"}),{" "}
+        {onTheEvening} done on the day of the dinner. {doneCount} ticked off.
       </p>
+      {noLimit.length > 0 && (
+        <p className="rounded-xl bg-saffron-light px-4 py-3 text-sm">
+          {noLimit.length} make-ahead {noLimit.length === 1 ? "task has" : "tasks have"} no &ldquo;how far
+          ahead&rdquo; limit yet ({noLimit.join(", ")}), so {noLimit.length === 1 ? "it's" : "they're"} done on the
+          day of the dinner.{" "}
+          <Link href="/settings#prep-limits" className="text-terracotta underline">
+            Set limits in Settings
+          </Link>
+          .
+        </p>
+      )}
       {error && (
         <p role="alert" className="rounded-xl bg-danger-light px-3 py-2 text-sm text-danger">
           Not saved: {error}
         </p>
       )}
 
-      <section className="rounded-2xl border border-line bg-paper p-4 shadow-sm">
-        <h2 className="font-display text-lg font-semibold">On Sunday</h2>
-        {tasks.length === 0 ? (
-          <p className="mt-1 text-muted">
-            None of this week&apos;s dishes has make-ahead tasks. They come from each recipe&apos;s &ldquo;Make
-            ahead&rdquo; section.
-          </p>
-        ) : (
-          <ul className="mt-1 divide-y divide-line">
-            {tasks.map((task) => (
-              <TaskRow
-                key={task.key}
-                weekStart={weekStart}
-                task={task}
-                done={isDone(task.key)}
-                onToggle={(done) => toggle(task.key, done)}
-              />
-            ))}
-          </ul>
-        )}
-      </section>
+      {prepDays.map((day) => {
+        const today = tasks.filter((t) => t.prepDay === day);
+        return (
+          <section key={day} className="rounded-2xl border border-line bg-paper p-4 shadow-sm">
+            <h2 className="font-display text-lg font-semibold">{prepDayName(day)}</h2>
+            {today.length === 0 ? (
+              <p className="mt-1 text-sm text-muted">Nothing to prep ahead on this day.</p>
+            ) : (
+              <ul className="mt-1 divide-y divide-line">
+                {today.map((task) => (
+                  <TaskRow
+                    key={task.key}
+                    weekStart={weekStart}
+                    task={task}
+                    done={isDone(task.key)}
+                    onToggle={(done) => toggle(task.key, done)}
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
+        );
+      })}
 
       <section className="rounded-2xl border border-line bg-paper p-4 shadow-sm">
         <h2 className="font-display text-lg font-semibold">Each evening</h2>
         <ul className="mt-1 divide-y divide-line">
           {evenings.map((evening) => (
-            <EveningRow key={evening.day} weekStart={weekStart} evening={evening} isDone={(name) => isDone(prepKey(name))} />
+            <EveningRow key={evening.day} weekStart={weekStart} evening={evening} isDone={isDone} />
           ))}
         </ul>
       </section>
 
       <p className="text-xs text-muted">
-        Tasks with the same name in different recipes are done as one batch. The app doesn&apos;t say how long
-        prepared food keeps: go by the recipe&apos;s advice and your own judgement.
+        Each task goes on the latest prep day that is within how far ahead it may be done; otherwise it&apos;s done on
+        the evening. The same task on the same day is one batch. Limits are yours, or from published food-safety
+        guidance with its source named: the app never makes up how long food keeps. Prep days are set in the
+        week&apos;s setup.
       </p>
     </div>
   );
@@ -136,6 +181,7 @@ function TaskRow({
             </span>
           ))}
         </p>
+        {task.limit && <p className="text-xs text-muted">Done ahead: {limitText(task.limit)}.</p>}
         {!done &&
           (descriptions.length === 1 ? (
             <p className="text-sm">{sentence(descriptions[0])}</p>
@@ -168,7 +214,7 @@ function EveningRow({
 }: {
   weekStart: string;
   evening: EveningPlan;
-  isDone: (taskName: string) => boolean;
+  isDone: (key: string) => boolean;
 }) {
   const { cook, leftovers, lunchBoxes, freezer } = evening;
   const after = [
@@ -187,20 +233,25 @@ function EveningRow({
             {cook.title}
           </Link>
           <p className="text-sm text-muted">
-            Cook {formatQuantity(cook.portions)} portions. The recipe says {cook.timeTotalMin} min, including the
-            parts done on Sunday.
+            Cook {formatQuantity(cook.portions)} portions. The recipe says {cook.timeTotalMin} min, including any
+            parts done ahead.
           </p>
-          {cook.prepped.length > 0 && (
+          {[...new Set(cook.tasks.flatMap((t) => (t.prepDay === null ? [] : [t.prepDay])))].map((day) => (
+            <p key={day} className="text-sm">
+              <span className="text-muted">Done on {prepDayName(day).split(",")[0]}: </span>
+              {cook.tasks
+                .filter((t) => t.prepDay === day)
+                .map((t) => `${t.key && isDone(t.key) ? "✓ " : ""}${t.name}`)
+                .join(", ")}
+            </p>
+          ))}
+          {cook.tasks.some((t) => t.prepDay === null) && (
             <p className="text-sm">
-              <span className="text-muted">Done on Sunday: </span>
-              {cook.prepped.map((name, i) => (
-                <span key={name}>
-                  {i > 0 && ", "}
-                  {isDone(name) ? "✓ " : ""}
-                  {i === 0 ? name : name.charAt(0).toLowerCase() + name.slice(1)}
-                </span>
-              ))}
-              . The rest is done on the evening.
+              <span className="text-muted">Do this evening: </span>
+              {cook.tasks
+                .filter((t) => t.prepDay === null)
+                .map((t) => `${t.name} (${limitText(t.limit)})`)
+                .join(", ")}
             </p>
           )}
           {after.length > 0 && <p className="text-sm">After dinner: {after.join("; ")}.</p>}

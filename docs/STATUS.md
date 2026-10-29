@@ -93,9 +93,12 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   - Tick **Bought**, or **Have it** for things already at home. Ticks are shared by both phones
     and with the grocery list. If the plan later needs more of something ticked, it comes back
     with a note. Other things to buy are added on the grocery list.
-- **Sunday prep:**
-  - Make-ahead tasks of the chosen dishes; the same task in several dishes is one batch, with the
-    amounts each dish needs ("410 g basmati rice (Mon) + 300 g basmati rice (Tue)").
+- **Prep (Week → Prep):**
+  - Prep days are set in the week setup (default Sunday before the week and Wednesday). Each
+    make-ahead task goes on the latest prep day within how far ahead it may be done, or on the day
+    of the dinner; the same task on the same day is one batch, with the amounts each dish needs.
+  - "How far ahead" limits are set per task in Settings → Prep limits. Until a task has one, it is
+    done on the day. Published guidance isn't in the app yet (see Known limitations).
   - Tick tasks off; ticks are shared by both phones.
   - Each evening: what was done on Sunday, the rest to do, lunch boxes to pack and portions to
     freeze, or an evening of leftovers with no cooking.
@@ -143,6 +146,9 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 - **Scaled recipe steps:** amounts with a unit ("300 ml", "½ tsp") are scaled and highlighted;
   times, temperatures and counts ("10 minutes", "4 tortillas") stay as written, and pan sizes
   aren't adjusted.
+- **No food-safety guidance in the app yet:** the prep limits are the household's own until
+  Livsmedelsverket's guidance can be read and added with its source (this session can't reach the
+  site). Until then, a task without a limit is planned for the day of the dinner.
 - **Prep amounts** for a shared task are found by its main word ("rice" in "Cook rice"); a task
   like "Chop aromatics" shows no amounts. The app never says how long prepared food keeps.
 - **First load after a quiet spell** can take a second or two (the free Neon database sleeps).

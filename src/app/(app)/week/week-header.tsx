@@ -4,7 +4,7 @@ import { addDays, formatWeek } from "@/lib/plan/dates";
 const TABS = [
   { path: "/week", label: "Dinners" },
   { path: "/week/shopping", label: "Shopping" },
-  { path: "/week/prep", label: "Sunday prep" },
+  { path: "/week/prep", label: "Prep" },
 ] as const;
 
 export type WeekTab = (typeof TABS)[number]["path"];

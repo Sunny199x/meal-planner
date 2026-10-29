@@ -235,7 +235,7 @@ export function WeekChooser({
             </Link>{" "}
             and the{" "}
             <Link href={`/week/prep?week=${weekStart}`} className="text-terracotta underline">
-              Sunday prep list
+              prep list
             </Link>
             .
           </p>

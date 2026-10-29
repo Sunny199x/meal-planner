@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseIngredientLine } from "../recipes/parse-ingredient-line";
-import { buildPrepList, eveningPlans } from "./prep";
+import { buildPrepList, choosePrepDay, eveningPlans, prepDayOffset } from "./prep";
 import { planPortions } from "./portions";
 import { DEFAULT_SETUP, type PlannedDish } from "./types";
 
@@ -35,51 +35,77 @@ const dish = (recipeId: string, day: number, extra: Partial<PlannedDish> = {}): 
   via: "browse",
   ...extra,
 });
-const week = [dish("korma", 0), dish("butter chicken", 2, { alsoOn: 3 }), dish("steak", 1, { freezer: 1 })];
+// Korma Monday, butter chicken Tuesday (and again Thursday), steak Wednesday.
+const week = [dish("korma", 0), dish("butter chicken", 1, { alsoOn: 3 }), dish("steak", 2, { freezer: 1 })];
 const portions = planPortions(DEFAULT_SETUP, week, recipes);
+const limits = (entries: Record<string, number>) => new Map(Object.entries(entries));
 
-describe("the Sunday prep list", () => {
-  const tasks = buildPrepList(week, recipes, portions);
+describe("when prep is done", () => {
+  it("counts Saturday and Sunday as the weekend before the week", () => {
+    expect([5, 6, 0, 2, 4].map(prepDayOffset)).toEqual([-2, -1, 0, 2, 4]);
+  });
 
-  it("merges the same task from several dishes, matched by name", () => {
-    expect(tasks.map((t) => [t.name, t.dishes.map((d) => d.recipeId)])).toEqual([
-      ["Cook rice", ["korma", "butter chicken"]],
-      ["Deseed pomegranate", ["korma", "butter chicken"]],
-      ["Quick-pickled red onions", ["butter chicken"]],
+  it("picks the latest prep day on or before the dinner that's within the limit", () => {
+    const sundayAndWednesday = [6, 2];
+    expect(choosePrepDay(0, { days: 1, by: "household" }, sundayAndWednesday)).toBe(-1); // Monday: Sunday
+    expect(choosePrepDay(1, { days: 1, by: "household" }, sundayAndWednesday)).toBeNull(); // Tuesday: on the evening
+    expect(choosePrepDay(3, { days: 1, by: "household" }, sundayAndWednesday)).toBe(2); // Thursday: Wednesday
+    expect(choosePrepDay(4, { days: 1, by: "household" }, sundayAndWednesday)).toBeNull(); // Friday: on the evening
+    expect(choosePrepDay(4, { days: 3, by: "household" }, sundayAndWednesday)).toBe(2);
+    expect(choosePrepDay(2, null, sundayAndWednesday)).toBe(2); // no limit: only a prep day on the dinner's own day
+    expect(choosePrepDay(0, null, sundayAndWednesday)).toBeNull();
+  });
+});
+
+describe("the prep list", () => {
+  it("merges the same task on the same prep day into one batch, with the amounts", () => {
+    const tasks = buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({ "cook rice": 2, "deseed pomegranate": 2 }));
+    expect(tasks.map((t) => [t.key, t.dishes.map((d) => d.recipeId)])).toEqual([
+      ["cook rice@-1", ["korma", "butter chicken"]],
+      ["deseed pomegranate@-1", ["korma", "butter chicken"]],
     ]);
-  });
-
-  it("shows the amounts a shared task works on, scaled to each dish", () => {
     // korma: 2½ dinner + 2 lunch boxes (3) = 5½ portions; butter chicken: 2½ + 2½ again + 2 boxes (3) = 8.
-    expect(tasks[0].dishes.map((d) => d.portions)).toEqual([5.5, 8]);
     expect(tasks[0].amounts.map((a) => a.line)).toEqual(["410 g basmati rice", "1.2 kg basmati rice"]);
-    expect(tasks[1].amounts.map((a) => a.line)).toEqual(["1½ pomegranates", "2 pomegranates"]);
-    expect(tasks[2].amounts).toEqual([]);
+    expect(tasks[0].limit).toEqual({ days: 2, by: "household" });
   });
 
-  it("finds the main thing a task works on, not the cupboard staples", () => {
-    const onions = buildPrepList([dish("butter chicken", 0), { ...dish("korma", 1) }], new Map([
-      ["butter chicken", recipes.get("butter chicken")!],
-      ["korma", { ...recipes.get("korma")!, ingredients: ["1 red onion", "1 red pepper"].map(parseIngredientLine), makeAhead: [{ name: "Quick-pickled red onions", description: "" }] }],
-    ]), planPortions(DEFAULT_SETUP, [dish("butter chicken", 0), dish("korma", 1)], recipes));
-    const pickled = onions.find((t) => t.name === "Quick-pickled red onions")!;
-    // Each dish: 2½ dinner + 2 lunch boxes (3) = 5½ portions. The red pepper is not an onion.
-    expect(pickled.amounts.map((a) => a.line)).toEqual(["2¾ red onions", "2¾ red onions"]);
+  it("leaves a task for the evening when the prep day is too early for its limit", () => {
+    const tasks = buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({ "cook rice": 1 }));
+    expect(tasks.map((t) => t.key)).toEqual(["cook rice@-1"]);
+    expect(tasks[0].dishes.map((d) => d.recipeId)).toEqual(["korma"]);
+  });
+
+  it("plans nothing ahead for tasks without a limit, unless a prep day is the dinner's own day", () => {
+    expect(buildPrepList(DEFAULT_SETUP, week, recipes, portions, limits({}))).toEqual([]);
+    const tuesdayPrep = { ...DEFAULT_SETUP, prepDays: [1] };
+    expect(buildPrepList(tuesdayPrep, week, recipes, portions, limits({})).map((t) => t.key)).toEqual([
+      "cook rice@1",
+      "deseed pomegranate@1",
+      "quick-pickled red onions@1",
+    ]);
   });
 });
 
 describe("each evening", () => {
-  const evenings = eveningPlans(DEFAULT_SETUP, week, recipes, portions);
+  const evenings = eveningPlans(DEFAULT_SETUP, week, recipes, portions, limits({ "cook rice": 1, "deseed pomegranate": 2 }));
 
-  it("lists what was prepped, lunch boxes to pack and portions to freeze", () => {
+  it("says which tasks were prepped and when, and which are done on the evening", () => {
     expect(evenings.map((e) => e.day)).toEqual([0, 1, 2, 3, 4]);
-    expect(evenings[0].cook).toMatchObject({ recipeId: "korma", portions: 5.5, prepped: ["Cook rice", "Deseed pomegranate"] });
-    expect(evenings[0].lunchBoxes).toEqual([{ name: "Sunny", count: 2 }]);
-    expect(evenings[1]).toMatchObject({ cook: { recipeId: "steak" }, freezer: 1, lunchBoxes: [] });
+    expect(evenings[0].cook?.tasks.map((t) => [t.name, t.prepDay])).toEqual([
+      ["Cook rice", -1],
+      ["Deseed pomegranate", -1],
+    ]);
+    expect(evenings[1].cook?.tasks.map((t) => [t.name, t.prepDay])).toEqual([
+      ["Cook the rice.", null],
+      ["Deseed Pomegranate", -1],
+      ["Quick-pickled red onions", null],
+    ]);
   });
 
-  it("shows an evening of leftovers and an empty evening", () => {
-    expect(evenings[3]).toMatchObject({ cook: null, leftovers: { recipeId: "butter chicken", cookedOn: 2 } });
+  it("lists lunch boxes to pack, portions to freeze, and evenings of leftovers", () => {
+    expect(evenings[0].lunchBoxes).toEqual([{ name: "Sunny", count: 2 }]);
+    expect(evenings[2]).toMatchObject({ cook: { recipeId: "steak" }, freezer: 1, lunchBoxes: [] });
+    expect(evenings[3]).toMatchObject({ cook: null, leftovers: { recipeId: "butter chicken", cookedOn: 1 } });
     expect(evenings[4]).toMatchObject({ cook: null, leftovers: null });
   });
 });
