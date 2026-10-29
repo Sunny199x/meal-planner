@@ -99,7 +99,7 @@ function divide(a: number, b: number): number | null {
 }
 
 /** Splits at the first comma that isn't inside brackets or a decimal like "1,5". */
-function splitNote(text: string): [string, string] {
+export function splitNote(text: string): [string, string] {
   let depth = 0;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];

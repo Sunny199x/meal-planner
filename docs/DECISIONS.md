@@ -75,6 +75,18 @@ the repo, then check it for real on the Vercel preview deployment.
   pastes, kimchi), and ignores look-alikes such as oyster mushrooms and vegan fish sauce.
 - **GitHub check:** lint, type check and unit tests on every pull request, including a test that
   every file in `seed-recipes/` loads without errors.
+- **Protein-rich / carb-focused labels** (draft household rule, shown in the app; easy to change in
+  `src/lib/recipes/labels.ts`):
+  - **Protein-rich:** per serving, 100 g meat, poultry, tofu, tempeh, paneer or halloumi; or 150 g
+    canned or cooked beans, chickpeas or lentils; or 50 g dry lentils, split peas or dried beans; or
+    2 eggs. A mix that adds up to the same also counts.
+  - **Carb-focused:** per serving, 75 g uncooked rice, pasta, noodles or grains, or 250 g potatoes,
+    sweet potatoes or gnocchi.
+  - Amounts are as bought. Canned beans count at the can's weight including liquid, so this is
+    generous to canned beans. Ingredients without a weight (e.g. "4 chicken thighs") aren't counted,
+    and the recipe page says so instead of guessing. Bread, tortillas and flatbreads aren't counted.
+- **Search and filters run in the browser** over all recipes, and the filters are kept in the page
+  address. Favourites are shared by the household, not per person.
 
 ## Product decisions
 
