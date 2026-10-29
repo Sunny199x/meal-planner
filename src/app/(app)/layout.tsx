@@ -1,8 +1,9 @@
 import Link from "next/link";
 
 const NAV = [
-  { href: "/", label: "Recipes" },
-  { href: "/recipes/new", label: "Add" },
+  { href: "/", label: "Groceries" },
+  { href: "/recipes", label: "Recipes" },
+  { href: "/week", label: "Week" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -14,9 +15,12 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-3">
           <Link
             href="/"
-            className="font-display text-lg font-semibold whitespace-nowrap text-terracotta-dark sm:text-xl"
+            className="flex items-center font-display text-lg font-semibold whitespace-nowrap text-terracotta-dark sm:text-xl"
           >
-            Meal Planner
+            {/* On phones the name doesn't fit next to four links, so the app icon stands in for it. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="" width={28} height={28} className="rounded-md sm:hidden" />
+            <span className="max-sm:sr-only">Meal Planner</span>
           </Link>
           <nav className="flex items-center text-sm sm:gap-1">
             {NAV.map(({ href, label }) => (

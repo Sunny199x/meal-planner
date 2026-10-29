@@ -9,7 +9,7 @@ export function BackToRecipes() {
   const href = useSyncExternalStore(
     () => () => {},
     lastListUrl,
-    () => "/",
+    () => "/recipes",
   );
   return (
     <Link href={href} className="text-sm text-terracotta hover:underline">

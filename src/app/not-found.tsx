@@ -8,7 +8,7 @@ export default function NotFound() {
         <p className="mt-2 text-muted">
           This page or recipe doesn&apos;t exist. It may have been deleted.
         </p>
-        <Link href="/" className="mt-4 inline-block text-terracotta underline">
+        <Link href="/recipes" className="mt-4 inline-block text-terracotta underline">
           Go to the recipes
         </Link>
       </div>

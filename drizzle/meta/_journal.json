@@ -8,6 +8,34 @@
       "when": 1793274672854,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793283815988,
+      "tag": "0001_week_plans",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793291582546,
+      "tag": "0002_shopping_list",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793292683138,
+      "tag": "0003_prep_ticks",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793294845203,
+      "tag": "0004_grocery_list",
+      "breakpoints": true
     }
   ]
 }

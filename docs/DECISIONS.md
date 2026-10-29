@@ -113,6 +113,162 @@ the repo, then check it for real on the Vercel preview deployment.
 - **Layout check:** `scripts/check-pages.mjs` visits every page at 375 px and 1280 px, reports
   sideways scrolling and errors, and saves screenshots. Run it before pushing changes to pages.
 
+## Decisions for milestone 2 (29 October 2026)
+
+- **In the app, Saketh is shown as "Sunny"** (portion sizes, lunches). Docs keep his full name.
+- **Photo and screenshot import:** the free version comes first.
+  - A "paste recipe text" box sorts pasted text into the form using rules. Text can come from a
+    phone's copy-text-from-photo feature (iPhone Live Text, Google Lens), an Instagram caption or a
+    YouTube description.
+  - It will be built together with website / Instagram / YouTube import in the capture milestone.
+  - Reading photos with the Claude API (about $0.04–0.05 per photo with Anthropic's most capable
+    model, needs an Anthropic API key) waits until the free version shows a real need.
+- **Real recipes for testing:** the household's recipes are files in `seed-recipes/`, so suggestion
+  rules are checked against them directly (no export step needed).
+- **Week plans:** one row per week, named by its Monday, in Stockholm time.
+  - Each row holds the setup (evenings and time per evening, dinner portions per person,
+    lunches, ingredients to use up) and the chosen dishes (JSON).
+  - A new week starts from the previous week's setup, without its "ingredients to use".
+  - Time per evening: Quick ≤ 25 min, Normal ≤ 45 min, Relaxed no limit (total recipe time).
+  - Two phones editing the same week at the same moment: the last save wins.
+- **Suggestion rules** (`src/lib/plan/suggest.ts`). Each candidate recipe gets points for reasons;
+  the highest total comes first. The reasons shown on a card are exactly the ones that scored, so
+  there is nothing hidden. Points are a first guess, to be tuned after a few real weeks.
+
+  | Reason | Points |
+  |---|---|
+  | Shares a make-ahead task with a chosen dish (same name, ignoring case, "the/a" and punctuation; at most 2) | +30 each |
+  | Uses the rest of a part-used item ("the other half of the pomegranate") | +20 |
+  | A fresh ingredient in a real amount that a chosen dish also uses (at most 3) | +8 each |
+  | Uses something from "ingredients to use up" (at most 2) | +25 each |
+  | Fits a Quick evening that is still open | +10 |
+  | Good as leftovers, while lunch boxes still need covering | +10 |
+  | A favourite | +6 |
+  | A cuisine the week doesn't have yet | +6 |
+  | Same cuisine **and** same main protein as a chosen dish | −40 |
+  | Same cuisine as a chosen dish (per dish) | −8 each |
+  | Same main protein as a chosen dish | −10 |
+  | Illustrative template recipe | −5 |
+
+  - "Real amount": 30 g / 30 ml or more, or half a countable item or more; teaspoons and
+    tablespoons never count. Fresh herbs always count (a bunch goes off fast).
+  - Staples (salt, oil, onion, garlic, dried spices) and cupboard goods (rice, pasta, tins, jars,
+    sauces) never count as shared ingredients. "Chicken stock" doesn't match "chicken".
+  - Never suggested: recipes with seafood, recipes already in the week, recipes marked "Not this
+    one", and recipes that don't fit any open evening's time.
+  - "May contain fish" and "Needs a Relaxed evening" are shown as notes, not points.
+  - The shortlist shows three, avoiding two of the same cuisine where possible. Ties are broken by
+    a fixed shuffle per week, so the order doesn't jump around on reload.
+  - A new dish goes to the tightest open evening it fits (a quick dish takes a Quick evening first).
+    Moving a dish onto a taken evening swaps the two.
+- **"Not this one"** lasts until the page is left. It isn't saved, so a dismissed recipe can
+  come back next visit. Saving it is cheap to add if it proves annoying.
+- **Time to choose** is measured from the first saved dish to the last one added, and shown only
+  if it was one sitting (under two hours). It's the check for the brief's "agree on the week in
+  10–15 minutes".
+
+## Decisions for milestone 3 (29 October 2026)
+
+- **Scope:** the plan (portions per dish), the shopping list and the Sunday prep list. The prep
+  list moved here from milestone 4, because shopping and prep happen on the same Sunday and both
+  need the portions. Milestone 2 and 3 are merged into `main` together at the end.
+- **Portions per dish** (`src/lib/plan/portions.ts`):
+  - Every chosen dish is cooked for one dinner for everyone (the setup's dinner portions added
+    up, e.g. Sunny 1.5 + Victoria 1 = 2.5).
+  - **A lunch box is the same size as that person's dinner** (Saketh's choice), so a lunch box
+    for Sunny is 1.5 portions.
+  - Lunch boxes are shared out automatically over dishes marked good as leftovers, one at a time,
+    earliest evening first, **at most two per dish** (one dish for dinner and four lunches is
+    too much of one thing; this matches the suggestion rule that asks for one leftover-friendly
+    dish per two lunch boxes). A dish whose lunch boxes are changed by hand keeps its numbers,
+    with no limit; the automatic dishes make up the difference, so − on one dish moves a box to
+    another. "Share lunch boxes out automatically" undoes all hand changes.
+  - Lunch boxes are counted, not given days, and the app says nothing about how long leftovers
+    keep.
+  - **Freezer portions:** extra whole portions, offered for freezer-friendly recipes, 0 by default.
+  - **Eat again as leftovers:** a leftover-friendly dish can also cover a later open evening. That
+    evening counts as chosen, adds one dinner's portions to the dish, and is cleared if something
+    is cooked that evening or the dish moves after it.
+  - All of this is stored with each chosen dish in the week's existing `dishes` data, so no
+    database change was needed. Undo covers it.
+- **Scaling a recipe for cooking** (`src/lib/recipes/scale.ts`): the recipe page has a portions
+  control (steps of ½); opening a dish from the week opens it at that dish's portions.
+  - Grams and millilitres round to 0.5 below 10, to 5 below 100, to 10 below 1,000, then to 50
+    (shown as kg or l from 1,000). Spoons, decilitres and pieces round to quarters, or halves from 3.
+  - Packs and cans also show their scaled weight ("2¾ packs … (about 1.05 kg in total)").
+  - Lines without an amount ("salt, to taste") and lines with reading problems stay as written.
+  - **Amounts in the steps** are scaled too (added 29 October 2026, Saketh's request): only a
+    number followed by a metric unit ("300 ml", "½ tsp", "1–2 tbsp", "2 dl", "1 litre"), with the
+    same rounding, highlighted so it's clear what changed (the original shows on hover). Times,
+    temperatures, sizes and counts ("10 minutes", "220°C", "2 cm", "4 tortillas") stay as
+    written: scaling those would often be wrong (cooking times don't double with the amount).
+
+- **Shopping list** (`src/lib/plan/shopping.ts`, Week → Shopping):
+  - Every chosen dish's ingredients, scaled to its portions (dinner, repeat dinner, lunch boxes,
+    freezer). Water is left off.
+  - **Adding up:** lines are added together when their names reduce to the same key (case,
+    plurals and words like "fresh", "baby", "chopped" ignored; "feta cheese" = "feta",
+    "2 garlic cloves" = "1 clove garlic"). Nothing looser: "red onion" and "onion", or "cooked
+    lentils" and "red lentils", stay apart because they are different things to buy.
+  - **Units:** g/kg together, ml/cl/dl/l together (spoons join them when both appear); cans,
+    packs and pieces are counted per unit. A can and grams of the same thing are shown side by
+    side ("1 can (390 g) + 200 g"), because a can's label weight isn't what the recipe measures.
+  - **Rounding up to buy:** grams and millilitres up to 5 below 100, 10 below 1,000, then 50.
+    Pieces, packs and cans up to whole ones, with the exact need shown ("2 (1¼ needed)").
+  - **Sections:** fruit and veg, bread, meat, vegetarian protein, dairy and eggs, rice/pasta/
+    grains, cans/jars/sauces, nuts/snacks/dried fruit, frozen, other, then "Check the cupboard"
+    (salt, pepper, oils, vinegar, sugar, dried spices, stock powder and cubes). Decided by
+    keyword rules; unknown items go to "Other". The order is a typical walk through a Swedish
+    supermarket; easy to change.
+  - **Ticks:** "Bought" and "Have it", plus items added by hand, are stored per week in
+    `week_plans.shopping` (an added column). Each tick is a single-key change made inside the
+    database, so ticks from two phones never overwrite each other. The other phone sees them
+    when the app comes back to the front (no live updates).
+  - A tick remembers how much was bought. If the plan later needs **more**, the item comes back
+    with a note; the same or less keeps it ticked.
+  - No prices, as the brief says.
+- **Sunday prep list** (`src/lib/plan/prep.ts`, Week → Sunday prep):
+  - The make-ahead tasks of the chosen dishes. The same task name in several dishes (ignoring
+    case, "the/a" and punctuation) is one batch, listed first with the dishes and portions it is
+    for. Each dish's own instructions for it are shown; identical ones once.
+  - For a shared task the app also shows the ingredient lines it works on, scaled per dish
+    ("410 g basmati rice (Mon) + 300 g basmati rice (Tue)"). It finds them by the task's main
+    word ("rice" in "Cook rice", "onion" in "Quick-pickled red onions"), ignoring cupboard
+    staples. Single-dish tasks link to the recipe instead.
+  - **Each evening:** the dish and its portions, which parts were done on Sunday (ticked ones
+    marked), lunch boxes to pack and portions to freeze after dinner, or "Leftovers … no cooking
+    tonight". The recipe's time is shown as written, since the app can't know how much the prep
+    saves.
+  - Ticks are stored per week in `week_plans.prep` (an added column), one key at a time, like
+    the shopping ticks.
+  - **No storage times:** the page says the app doesn't know how long prepared food keeps.
+
+## The grocery list as the home page (29 October 2026)
+
+Saketh asked for the grocery list to be the first thing the app opens, because it's used more
+often than the planner and things get added through the week. The weekly list should feed it,
+and a change in one should show in the other.
+
+- **One list, two views** rather than two lists that copy into each other (copies drift and
+  duplicate).
+  - **Grocery list (home page, `/`):** things added by hand on any day, plus the ingredients of
+    this week's and next week's planned dinners, in one list by supermarket section.
+  - **Week → Shopping:** the same dinner ingredients for one week only.
+  - The dinner ingredients' "Bought" and "Have it" ticks are stored once per week
+    (`week_plans.shopping`), so a tick in either place shows in both.
+- **Things added by hand** live in a new household table, `grocery_items`, not in a week. They
+  are sorted into sections by the same keyword rules (typed "2 l milk" goes to Dairy), stay
+  until removed, and "Remove the bought items you added" clears the ticked ones. Adding is only
+  on the home page; the week's Shopping tab points there.
+  - The migration copies items already added on a week's Shopping tab into the new table (the
+    old data is left in place).
+- **Which dinners feed the list:** the week we're in and the next one (Monday to Sunday,
+  Stockholm time). This week's ingredients leave the list once all the dinners needing them have
+  passed; amounts stay the whole week's, so ticks match the week's Shopping tab. When both weeks
+  have items, each line says "This week" or "Next week".
+- **Recipes moved** to `/recipes` (a Recipes link in the menu). On phones the menu shows the
+  app icon instead of the words "Meal Planner" so four links fit.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

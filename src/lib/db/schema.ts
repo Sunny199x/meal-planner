@@ -1,7 +1,8 @@
 // Database tables. After changing this file, run `npm run db:generate` to
 // create a migration in drizzle/. While preview and production share one
 // database, only add tables or columns; never rename or drop them.
-import { boolean, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "../plan/types";
 import { DIETS, type IngredientLine, type MakeAheadTask } from "../recipes/types";
 
 export const recipes = pgTable("recipes", {
@@ -34,3 +35,36 @@ export const recipes = pgTable("recipes", {
 });
 
 export type RecipeRow = typeof recipes.$inferSelect;
+
+/** One row per week (named by its Monday): the setup and the dishes chosen. */
+export const weekPlans = pgTable("week_plans", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  weekStart: date("week_start", { mode: "string" }).notNull().unique(),
+  setup: jsonb("setup").$type<WeekSetup>().notNull(),
+  dishes: jsonb("dishes").$type<PlannedDish[]>().notNull().default([]),
+  /** When choosing dinners started, to see how long agreeing on a week takes. */
+  choosingStartedAt: timestamp("choosing_started_at", { withTimezone: true }),
+  /** Shopping-list ticks and items added by hand. */
+  shopping: jsonb("shopping").$type<ShoppingState>().notNull().default({}),
+  /** Sunday prep tasks ticked off. */
+  prep: jsonb("prep").$type<PrepState>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type WeekPlanRow = typeof weekPlans.$inferSelect;
+
+/**
+ * The household grocery list: things added by hand on any day ("milk").
+ * The planned weeks' ingredients join them on the list but are stored with
+ * each week (`week_plans.shopping`).
+ */
+export const groceryItems = pgTable("grocery_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Set when ticked as bought; bought items stay until "Clear bought items". */
+  boughtAt: timestamp("bought_at", { withTimezone: true }),
+});
+
+export type GroceryItemRow = typeof groceryItems.$inferSelect;

@@ -12,6 +12,8 @@ dishes fit together.
   brief where they differ.
 - `seed-recipes/README.md` — the recipe file format.
 - `docs/STATUS.md` — what the app does today, what is missing, and known limitations.
+- `docs/IDEAS.md` — feedback from using the app and ideas for later. Add new feedback there; move
+  an item into a milestone plan only when Saketh agrees.
 
 ## Working with Saketh
 

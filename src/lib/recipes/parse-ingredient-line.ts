@@ -73,7 +73,7 @@ const FR = Object.keys(UNICODE_FRACTIONS).join("");
 
 // One amount: "1 1/2", "1/2", "0.5", "0,5", "1½", "1 ½", "½". Longer forms come
 // first because the regex takes the first alternative that matches.
-const NUM = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d+(?:[.,]\\d+)?(?:\\s*[${FR}])?|[${FR}])`;
+export const NUM = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d+(?:[.,]\\d+)?(?:\\s*[${FR}])?|[${FR}])`;
 const QUANTITY_RE = new RegExp(`^(${NUM})(?:\\s*(?:-|–|—|to)\\s*(${NUM}))?`);
 const WORD_RE = /^([a-zA-Z]+)\.?(?=\s|$|[(])/;
 const TIMES_RE = new RegExp(`^(${NUM})\\s*[x×]\\s*(${NUM})\\s*([a-zA-Z]+)\\.?(?=\\s|$)`);
