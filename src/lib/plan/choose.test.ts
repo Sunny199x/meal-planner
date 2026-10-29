@@ -33,6 +33,17 @@ describe("placing dishes on evenings", () => {
     expect(pickEvening({ timeTotalMin: 40 }, setup, monday)).toBe(3);
   });
 
+  it("works out the next evening again when dishes were picked out of day order", () => {
+    // Thursday chosen first: Monday is the next empty day, and a dish only goes where its time fits.
+    const thursday = [{ recipeId: ID(1), day: 3, addedAt: "", via: "start" as const }];
+    expect(pickEvening({ timeTotalMin: 40 }, setup, thursday)).toBe(0);
+    const mondayToo = [...thursday, { recipeId: ID(2), day: 0, addedAt: "", via: "browse" as const }];
+    expect(pickEvening({ timeTotalMin: 20 }, setup, mondayToo)).toBe(1); // Tuesday, Quick
+    expect(pickEvening({ timeTotalMin: 40 }, setup, mondayToo)).toBe(5); // too long for Tue/Wed, Thu taken: Saturday
+    // Moving Monday's dish away opens Monday again.
+    expect(pickEvening({ timeTotalMin: 40 }, setup, moveDish(mondayToo, ID(2), 5))).toBe(0);
+  });
+
   it("skips taken evenings and returns null when nothing fits", () => {
     let dishes = addDish([], { id: ID(1), timeTotalMin: 20 }, setup, "start", now);
     dishes = addDish(dishes, { id: ID(2), timeTotalMin: 20 }, setup, "suggestion", now);
