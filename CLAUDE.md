@@ -56,7 +56,11 @@ import, multi-user accounts beyond the shared household passcode, a large recomm
 - Install: `npm install`
 - Dev server: `npm run dev` (http://localhost:3000)
 - Lint / type check / unit tests: `npm run lint`, `npm run typecheck`, `npm test`
-- Production build: `npm run build`
+- Production build: `npm run build` (runs database migrations first when `DATABASE_URL` is set)
+- After changing `src/lib/db/schema.ts`: `npm run db:generate` to create a migration in `drizzle/`
+- Local database: without `DATABASE_URL` the app uses PGlite in `.data/pglite` (delete the folder
+  to start fresh). Cloud sessions can't reach Neon, so test against this. For the dev server, set
+  `HOUSEHOLD_PASSCODE` and `SESSION_SECRET` (32+ characters) in `.env.local`.
 
 Next.js here is version 16 with Cache Components on; see `AGENTS.md` and read the guides in
 `node_modules/next/dist/docs/` before relying on older Next.js knowledge.

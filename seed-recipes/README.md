@@ -43,11 +43,18 @@ One ingredient per line, starting with `- `:
 - salt, to taste
 ```
 
-- Use metric units: `g`, `kg`, `ml`, `l`, `tsp`, `tbsp`.
+- Use metric units: `g`, `kg`, `ml`, `dl`, `cl`, `l`, `tsp`, `tbsp`. (The Swedish `msk`, `tsk`
+  and `krm` are understood too.) Cups, ounces and pounds are flagged: please convert them.
 - Countable things need no unit: `1 onion`, `3 garlic cloves`, `2 cans`, `1 bunch`.
-- Fractions are fine: `½ lemon` or `0.5 lemon`.
+- Fractions are fine: `½ lemon`, `1 ½ tsp`, `0.5 lemon` or `0,5 lemon`. Ranges too: `2–3 tomatoes`.
 - Anything after a comma is a note and is ignored when adding up the shopping list.
 - Add `(optional)` at the end for optional ingredients.
+- A weight in brackets helps the shopping list:
+  - `1 cauliflower (about 600 g)`: the bracket is the total.
+  - `2 cans black beans (400 g each)`: for cans, jars, packs, bags and bottles, the bracket is per
+    container, so this is 800 g. Write `(800 g in total)` if you mean the total.
+  - `2 x 400 g cans chopped tomatoes` works as well.
+- To group ingredients, add a small heading such as `### For the sauce` above them.
 
 ## Instructions
 
@@ -72,3 +79,14 @@ Don't write how many days something keeps unless you know it from a reliable sou
 ## Notes (optional)
 
 Anything else: what you'd change next time, what to serve it with, who liked it.
+
+## After adding or changing a file
+
+1. Save (commit) the file on GitHub. Vercel builds a new version of the app automatically.
+2. When that's done, open the app → **Settings** → **Load recipes from files**.
+3. The report lists every file. **Errors** mean the recipe wasn't loaded (for example a missing
+   title). **Warnings** mean it loaded but something looks off (for example a non-metric unit,
+   or seafood). Each message says which line to look at.
+
+GitHub also checks every file in this folder. If a file can't be read, the pull request shows a
+red ✗; click **Details** to see which file and line.

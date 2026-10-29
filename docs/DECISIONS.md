@@ -34,6 +34,48 @@ to change anything now.
 recipe sites can't be fetched from inside a session. Test the importer against saved HTML fixtures in
 the repo, then check it for real on the Vercel preview deployment.
 
+## Technical decisions during milestone 1 (29 October 2026)
+
+- **Next.js 16 with Cache Components** (the framework's new default). Pages show their layout
+  at once and stream in data behind a short "Loading…" message. Anything that reads the database
+  or the sign-in cookie must sit inside a `<Suspense>` boundary.
+- **Database access: Drizzle ORM.** On Vercel it talks to Neon over HTTP (`DATABASE_URL`, set by
+  the Vercel–Neon integration). For development and tests where Neon can't be reached (cloud
+  sessions), a Postgres that runs inside the app (PGlite) stands in. It is never used on Vercel;
+  if Neon is missing there, the app says so.
+- **One row per recipe.** Ingredient lines, steps and make-ahead tasks are stored in the recipe
+  row (JSON columns), not separate tables. Saving a recipe is then a single write, so a recipe
+  can't be half-saved; the Neon HTTP driver has no multi-statement transactions.
+- **Ingredients are stored as written** (`"250 g red lentils, rinsed"`). Amounts, units and notes
+  are worked out when shown, so improving the parser fixes every recipe at once. Labels such as
+  "contains seafood" are also calculated when shown, never stored.
+- **Migrations run at the start of every Vercel build** (`npm run build` runs
+  `scripts/migrate.mts` first). If no database is connected, that step is skipped with a message.
+- **Preview and production share one database for now.** Until that changes, database changes
+  must only add tables or columns, never rename or remove them. Revisit before weekly use
+  (milestone 2/3), e.g. with Neon's per-preview database branches.
+- **Server region Frankfurt** (`fra1` in `vercel.json`), next to the Neon database in Frankfurt.
+- **Passcode sign-in:** a signed, HttpOnly cookie lasting 90 days. The passcode ignores capitals
+  and extra spaces. Changing `HOUSEHOLD_PASSCODE` or `SESSION_SECRET` in Vercel signs everyone
+  out. A wrong guess waits one second.
+- **"Load recipes from files"** (Settings) adds and updates recipes from `seed-recipes/` and keeps
+  favourites. A file recipe edited in the app is skipped. When a file is deleted, its recipe is
+  removed, unless it was edited in the app; then it is kept as an app recipe. A file that can't be
+  read keeps the previous version. Recipes added in the app are never touched. "Reset everything"
+  (type RESET) wipes all recipes and reloads the files.
+- **Ingredient line conventions** (see `seed-recipes/README.md`):
+  - A bracketed weight is a total (`1 cauliflower (about 600 g)`).
+  - For cans, jars, packs, bags and bottles, a bracketed weight is per container
+    (`2 cans black beans (400 g each)` = 800 g), unless it says "in total".
+  - Ranges use the upper amount for totals.
+  - Metric spoons are 5 ml (tsp) and 15 ml (tbsp).
+  - Cups, ounces and pounds are flagged rather than converted.
+- **Seafood check:** a word list (English plus common Swedish names) flags recipes that contain
+  seafood. It also warns about ingredients that often contain fish (Worcestershire sauce, curry
+  pastes, kimchi), and ignores look-alikes such as oyster mushrooms and vegan fish sauce.
+- **GitHub check:** lint, type check and unit tests on every pull request, including a test that
+  every file in `seed-recipes/` loads without errors.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and
