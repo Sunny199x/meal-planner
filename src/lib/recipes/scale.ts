@@ -3,7 +3,7 @@
 // the shopping list rounds separately, up to what can be bought. Lines without
 // an amount, or that couldn't be fully read, are shown as written.
 import { formatMetric, formatQuantity, formatUnit } from "./format";
-import { splitNote, type ParsedIngredient } from "./parse-ingredient-line";
+import { NUM, parseAmount, splitNote, type ParsedIngredient } from "./parse-ingredient-line";
 
 const TO_BASE: Record<string, ["g" | "ml", number]> = {
   g: ["g", 1],
@@ -84,4 +84,59 @@ export function scaleLine(item: ParsedIngredient, factor: number): ScaledLine {
     weight = ` (${formatMetric({ ...item.metric, value })}${quantity * factor > 1 ? " in total" : ""})`;
   }
   return { text: `${amount} ${name}${weight}`, note: item.note, scaled: true };
+}
+
+// Amounts with a metric unit inside a recipe step: "Bring 300 ml water to the
+// boil", "add ½ tsp salt". Times, temperatures, sizes and counts ("10 minutes",
+// "220°C", "2 cm", "4 tortillas") have no such unit and are left alone.
+const STEP_UNITS: Record<string, string> = {
+  g: "g", gram: "g", grams: "g", kg: "kg", kilo: "kg", kilos: "kg",
+  ml: "ml", millilitre: "ml", millilitres: "ml", cl: "cl", dl: "dl", l: "l", litre: "l", litres: "l", liter: "l", liters: "l",
+  tsp: "tsp", teaspoon: "tsp", teaspoons: "tsp", tsk: "tsp", tbsp: "tbsp", tablespoon: "tbsp", tablespoons: "tbsp", msk: "tbsp",
+};
+const STEP_AMOUNT = new RegExp(
+  `(?<![\\w.,/])(${NUM})(?:\\s*(?:-|–|—|to)\\s*(${NUM}))?\\s*(${Object.keys(STEP_UNITS).join("|")})(?![a-zA-Z])`,
+  "gi",
+);
+
+/** A step split into plain text and scaled amounts (with the amount as written, to show what changed). */
+export type StepPart = string | { text: string; original: string };
+
+function scaleAmount(value: number, unit: string, factor: number): string {
+  if (TO_BASE[unit]) {
+    const [base, toBase] = TO_BASE[unit];
+    return formatMetric({ value: roundForKitchen(value * factor * toBase, base), unit: base, approximate: false });
+  }
+  return formatQuantity(roundForKitchen(value * factor, unit));
+}
+
+export function scaleStep(step: string, factor: number): StepPart[] {
+  if (Math.abs(factor - 1) < 0.001) return [step];
+  const parts: StepPart[] = [];
+  let last = 0;
+  for (const match of step.matchAll(STEP_AMOUNT)) {
+    const [whole, low, high, unitText] = match;
+    const unit = STEP_UNITS[unitText.toLowerCase()];
+    const lowValue = parseAmount(low);
+    const highValue = high ? parseAmount(high) : null;
+    if (lowValue === null || (high && highValue === null)) continue;
+    let text: string;
+    if (TO_BASE[unit]) {
+      const lowText = scaleAmount(lowValue, unit, factor);
+      if (highValue === null) text = lowText;
+      else {
+        const highText = scaleAmount(highValue, unit, factor);
+        const [lowNumber, lowUnit] = lowText.split(" ");
+        text = highText.endsWith(` ${lowUnit}`) ? `${lowNumber}–${highText}` : `${lowText}–${highText}`;
+      }
+    } else {
+      const range = highValue === null ? scaleAmount(lowValue, unit, factor) : `${scaleAmount(lowValue, unit, factor)}–${scaleAmount(highValue, unit, factor)}`;
+      text = `${range} ${unitText}`;
+    }
+    if (match.index > last) parts.push(step.slice(last, match.index));
+    parts.push({ text, original: whole });
+    last = match.index + whole.length;
+  }
+  if (last < step.length) parts.push(step.slice(last));
+  return parts;
 }

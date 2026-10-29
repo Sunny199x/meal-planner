@@ -197,7 +197,11 @@ the repo, then check it for real on the Vercel preview deployment.
     (shown as kg or l from 1,000). Spoons, decilitres and pieces round to quarters, or halves from 3.
   - Packs and cans also show their scaled weight ("2¾ packs … (about 1.05 kg in total)").
   - Lines without an amount ("salt, to taste") and lines with reading problems stay as written.
-    Amounts inside the steps are not scaled, and the page says so.
+  - **Amounts in the steps** are scaled too (added 29 October 2026, Saketh's request): only a
+    number followed by a metric unit ("300 ml", "½ tsp", "1–2 tbsp", "2 dl", "1 litre"), with the
+    same rounding, highlighted so it's clear what changed (the original shows on hover). Times,
+    temperatures, sizes and counts ("10 minutes", "220°C", "2 cm", "4 tortillas") stay as
+    written: scaling those would often be wrong (cooking times don't double with the amount).
 
 - **Shopping list** (`src/lib/plan/shopping.ts`, Week → Shopping):
   - Every chosen dish's ingredients, scaled to its portions (dinner, repeat dinner, lunch boxes,

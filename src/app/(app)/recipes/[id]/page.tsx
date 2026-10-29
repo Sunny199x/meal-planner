@@ -19,7 +19,7 @@ import { getRecipe } from "@/lib/recipes/queries";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
 import { describeSourceLink } from "@/lib/recipes/source-link";
 import { BackToRecipes } from "./back-link";
-import { Ingredients } from "./ingredients";
+import { RecipeBody, Section } from "./recipe-body";
 import { SavedNotice } from "./saved-notice";
 
 export default function RecipePage({ params, searchParams }: PageProps<"/recipes/[id]">) {
@@ -158,32 +158,12 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
         )}
       </Section>
 
-      <div className="grid gap-5 lg:grid-cols-[2fr_3fr]">
-        <Section title="Ingredients">
-          <Ingredients
-            items={parsed}
-            servings={recipe.servings}
-            initialPortions={readPortions(query.portions) ?? recipe.servings}
-          />
-        </Section>
-
-        <Section title="Instructions">
-          {recipe.instructions.length ? (
-            <ol className="space-y-3">
-              {recipe.instructions.map((step, i) => (
-                <li key={i} className="flex gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cream text-sm font-semibold text-terracotta-dark">
-                    {i + 1}
-                  </span>
-                  <span className="pt-0.5">{step}</span>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="text-muted">No instructions written down.</p>
-          )}
-        </Section>
-      </div>
+      <RecipeBody
+        items={parsed}
+        instructions={recipe.instructions}
+        servings={recipe.servings}
+        initialPortions={readPortions(query.portions) ?? recipe.servings}
+      />
 
       {recipe.makeAhead.length > 0 && (
         <Section title="Make ahead">
@@ -213,15 +193,6 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
         </Section>
       )}
     </article>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl border border-line bg-paper p-5 shadow-sm">
-      <h2 className="mb-3 font-display text-xl font-semibold">{title}</h2>
-      {children}
-    </section>
   );
 }
 

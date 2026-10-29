@@ -29,8 +29,8 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
     - includes / leaves out an ingredient
   - Filters are kept in the address.
 - **Recipe page:**
-  - a portions control (− / +) that scales the ingredient amounts; opening a dish from the week
-    shows it at that dish's portions
+  - a portions control (− / +) that scales the ingredient amounts and the amounts in the steps
+    (highlighted); opening a dish from the week shows it at that dish's portions
   - times, servings, freezer and leftover notes
   - source, with a "Watch on YouTube" / "Open on Instagram" / website link
   - labels, with the reason shown ("62.5 g red lentils per serving")
@@ -120,8 +120,9 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   not known, so small amounts (20 g curry paste) are shown as written.
 - **Shopping and prep ticks** reach the other phone when the app is opened or comes back to the
   front, not live while both are looking at it.
-- **Amounts in the recipe steps are not scaled** ("Bring 300 ml water to the boil"); only the
-  ingredient list is. The recipe page says so.
+- **Scaled recipe steps:** amounts with a unit ("300 ml", "½ tsp") are scaled and highlighted;
+  times, temperatures and counts ("10 minutes", "4 tortillas") stay as written, and pan sizes
+  aren't adjusted.
 - **Prep amounts** for a shared task are found by its main word ("rice" in "Cook rice"); a task
   like "Chop aromatics" shows no amounts. The app never says how long prepared food keeps.
 - **First load after a quiet spell** can take a second or two (the free Neon database sleeps).

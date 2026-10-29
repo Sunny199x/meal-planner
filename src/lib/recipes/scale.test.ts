@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseIngredientLine } from "./parse-ingredient-line";
-import { roundForKitchen, scaleLine } from "./scale";
+import { roundForKitchen, scaleLine, scaleStep, type StepPart } from "./scale";
 
 const scale = (line: string, factor: number) => scaleLine(parseIngredientLine(line), factor);
 
@@ -50,5 +50,32 @@ describe("scaling ingredient lines", () => {
     expect(roundForKitchen(0.1, "g")).toBe(0.5);
     expect(roundForKitchen(0.05, "tsp")).toBe(0.25);
     expect(roundForKitchen(1234, "g")).toBe(1250);
+  });
+});
+
+describe("scaling amounts inside recipe steps", () => {
+  const show = (parts: StepPart[]) => parts.map((p) => (typeof p === "string" ? p : `[${p.text}]`)).join("");
+
+  it("scales amounts with a metric unit and marks them", () => {
+    const step = "Bring 300 ml water to the boil, add the rice and ½ tsp salt.";
+    // 825 ml, rounded to 10 ml like the ingredient list.
+    expect(show(scaleStep(step, 2.75))).toBe("Bring [830 ml] water to the boil, add the rice and [1½ tsp] salt.");
+    expect(scaleStep(step, 2.75)[1]).toEqual({ text: "830 ml", original: "300 ml" });
+  });
+
+  it("leaves times, temperatures, sizes and counts alone", () => {
+    const step = "Roast at 220°C for 20–25 minutes, cut into 2 cm cubes and fill 4 tortillas.";
+    expect(scaleStep(step, 2)).toEqual([step]);
+  });
+
+  it("handles ranges, decilitres, kilos and written-out units", () => {
+    expect(show(scaleStep("Add 1–2 tbsp oil and 2 dl cream.", 2))).toBe("Add [2–4 tbsp] oil and [4 dl] cream.");
+    expect(show(scaleStep("Boil 1 kg potatoes in 1 litre of water.", 1.5))).toBe("Boil [1½ kg] potatoes in [1½ l] of water.");
+    expect(show(scaleStep("Stir in 2 teaspoons of sugar.", 0.5))).toBe("Stir in [1 teaspoons] of sugar.");
+  });
+
+  it("doesn't touch words that only look like units, or the recipe's own size", () => {
+    expect(scaleStep("Use 2 large onions and 1 lime.", 2)).toEqual(["Use 2 large onions and 1 lime."]);
+    expect(scaleStep("Bring 300 ml water to the boil.", 1)).toEqual(["Bring 300 ml water to the boil."]);
   });
 });

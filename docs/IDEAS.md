@@ -50,6 +50,12 @@ Options:
 
 Options 1 and 2 together keep the rule strict and the names tidy.
 
+### Scale the amounts in the recipe steps (Done)
+
+*Saketh, 29 October 2026.* Amounts with a metric unit in the steps ("300 ml water", "½ tsp
+salt") now follow the portions control and are highlighted. Times, temperatures and counts stay
+as written.
+
 ## Noticed while building milestone 3 (Open)
 
 Small things that may or may not matter once the app is used for real weeks:
@@ -63,9 +69,6 @@ Small things that may or may not matter once the app is used for real weeks:
 - **Pack sizes:** the list shows "20 g curry paste" because the app doesn't know what a pack
   holds. Remembering usual pack sizes ("spinach: 65 g bag") would let it say "1 bag" and what's
   left over.
-- **Scaling amounts in the steps:** only the ingredient list is scaled; "Bring 300 ml water to
-  the boil" stays as written. Doing this automatically is error-prone; marking such amounts in
-  the recipe files would be safer.
 
 ## Parked earlier (decided "later")
 
