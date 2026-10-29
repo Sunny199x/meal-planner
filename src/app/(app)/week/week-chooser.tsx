@@ -231,8 +231,12 @@ export function WeekChooser({
             portions or plans it again as leftovers. Then open the{" "}
             <Link href={`/week/shopping?week=${weekStart}`} className="text-terracotta underline">
               shopping list
+            </Link>{" "}
+            and the{" "}
+            <Link href={`/week/prep?week=${weekStart}`} className="text-terracotta underline">
+              Sunday prep list
             </Link>
-            . The Sunday prep list is being built next.
+            .
           </p>
         </section>
       )}

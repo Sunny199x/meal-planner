@@ -2,7 +2,7 @@
 // create a migration in drizzle/. While preview and production share one
 // database, only add tables or columns; never rename or drop them.
 import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import type { PlannedDish, ShoppingState, WeekSetup } from "../plan/types";
+import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "../plan/types";
 import { DIETS, type IngredientLine, type MakeAheadTask } from "../recipes/types";
 
 export const recipes = pgTable("recipes", {
@@ -46,6 +46,8 @@ export const weekPlans = pgTable("week_plans", {
   choosingStartedAt: timestamp("choosing_started_at", { withTimezone: true }),
   /** Shopping-list ticks and items added by hand. */
   shopping: jsonb("shopping").$type<ShoppingState>().notNull().default({}),
+  /** Sunday prep tasks ticked off. */
+  prep: jsonb("prep").$type<PrepState>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

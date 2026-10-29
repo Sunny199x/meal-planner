@@ -53,6 +53,9 @@ export type ShoppingState = {
   extra?: Record<string, { text: string; addedAt: string }>;
 };
 
+/** Sunday prep tasks ticked off, by task key. */
+export type PrepState = Record<string, true>;
+
 export const PORTION_CHOICES = [0.75, 1, 1.25, 1.5, 2];
 export const MAX_LUNCHES = 7;
 export const MAX_FREEZER = 12;

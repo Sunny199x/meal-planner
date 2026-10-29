@@ -1,7 +1,16 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openLocalDb } from "../db/local";
 import type { Db } from "../db/types";
-import { addShoppingExtra, getPlan, removeShoppingExtra, saveDishes, saveSetup, setupForNewWeek, tickShoppingItem } from "./store";
+import {
+  addShoppingExtra,
+  getPlan,
+  removeShoppingExtra,
+  saveDishes,
+  saveSetup,
+  setupForNewWeek,
+  tickPrepTask,
+  tickShoppingItem,
+} from "./store";
 import { DEFAULT_SETUP } from "./types";
 
 let db: Db;
@@ -72,5 +81,15 @@ describe("shopping-list ticks", () => {
 
   it("returns null for a week without a setup", async () => {
     expect(await tickShoppingItem(db, "2026-11-09", "bought", "rice", "1 kg")).toBeNull();
+  });
+});
+
+describe("Sunday prep ticks", () => {
+  it("ticks tasks off and on, leaving the others", async () => {
+    await saveSetup(db, "2026-11-02", DEFAULT_SETUP);
+    await tickPrepTask(db, "2026-11-02", "cook rice", true);
+    expect(await tickPrepTask(db, "2026-11-02", "deseed pomegranate", true)).toEqual({ "cook rice": true, "deseed pomegranate": true });
+    expect(await tickPrepTask(db, "2026-11-02", "cook rice", false)).toEqual({ "deseed pomegranate": true });
+    expect(await tickPrepTask(db, "2026-11-09", "cook rice", true)).toBeNull();
   });
 });

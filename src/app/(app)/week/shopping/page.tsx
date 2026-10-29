@@ -50,9 +50,7 @@ async function Shopping({ searchParams }: Pick<PageProps<"/week/shopping">, "sea
         <ShoppingList
           key={weekStart}
           weekStart={weekStart}
-          initialSetup={plan.setup}
-          initialDishes={plan.dishes}
-          initialShopping={plan.shopping}
+          initial={{ setup: plan.setup, dishes: plan.dishes, shopping: plan.shopping, prep: plan.prep }}
           recipes={recipeRows.map(toPlanRecipe)}
         />
       )}

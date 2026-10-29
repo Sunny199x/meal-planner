@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Chip } from "@/components/ui";
-import { addShoppingItemAction, loadWeekAction, removeShoppingItemAction, tickShoppingAction } from "@/lib/plan/actions";
+import { addShoppingItemAction, removeShoppingItemAction, tickShoppingAction, type SavedWeek } from "@/lib/plan/actions";
 import { planPortions } from "@/lib/plan/portions";
 import { buildShoppingList, covers, SECTIONS, type ShoppingItem } from "@/lib/plan/shopping";
 import { shortTitle, type PlanRecipe } from "@/lib/plan/suggest";
-import { DAY_SHORT, type PlannedDish, type ShoppingState, type WeekSetup } from "@/lib/plan/types";
+import { DAY_SHORT, type ShoppingState } from "@/lib/plan/types";
+import { useLiveWeek } from "../use-live-week";
 
 type Row = Pick<ShoppingItem, "key" | "name" | "amount" | "measure" | "optional" | "sources"> & { extraId?: string };
 type Status = "todo" | "basket" | "home";
@@ -21,62 +22,29 @@ function withTick(state: ShoppingState, list: "bought" | "have", key: string, am
 
 export function ShoppingList({
   weekStart,
-  initialSetup,
-  initialDishes,
-  initialShopping,
+  initial,
   recipes,
 }: {
   weekStart: string;
-  initialSetup: WeekSetup;
-  initialDishes: PlannedDish[];
-  initialShopping: ShoppingState;
+  initial: SavedWeek;
   recipes: PlanRecipe[];
 }) {
-  const [setup, setSetup] = useState(initialSetup);
-  const [dishes, setDishes] = useState(initialDishes);
-  const [shopping, setShopping] = useState(initialShopping);
-  const [error, setError] = useState<string | null>(null);
+  const { week, error, send } = useLiveWeek(weekStart, initial);
+  const { setup, dishes, shopping } = week;
   const [draft, setDraft] = useState("");
-  const pending = useRef(0);
 
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   const known = useMemo(() => dishes.filter((d) => byId.has(d.recipeId)), [dishes, byId]);
   const items = useMemo(() => buildShoppingList(known, byId, planPortions(setup, known, byId)), [known, byId, setup]);
 
-  // Pick up changes from the other phone when the page opens or the app comes back to the front.
-  useEffect(() => {
-    async function refresh() {
-      if (document.visibilityState !== "visible" || pending.current > 0) return;
-      const result = await loadWeekAction(weekStart);
-      if (pending.current > 0 || !result.setup || !result.dishes || !result.shopping) return;
-      setSetup(result.setup);
-      setDishes(result.dishes);
-      setShopping(result.shopping);
-    }
-    refresh();
-    document.addEventListener("visibilitychange", refresh);
-    return () => document.removeEventListener("visibilitychange", refresh);
-  }, [weekStart]);
-
-  /** Shows a change straight away, saves it, then shows what the database holds (including the other phone's ticks). */
-  function send(local: (state: ShoppingState) => ShoppingState, save: () => Promise<Result>) {
-    setShopping(local);
-    setError(null);
-    pending.current++;
-    save().then(
-      (result) => {
-        pending.current--;
-        if (result.error) setError(result.error);
-        else if (result.shopping && pending.current === 0) setShopping(result.shopping);
-      },
-      () => {
-        pending.current--;
-        setError("Couldn't reach the app. Check the connection; the last tick may not be saved.");
-      },
+  function change(local: (state: ShoppingState) => ShoppingState, save: () => Promise<Result>) {
+    send(
+      (w) => ({ ...w, shopping: local(w.shopping) }),
+      () => save().then((r) => ({ error: r.error, update: r.shopping && { shopping: r.shopping } })),
     );
   }
   const tick = (list: "bought" | "have", key: string, amount: string | null) =>
-    send((s) => withTick(s, list, key, amount), () => tickShoppingAction(weekStart, list, key, amount));
+    change((s) => withTick(s, list, key, amount), () => tickShoppingAction(weekStart, list, key, amount));
 
   function addOwn(event: React.FormEvent) {
     event.preventDefault();
@@ -84,13 +52,13 @@ export function ShoppingList({
     if (!text) return;
     const id = crypto.randomUUID();
     setDraft("");
-    send(
+    change(
       (s) => ({ ...s, extra: { ...s.extra, [id]: { text, addedAt: new Date().toISOString() } } }),
       () => addShoppingItemAction(weekStart, id, text),
     );
   }
   function removeOwn(id: string) {
-    send((s) => {
+    change((s) => {
       const extra = { ...s.extra };
       delete extra[id];
       return withTick({ ...s, extra }, "bought", `extra:${id}`, null);

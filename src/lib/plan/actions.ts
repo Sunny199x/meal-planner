@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireSignedIn } from "../auth/server";
 import { describeDatabaseError, getDb } from "../db";
 import { readWeekStart } from "./dates";
-import { addShoppingExtra, getPlan, removeShoppingExtra, saveDishes, saveSetup, tickShoppingItem } from "./store";
-import { readDishes, readSetup, type PlannedDish, type ShoppingState, type WeekSetup } from "./types";
+import { addShoppingExtra, getPlan, removeShoppingExtra, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
+import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
 export async function saveWeekSetupAction(
   weekStart: string,
@@ -83,16 +83,33 @@ export async function removeShoppingItemAction(weekStart: string, id: string): P
   return changeShopping(weekStart, async (week) => removeShoppingExtra(await getDb(), week, id));
 }
 
+/** Ticks a Sunday prep task off or back on. */
+export async function tickPrepAction(weekStart: string, key: string, done: boolean): Promise<{ prep?: PrepState; error?: string }> {
+  await requireSignedIn();
+  const week = readWeekStart(weekStart);
+  if (!week || typeof key !== "string" || !key || key.length > 160 || typeof done !== "boolean") {
+    return { error: "Something wasn't valid. Please reload and try again." };
+  }
+  try {
+    const prep = await tickPrepTask(await getDb(), week, key, done);
+    return prep ? { prep } : { error: "Save the week's setup first." };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+export type SavedWeek = { setup: WeekSetup; dishes: PlannedDish[]; shopping: ShoppingState; prep: PrepState };
+
 /** The week as saved now, to pick up changes made on the other phone. */
-export async function loadWeekAction(
-  weekStart: string,
-): Promise<{ setup?: WeekSetup; dishes?: PlannedDish[]; shopping?: ShoppingState; error?: string }> {
+export async function loadWeekAction(weekStart: string): Promise<{ week?: SavedWeek; error?: string }> {
   await requireSignedIn();
   const week = readWeekStart(weekStart);
   if (!week) return { error: "Something wasn't valid. Please reload and try again." };
   try {
     const plan = await getPlan(await getDb(), week);
-    return plan ? { setup: plan.setup, dishes: plan.dishes, shopping: plan.shopping } : { error: "Save the week's setup first." };
+    return plan
+      ? { week: { setup: plan.setup, dishes: plan.dishes, shopping: plan.shopping, prep: plan.prep } }
+      : { error: "Save the week's setup first." };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

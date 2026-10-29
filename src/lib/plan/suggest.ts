@@ -115,9 +115,10 @@ export function fitsEvening(recipe: Pick<PlanRecipe, "timeTotalMin">, setup: Wee
   return max === null || recipe.timeTotalMin <= max;
 }
 
-/** "Creamy lentil korma with coconut rice" → "Creamy lentil korma". */
+/** "Creamy lentil korma with coconut rice" → "Creamy lentil korma"; "and" only splits a title that is still long. */
 export function shortTitle(title: string): string {
-  const cut = title.split(/ with | and |,/i)[0];
+  let cut = title.split(/ with |,/i)[0];
+  if (cut.length > 40) cut = cut.split(/ and /i)[0];
   return cut.length <= 40 ? cut : cut.slice(0, 38) + "…";
 }
 

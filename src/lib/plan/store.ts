@@ -2,7 +2,7 @@
 import { desc, eq, lt, sql, type SQL } from "drizzle-orm";
 import { weekPlans, type WeekPlanRow } from "../db/schema";
 import type { Db } from "../db/types";
-import { DEFAULT_SETUP, type PlannedDish, type ShoppingState, type WeekSetup } from "./types";
+import { DEFAULT_SETUP, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
 export async function getPlan(db: Db, weekStart: string): Promise<WeekPlanRow | null> {
   const [row] = await db.select().from(weekPlans).where(eq(weekPlans.weekStart, weekStart));
@@ -82,4 +82,14 @@ export function removeShoppingExtra(db: Db, weekStart: string, id: string): Prom
   const extra = sql`coalesce(${weekPlans.shopping} -> 'extra', '{}'::jsonb) - ${id}::text`;
   const bought = sql`coalesce(${weekPlans.shopping} -> 'bought', '{}'::jsonb) - ${`extra:${id}`}::text`;
   return updateShopping(db, weekStart, sql`${weekPlans.shopping} || jsonb_build_object('extra', ${extra}, 'bought', ${bought})`);
+}
+
+/** Ticks a Sunday prep task off (true) or back on (false), leaving other ticks alone. */
+export async function tickPrepTask(db: Db, weekStart: string, key: string, done: boolean): Promise<PrepState | null> {
+  const [row] = await db
+    .update(weekPlans)
+    .set({ prep: done ? sql`${weekPlans.prep} || jsonb_build_object(${key}::text, true)` : sql`${weekPlans.prep} - ${key}::text` })
+    .where(eq(weekPlans.weekStart, weekStart))
+    .returning({ prep: weekPlans.prep });
+  return row?.prep ?? null;
 }

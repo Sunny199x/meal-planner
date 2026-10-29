@@ -223,6 +223,21 @@ the repo, then check it for real on the Vercel preview deployment.
   - A tick remembers how much was bought. If the plan later needs **more**, the item comes back
     with a note; the same or less keeps it ticked.
   - No prices, as the brief says.
+- **Sunday prep list** (`src/lib/plan/prep.ts`, Week → Sunday prep):
+  - The make-ahead tasks of the chosen dishes. The same task name in several dishes (ignoring
+    case, "the/a" and punctuation) is one batch, listed first with the dishes and portions it is
+    for. Each dish's own instructions for it are shown; identical ones once.
+  - For a shared task the app also shows the ingredient lines it works on, scaled per dish
+    ("410 g basmati rice (Mon) + 300 g basmati rice (Tue)"). It finds them by the task's main
+    word ("rice" in "Cook rice", "onion" in "Quick-pickled red onions"), ignoring cupboard
+    staples. Single-dish tasks link to the recipe instead.
+  - **Each evening:** the dish and its portions, which parts were done on Sunday (ticked ones
+    marked), lunch boxes to pack and portions to freeze after dinner, or "Leftovers … no cooking
+    tonight". The recipe's time is shown as written, since the app can't know how much the prep
+    saves.
+  - Ticks are stored per week in `week_plans.prep` (an added column), one key at a time, like
+    the shopping ticks.
+  - **No storage times:** the page says the app doesn't know how long prepared food keeps.
 
 ## Product decisions
 
