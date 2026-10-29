@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Warm, calm palette. Colours are defined once here and used through Tailwind
+   classes such as bg-cream, text-ink and bg-terracotta. */
+@theme {
+  --color-cream: #fbf7f0;
+  --color-paper: #ffffff;
+  --color-ink: #2b2622;
+  --color-muted: #6f655c;
+  --color-line: #e8ddd0;
+  --color-terracotta: #b8562a;
+  --color-terracotta-dark: #96441f;
+  --color-sage: #5c7a57;
+  --color-sage-light: #e6eee3;
+  --color-saffron: #e3a33b;
+  --color-saffron-light: #fbefd9;
+  --color-danger: #a83a32;
+  --color-danger-light: #f8e3e0;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}

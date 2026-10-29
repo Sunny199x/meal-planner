@@ -22,7 +22,9 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
 | Database | Postgres from Neon, added through Vercel's Storage / Marketplace | No separate account to manage; the database URL is injected automatically. |
 | Sign-in | One shared household passcode (environment variable), cookie session | Two people, one household. Real user accounts are out of scope. |
 | Recipe URL import | Server-side fetch, parse schema.org `Recipe` JSON-LD, then a review screen | Works for most food blogs. Falls back to "save link + manual entry" when there is no structured data. |
-| Instagram / TikTok | Save link + notes only, clearly labelled | These cannot be parsed reliably. |
+| Instagram | Save link (as the recipe's source) + type the recipe, clearly labelled | Instagram doesn't let apps read posts without a business developer account. |
+| YouTube | Save link now. Milestone 4: also fetch title, channel and thumbnail automatically (YouTube's public oEmbed, no key needed) | The recipe text is usually in the video description, which needs a YouTube Data API key; only with Saketh's OK. |
+| TikTok | Not supported | Saketh and Victoria don't use it (decided 29 October 2026). |
 | Photo import | Attach a photo to a recipe as a reference, then type the recipe manually | No OCR in the MVP. Label it honestly. |
 | Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Saketh writes his own recipes there. See `seed-recipes/README.md`. |
 
@@ -33,6 +35,83 @@ to change anything now.
 **Cloud session caveat:** the default Claude Code cloud environment blocks most websites, so live
 recipe sites can't be fetched from inside a session. Test the importer against saved HTML fixtures in
 the repo, then check it for real on the Vercel preview deployment.
+
+## Technical decisions during milestone 1 (29 October 2026)
+
+- **Next.js 16 with Cache Components** (the framework's new default). Pages show their layout
+  at once and stream in data behind a short "Loading…" message. Anything that reads the database
+  or the sign-in cookie must sit inside a `<Suspense>` boundary.
+- **Database access: Drizzle ORM.** On Vercel it talks to Neon over HTTP (`DATABASE_URL`, set by
+  the Vercel–Neon integration). For development and tests where Neon can't be reached (cloud
+  sessions), a Postgres that runs inside the app (PGlite) stands in. It is never used on Vercel;
+  if Neon is missing there, the app says so.
+- **One row per recipe.** Ingredient lines, steps and make-ahead tasks are stored in the recipe
+  row (JSON columns), not separate tables. Saving a recipe is then a single write, so a recipe
+  can't be half-saved; the Neon HTTP driver has no multi-statement transactions.
+- **Ingredients are stored as written** (`"250 g red lentils, rinsed"`). Amounts, units and notes
+  are worked out when shown, so improving the parser fixes every recipe at once. Labels such as
+  "contains seafood" are also calculated when shown, never stored.
+- **Migrations run at the start of every Vercel build** (`npm run build` runs
+  `scripts/migrate.mts` first). If no database is connected, that step is skipped with a message.
+- **Preview and production share one database for now.** Until that changes, database changes
+  must only add tables or columns, never rename or remove them. Revisit before weekly use
+  (milestone 2/3), e.g. with Neon's per-preview database branches.
+- **Server region Frankfurt** (`fra1` in `vercel.json`), next to the Neon database in Frankfurt.
+- **Passcode sign-in:** a signed, HttpOnly cookie lasting 90 days. The passcode ignores capitals
+  and extra spaces. Changing `HOUSEHOLD_PASSCODE` or `SESSION_SECRET` in Vercel signs everyone
+  out. A wrong guess waits one second.
+- **"Load recipes from files"** (Settings) adds and updates recipes from `seed-recipes/` and keeps
+  favourites. A file recipe edited in the app is skipped. When a file is deleted, its recipe is
+  removed, unless it was edited in the app; then it is kept as an app recipe. A file that can't be
+  read keeps the previous version. Recipes added in the app are never touched. "Reset everything"
+  (type RESET) wipes all recipes and reloads the files.
+- **Ingredient line conventions** (see `seed-recipes/README.md`):
+  - A bracketed weight is a total (`1 cauliflower (about 600 g)`).
+  - For cans, jars, packs, bags and bottles, a bracketed weight is per container
+    (`2 cans black beans (400 g each)` = 800 g), unless it says "in total".
+  - Ranges use the upper amount for totals.
+  - Metric spoons are 5 ml (tsp) and 15 ml (tbsp).
+  - Cups, ounces and pounds are flagged rather than converted.
+- **Seafood check:** a word list (English plus common Swedish names) flags recipes that contain
+  seafood. It also warns about ingredients that often contain fish (Worcestershire sauce, curry
+  pastes, kimchi), and ignores look-alikes such as oyster mushrooms and vegan fish sauce.
+- **GitHub check:** lint, type check and unit tests on every pull request, including a test that
+  every file in `seed-recipes/` loads without errors.
+- **Protein-rich / carb-focused labels** (draft household rule, shown in the app; easy to change in
+  `src/lib/recipes/labels.ts`):
+  - **Protein-rich:** per serving, 100 g meat, poultry, tofu, tempeh, paneer or halloumi; or 150 g
+    canned or cooked beans, chickpeas or lentils; or 50 g dry lentils, split peas or dried beans; or
+    2 eggs. A mix that adds up to the same also counts.
+  - **Carb-focused:** per serving, 75 g uncooked rice, pasta, noodles or grains, or 250 g potatoes,
+    sweet potatoes or gnocchi.
+  - Amounts are as bought. Canned beans count at the can's weight including liquid, so this is
+    generous to canned beans. Ingredients without a weight (e.g. "4 chicken thighs") aren't counted,
+    and the recipe page says so instead of guessing. Bread, tortillas and flatbreads aren't counted.
+- **Search and filters run in the browser** over all recipes, and the filters are kept in the page
+  address. Favourites are shared by the household, not per person.
+- **Adding and editing recipes in the app** uses the same text format as the recipe files:
+  - Ingredients go one per line, with `### Group` headings; steps one per line; make-ahead
+    tasks as `Name: what to do`.
+  - A live preview shows how each ingredient line is read. Seafood is flagged while typing.
+  - Make-ahead names already used in other recipes can be added with a tap, so shared prep
+    matches.
+  - Editing a recipe that came from a file marks it "edited in the app"; it stays marked as an
+    illustrative template if it was one.
+  - Deleting asks for confirmation. A deleted file recipe comes back on the next "Load recipes
+    from files" unless its file is deleted too; the delete screen says so.
+- **A full page load after saving or deleting.** Next.js 16 keeps recently visited pages alive and
+  shows them instantly when you return, then swaps in fresh data. Straight after a save that showed
+  the old version for a moment, which looks as if the save failed. So save and delete open the next
+  page with a normal page load (a fraction of a second slower, always current). Other changes
+  (favourites, loading files) mark every page for a refresh, and a briefly outdated view of a page
+  you go back to is accepted there.
+- **Source links are recognised by address** (YouTube, Instagram or a website name). The recipe
+  page says "Watch on YouTube", "Open on Instagram" or "Open on bbcgoodfood.com". Nothing is
+  fetched from those sites yet.
+- **Phone home screen:** the app has an icon and a web app manifest, so "Add to Home Screen"
+  gives it its own name and icon. Pages ask search engines not to index them.
+- **Layout check:** `scripts/check-pages.mjs` visits every page at 375 px and 1280 px, reports
+  sideways scrolling and errors, and saves screenshots. Run it before pushing changes to pages.
 
 ## Product decisions
 
