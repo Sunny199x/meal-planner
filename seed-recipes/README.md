@@ -7,6 +7,20 @@ The three files starting with `_template-` are examples written by Claude to sho
 format. They are illustrative and untested in a kitchen. Delete them once your own recipes
 are in. The `template: true` line also marks them so the app can label them.
 
+## Recipes taken from HelloFresh
+
+The files with `source: HelloFresh Sweden` were written from hellofresh.se recipe pages:
+
+- Ingredients, times and the source link come from the page. Quantities are HelloFresh's
+  2-portion amounts (`servings: 2`).
+- The method is rewritten in our own words, not copied.
+- HelloFresh's own spice blends are swapped for supermarket equivalents, marked
+  "replaces HelloFresh's … spice blend". Amounts the page showed only as "1 pack" or without a
+  unit are estimates, listed in the recipe's Notes.
+- `freezer_friendly` is `false` until you've actually frozen the dish and it was fine.
+- Make-ahead names are reused on purpose (e.g. `Cook rice`, `Harissa bulgur`,
+  `Deseed pomegranate`) so the app can spot shared preparation.
+
 ## Quick start
 
 1. Copy one of the template files and rename it, e.g. `chicken-tikka.md`

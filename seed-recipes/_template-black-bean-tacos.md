@@ -43,7 +43,7 @@ tags: [oven]
 ## Make ahead
 
 - Quick-pickled red onions: thinly slice ½ red onion and mix with the vinegar and a pinch of salt in a jar.
-- Roast the sweet potato: do step 1, cool, and keep in the fridge; reheat in the oven or a pan on the night.
+- Roast sweet potato: do step 1, cool, and keep in the fridge; reheat in the oven or a pan on the night.
 
 ## Notes
 
