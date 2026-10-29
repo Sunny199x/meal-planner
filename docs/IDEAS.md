@@ -71,7 +71,11 @@ Show the dish's photo on the "Pick a first dish" options, the suggestion cards, 
   disappear if the site changes it. Keeping our own copy avoids that and needs the same storage
   as uploads.
 
-### Shared prep only matches identical make-ahead names (Open)
+### Shared prep only matches identical make-ahead names (Partly done)
+
+Done in milestone 4: imports suggest the names already shared by your recipes, and Settings →
+Recipe check lists probably-duplicate names. Still open: the one-tap rename (option 1 below) and the
+hint while typing (option 2), worth building once duplicates actually turn up.
 
 *Saketh, 29 October 2026, after milestone 2.*
 

@@ -59,6 +59,9 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   - Live preview of how each ingredient line is read.
   - Live seafood warning.
   - Tap-to-add make-ahead names already used elsewhere.
+- **Recipe check** (Settings): recipes that won't work well with the suggestions yet (no make-ahead
+  tasks, unreadable lines, no cuisine or protein, seafood, templates) and probably-duplicate
+  make-ahead names.
 - **Recipe files** in `seed-recipes/`: Settings → *Load recipes from files* adds and updates them
   and reports problems line by line. Settings → *Reset everything* starts over (type RESET).
 - **Seafood rule:** recipes with seafood get a red warning. Ingredients that often contain fish

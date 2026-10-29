@@ -336,6 +336,13 @@ and a change in one should show in the other.
   until Livsmedelsverket's pages can be read from a session (the site is blocked by the session's
   network settings); nothing is filled in from memory. Old ticks from before prep days don't
   carry over.
+- **Recipe check** (Settings → Recipe check, `src/lib/recipes/health.ts`): lists recipes with no
+  make-ahead tasks, lines the app can't fully read, no cuisine or main protein, seafood, or that
+  are illustrative templates; and make-ahead tasks that work on the same things under different
+  names ("Cook rice" / "Make rice"). It points to the recipes rather than renaming them for you:
+  the household's recipes have no such near-duplicates today, and a rename of a recipe from a
+  file would mark it as edited in the app. A one-tap rename stays in `docs/IDEAS.md` for when
+  duplicates appear.
 - **Prep timing (plan):** Sunday and Wednesday are prep days by default (a setting). Each make-ahead task
   has a "done at most N days ahead" limit, taken from published food-safety guidance
   (Livsmedelsverket, the Swedish Food Agency) with the source shown; tasks the guidance doesn't
