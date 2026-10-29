@@ -195,7 +195,8 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes), apart from t
 
 ## Next
 
-1. Add `ANTHROPIC_API_KEY` in Vercel and try importing a few real recipes on the preview.
+1. ~~Add `ANTHROPIC_API_KEY` in Vercel~~ Done 29 October; try importing a few real recipes on
+   the preview.
 2. Allow `www.livsmedelsverket.se` in the session's network settings so the published guidance
    can be added to the prep limits, with its source.
 3. Merge milestone 4 into `main`.
