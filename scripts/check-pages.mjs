@@ -58,8 +58,18 @@ await page.goto(base + "/");
 await page.waitForSelector("main article");
 const firstRecipe = await page.getAttribute("main article h2 a", "href");
 
+// A coming week with its setup saved and one dish chosen.
+await page.goto(base + "/week");
+if (await page.locator("button:has-text('Save setup')").count()) {
+  await page.click("button:has-text('Save setup')");
+  await page.locator("ul.grid > li").first().locator("button:has-text('Add')").click();
+  await page.waitForSelector("text=1 of");
+}
+
 const pages = [
   ["recipes", "/"],
+  ["week", "/week"],
+  ["week-setup", "/week?week=2030-01-07"],
   ["recipes-filtered", "/?time=45&diet=vegetarian&protein=1"],
   ["recipe", firstRecipe],
   ["edit", `${firstRecipe}/edit`],

@@ -87,6 +87,7 @@ export function WeekChooser({
             Undo
           </button>
         </div>
+        <RemainingNeeds setup={setup} open={open} chosen={known.map((d) => byId.get(d.recipeId)!)} />
         <ul className="divide-y divide-line">
           {cookingDays.map((day) => {
             const dish = known.find((d) => d.day === day);
@@ -204,6 +205,23 @@ export function WeekChooser({
         </section>
       )}
     </>
+  );
+}
+
+/** What the week still needs: open evenings and lunch boxes. Portions come with the shopping list. */
+function RemainingNeeds({ setup, open, chosen }: { setup: WeekSetup; open: number[]; chosen: PlanRecipe[] }) {
+  const lunches = setup.people.reduce((sum, p) => sum + p.lunches, 0);
+  const leftovers = chosen.filter((r) => r.goodAsLeftovers).length;
+  return (
+    <p className="text-sm text-muted">
+      {open.length > 0 ? <>Still open: {open.map((day) => DAY_SHORT[day]).join(", ")}. </> : null}
+      {lunches > 0 && (
+        <>
+          Lunch boxes: {lunches} needed; {leftovers} chosen {leftovers === 1 ? "dish is" : "dishes are"} good as
+          leftovers.
+        </>
+      )}
+    </p>
   );
 }
 

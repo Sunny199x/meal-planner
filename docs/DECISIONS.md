@@ -121,8 +121,8 @@ the repo, then check it for real on the Vercel preview deployment.
     phone's copy-text-from-photo feature (iPhone Live Text, Google Lens), an Instagram caption or a
     YouTube description.
   - It will be built together with website / Instagram / YouTube import in the capture milestone.
-  - Reading photos with the Claude API (about $0.04–0.05 per photo with Claude Opus 5.5, needs an
-    Anthropic API key) waits until the free version shows a real need.
+  - Reading photos with the Claude API (about $0.04–0.05 per photo with Anthropic's most capable
+    model, needs an Anthropic API key) waits until the free version shows a real need.
 - **Real recipes for testing:** the household's recipes are files in `seed-recipes/`, so suggestion
   rules are checked against them directly (no export step needed).
 - **Week plans:** one row per week, named by its Monday, in Stockholm time.
@@ -131,6 +131,41 @@ the repo, then check it for real on the Vercel preview deployment.
   - A new week starts from the previous week's setup, without its "ingredients to use".
   - Time per evening: Quick ≤ 25 min, Normal ≤ 45 min, Relaxed no limit (total recipe time).
   - Two phones editing the same week at the same moment: the last save wins.
+- **Suggestion rules** (`src/lib/plan/suggest.ts`). Each candidate recipe gets points for reasons;
+  the highest total comes first. The reasons shown on a card are exactly the ones that scored, so
+  there is nothing hidden. Points are a first guess, to be tuned after a few real weeks.
+
+  | Reason | Points |
+  |---|---|
+  | Shares a make-ahead task with a chosen dish (same name, ignoring case, "the/a" and punctuation; at most 2) | +30 each |
+  | Uses the rest of a part-used item ("the other half of the pomegranate") | +20 |
+  | A fresh ingredient in a real amount that a chosen dish also uses (at most 3) | +8 each |
+  | Uses something from "ingredients to use up" (at most 2) | +25 each |
+  | Fits a Quick evening that is still open | +10 |
+  | Good as leftovers, while lunch boxes still need covering | +10 |
+  | A favourite | +6 |
+  | A cuisine the week doesn't have yet | +6 |
+  | Same cuisine **and** same main protein as a chosen dish | −40 |
+  | Same cuisine as a chosen dish (per dish) | −8 each |
+  | Same main protein as a chosen dish | −10 |
+  | Illustrative template recipe | −5 |
+
+  - "Real amount": 30 g / 30 ml or more, or half a countable item or more; teaspoons and
+    tablespoons never count. Fresh herbs always count (a bunch goes off fast).
+  - Staples (salt, oil, onion, garlic, dried spices) and cupboard goods (rice, pasta, tins, jars,
+    sauces) never count as shared ingredients. "Chicken stock" doesn't match "chicken".
+  - Never suggested: recipes with seafood, recipes already in the week, recipes marked "Not this
+    one", and recipes that don't fit any open evening's time.
+  - "May contain fish" and "Needs a Relaxed evening" are shown as notes, not points.
+  - The shortlist shows three, avoiding two of the same cuisine where possible. Ties are broken by
+    a fixed shuffle per week, so the order doesn't jump around on reload.
+  - A new dish goes to the tightest open evening it fits (a quick dish takes a Quick evening first).
+    Moving a dish onto a taken evening swaps the two.
+- **"Not this one"** lasts until the page is left. It isn't saved, so a dismissed recipe can
+  come back next visit. Saving it is cheap to add if it proves annoying.
+- **Time to choose** is measured from the first saved dish to the last one added, and shown only
+  if it was one sitting (under two hours). It's the check for the brief's "agree on the week in
+  10–15 minutes".
 
 ## Product decisions
 
