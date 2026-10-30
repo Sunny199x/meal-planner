@@ -4,11 +4,11 @@ import "@fontsource-variable/inter-tight";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Meal Planner",
+  title: "Forkcast",
   description: "Turn our recipe collection into a weekly dinner plan.",
   // A private household app: keep the sign-in page out of search engines.
   robots: { index: false, follow: false },
-  appleWebApp: { title: "Meals", statusBarStyle: "default" },
+  appleWebApp: { title: "Forkcast", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

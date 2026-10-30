@@ -410,6 +410,10 @@ replaces the brief's "warm" look:
 - **Status colours:** green for good things, soft yellow for hints, red for warnings.
 - **Logo, "Grin":** a bowl of soup as a smiling mouth, with two wisps of steam as the eyes. It is
   white on black, so it doesn't compete with the page colours.
+- **Name: Forkcast** (Saketh, 30 October 2026), replacing "Meal Planner" everywhere the household
+  sees it: the browser tab, the home-screen name, the menu and the sign-in page. The code, the
+  GitHub repository and the Vercel project keep the name `meal-planner`; renaming those changes
+  addresses and connections for no visible gain.
 - **Colours are named for what they do** in `src/app/globals.css`: `soft`, `paper`, `ink`, `muted`,
   `line`, `accent`, `good`, `note`, `danger`, plus the four page colours. Pages use them as
   classes such as `bg-soft` or `text-recipes`.
