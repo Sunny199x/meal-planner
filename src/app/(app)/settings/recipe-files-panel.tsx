@@ -23,7 +23,7 @@ export function RecipeFilesPanel() {
         <button
           type="submit"
           disabled={busy}
-          className="rounded-xl bg-terracotta px-4 py-3 font-medium text-white hover:bg-terracotta-dark disabled:opacity-60"
+          className="rounded-full bg-accent px-4 py-3 font-medium text-white hover:bg-accent-dark disabled:opacity-60"
         >
           {loading ? "Loading…" : "Load recipes from files"}
         </button>
@@ -42,7 +42,7 @@ export function RecipeFilesPanel() {
             name="confirm"
             autoComplete="off"
             autoCapitalize="characters"
-            className="mt-1 block w-full max-w-xs rounded-xl border border-line bg-cream px-3 py-2 text-base"
+            className="mt-1 block w-full max-w-xs rounded-xl border border-line bg-soft px-3 py-2 text-base"
           />
         </label>
         <button
@@ -77,9 +77,9 @@ const STATUS_LABEL: Record<FileReport["status"], string> = {
 };
 
 const STATUS_STYLE: Record<FileReport["status"], string> = {
-  added: "bg-sage-light text-sage",
-  updated: "bg-sage-light text-sage",
-  "skipped-edited": "bg-saffron-light text-ink",
+  added: "bg-good-light text-good",
+  updated: "bg-good-light text-good",
+  "skipped-edited": "bg-note-light text-ink",
   "not-loaded": "bg-danger-light text-danger",
 };
 
@@ -89,7 +89,7 @@ function Report({ report }: { report: LoadReport }) {
   const loaded = counts("added") + counts("updated");
 
   return (
-    <div className="space-y-3 rounded-xl border border-line bg-cream p-4 text-sm" aria-live="polite">
+    <div className="space-y-3 rounded-xl border border-line bg-soft p-4 text-sm" aria-live="polite">
       <p className="font-medium">
         Loaded {loaded} of {report.files.length} {report.files.length === 1 ? "file" : "files"}:{" "}
         {counts("added")} new, {counts("updated")} updated.

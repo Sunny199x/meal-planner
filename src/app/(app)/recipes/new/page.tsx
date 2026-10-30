@@ -11,7 +11,7 @@ import { getFormSuggestions } from "@/lib/recipes/queries";
 export default function NewRecipePage() {
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-3xl font-semibold">Add a recipe</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-recipes">Add a recipe</h1>
       <div className="space-y-2 rounded-xl border border-line bg-paper px-4 py-3 text-sm text-muted">
         <p>
           Type or paste the recipe below. For a recipe from a website, an Instagram post or a YouTube video,
@@ -24,7 +24,7 @@ export default function NewRecipePage() {
         </p>
         <p>
           Have the recipe as text, in any language? Use{" "}
-          <Link href="/recipes/import" className="text-terracotta underline">
+          <Link href="/recipes/import" className="text-accent underline">
             Import
           </Link>{" "}
           instead: Claude reads it and fills in this form for you to check.

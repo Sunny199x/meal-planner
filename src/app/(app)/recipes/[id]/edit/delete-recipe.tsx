@@ -11,7 +11,7 @@ export function DeleteRecipe({ id, title, fromFile }: { id: string; title: strin
 
   return (
     <section className="space-y-3 rounded-2xl border border-danger/40 bg-paper p-5">
-      <h2 className="font-display text-xl font-semibold">Delete recipe</h2>
+      <h2 className="font-display text-xl font-extrabold tracking-tight">Delete recipe</h2>
       {fromFile && (
         <p className="text-sm text-muted">
           This recipe comes from <code>seed-recipes/{fromFile}.md</code>. It will come back the next time you

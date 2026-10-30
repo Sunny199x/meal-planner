@@ -33,12 +33,12 @@ async function EditRecipe({ params }: Pick<PageProps<"/recipes/[id]/edit">, "par
 
   return (
     <>
-      <Link href={`/recipes/${recipe.id}`} className="text-sm text-terracotta hover:underline">
+      <Link href={`/recipes/${recipe.id}`} className="text-sm text-accent hover:underline">
         ← Back to the recipe
       </Link>
-      <h1 className="font-display text-3xl font-semibold">Edit recipe</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-recipes">Edit recipe</h1>
       {recipe.origin === "file" && (
-        <p className="rounded-xl bg-saffron-light px-4 py-3 text-sm">
+        <p className="rounded-xl bg-note-light px-4 py-3 text-sm">
           This recipe comes from the file <code>seed-recipes/{recipe.fileSlug}.md</code>.{" "}
           {recipe.editedInApp
             ? "It has been edited in the app, so loading recipes from files no longer changes it."

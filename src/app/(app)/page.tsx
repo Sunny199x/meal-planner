@@ -12,7 +12,7 @@ import { GroceryList } from "./grocery-list";
 export default function GroceriesPage() {
   return (
     <div className="space-y-4">
-      <h1 className="font-display text-3xl font-semibold">Grocery list</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-groceries">Grocery list</h1>
       <Suspense fallback={<p className="text-muted">Loading the list…</p>}>
         <Groceries />
       </Suspense>

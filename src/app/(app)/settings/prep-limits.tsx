@@ -81,7 +81,7 @@ export function PrepLimits({ rows }: { rows: PrepLimitRow[] }) {
                 aria-label={`How far ahead: ${row.name}`}
                 value={value !== undefined && choices.includes(value) ? value : ""}
                 onChange={(e) => choose(row, e.target.value)}
-                className="rounded-xl border border-line bg-cream px-2 py-1 text-sm"
+                className="rounded-xl border border-line bg-soft px-2 py-1 text-sm"
               >
                 <option value="">{guidance ? `Guidance: ${guidance.days} ${guidance.days === 1 ? "day" : "days"}` : "On the day"}</option>
                 {choices.map((days) => (

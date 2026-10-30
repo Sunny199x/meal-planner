@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
 const CHIP_STYLES = {
-  neutral: "border border-line bg-cream text-ink",
-  good: "bg-sage-light text-sage",
-  warn: "bg-saffron-light text-ink",
+  neutral: "border border-line bg-soft text-ink",
+  good: "bg-good-light text-good",
+  warn: "bg-note-light text-ink",
   danger: "bg-danger-light text-danger",
 } as const;
 
@@ -21,14 +21,14 @@ export function Chip({
   );
 }
 
-// Warm tile colours; a cuisine always gets the same one.
+// Earthy tile colours, the same family as the page colours; a cuisine always gets the same one.
 const TILE_COLOURS = [
-  ["#f1dcc8", "#8a4a22"],
-  ["#dfe8da", "#3f5a3b"],
-  ["#f6e4bf", "#7a5410"],
-  ["#ecd0c4", "#8c3b26"],
-  ["#e4dcec", "#5a4370"],
-  ["#d9e4e6", "#35585e"],
+  ["#e3efe5", "#166534"],
+  ["#efe4ec", "#6b3a5b"],
+  ["#e1ecec", "#2f5d62"],
+  ["#f3ecd9", "#8a6a1f"],
+  ["#e9e9ec", "#3f3f46"],
+  ["#ece6df", "#6b5440"],
 ];
 
 const TILE_SIZES = { sm: "h-12 w-12 text-xl", md: "h-16 w-16 text-3xl", lg: "h-20 w-20 text-4xl" } as const;
@@ -56,7 +56,7 @@ export function RecipeTile({
   return (
     <div
       aria-hidden
-      className={`flex shrink-0 items-center justify-center rounded-xl font-display font-semibold ${dimensions}`}
+      className={`flex shrink-0 items-center justify-center rounded-xl font-display font-extrabold tracking-tight ${dimensions}`}
       style={{ background, color: colour }}
     >
       {title.trim().charAt(0).toUpperCase()}

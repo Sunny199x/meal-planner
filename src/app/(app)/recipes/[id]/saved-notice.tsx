@@ -21,7 +21,7 @@ export function SavedNotice() {
 
   if (!shown) return null;
   return (
-    <p role="status" className="rounded-xl bg-sage-light px-4 py-3 text-sm font-medium text-sage">
+    <p role="status" className="rounded-xl bg-good-light px-4 py-3 text-sm font-medium text-good">
       ✓ Saved
     </p>
   );

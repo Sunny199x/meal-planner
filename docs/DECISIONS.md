@@ -393,6 +393,27 @@ and a change in one should show in the other.
   tasks the guidance doesn't cover default to "on the day" until the household sets them. The app
   never makes up storage times. (Built as above; the limits ended up from the UK agency.)
 
+## Look and feel (30 October 2026)
+
+The first look (cream background, terracotta orange, serif headings) felt "very Claude-y" to
+Saketh. He compared four directions rendered side by side and chose the fourth, "D", which
+replaces the brief's "warm" look:
+
+- **Modern and minimal:** black and white with grey for quiet details. Headings are extra bold in
+  Inter Tight; text is Inter. The main buttons are black pills.
+- **Cards:** a light grey page with white rounded cards, thin lines and no shadows.
+- **A colour per part of the app,** earthy, for the page title and the menu underline:
+  - Groceries: forest green `#166534`
+  - Recipes: aubergine `#6b3a5b`
+  - Week: deep teal `#2f5d62`
+  - Settings: ochre `#8a6a1f`
+- **Status colours:** green for good things, soft yellow for hints, red for warnings.
+- **Logo, "Grin":** a bowl of soup as a smiling mouth, with two wisps of steam as the eyes. It is
+  white on black, so it doesn't compete with the page colours.
+- **Colours are named for what they do** in `src/app/globals.css`: `soft`, `paper`, `ink`, `muted`,
+  `line`, `accent`, `good`, `note`, `danger`, plus the four page colours. Pages use them as
+  classes such as `bg-soft` or `text-recipes`.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

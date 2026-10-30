@@ -12,7 +12,7 @@ export function BackToRecipes() {
     () => "/recipes",
   );
   return (
-    <Link href={href} className="text-sm text-terracotta hover:underline">
+    <Link href={href} className="text-sm text-accent hover:underline">
       ← Back to recipes
     </Link>
   );

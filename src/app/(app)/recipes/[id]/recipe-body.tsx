@@ -26,7 +26,7 @@ export function RecipeBody({
   const [portions, setPortions] = useState(initialPortions);
   const factor = portions / servings;
   const change = (by: number) => setPortions((p) => Math.min(MAX_PORTIONS, Math.max(MIN_PORTIONS, p + by)));
-  const stepButton = "flex h-8 w-8 items-center justify-center rounded-full border border-line text-lg hover:border-terracotta/50 disabled:opacity-40";
+  const stepButton = "flex h-8 w-8 items-center justify-center rounded-full border border-line text-lg hover:border-accent/50 disabled:opacity-40";
 
   return (
     <div className="grid gap-5 lg:grid-cols-[2fr_3fr]">
@@ -46,7 +46,7 @@ export function RecipeBody({
           {portions === servings ? (
             <span className="text-muted">as the recipe is written</span>
           ) : (
-            <button type="button" onClick={() => setPortions(servings)} className="text-terracotta underline">
+            <button type="button" onClick={() => setPortions(servings)} className="text-accent underline">
               Back to {servings} (the recipe)
             </button>
           )}
@@ -65,7 +65,7 @@ export function RecipeBody({
           <ol className="space-y-3">
             {instructions.map((step, i) => (
               <li key={i} className="flex gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cream text-sm font-semibold text-terracotta-dark">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-soft text-sm font-semibold text-accent-dark">
                   {i + 1}
                 </span>
                 <span className="pt-0.5">
@@ -73,7 +73,7 @@ export function RecipeBody({
                     typeof part === "string" ? (
                       part
                     ) : (
-                      <mark key={j} title={`${part.original} in the recipe`} className="rounded bg-saffron-light px-0.5 text-ink">
+                      <mark key={j} title={`${part.original} in the recipe`} className="rounded bg-note-light px-0.5 text-ink">
                         {part.text}
                       </mark>
                     ),
@@ -92,8 +92,8 @@ export function RecipeBody({
 
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line bg-paper p-5 shadow-sm">
-      <h2 className="mb-3 font-display text-xl font-semibold">{title}</h2>
+    <section className="rounded-2xl border border-line bg-paper p-5">
+      <h2 className="mb-3 font-display text-xl font-extrabold tracking-tight">{title}</h2>
       {children}
     </section>
   );

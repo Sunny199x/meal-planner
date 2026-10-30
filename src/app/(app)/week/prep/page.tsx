@@ -44,7 +44,7 @@ async function Prep({ searchParams }: Pick<PageProps<"/week/prep">, "searchParam
       {!plan || plan.dishes.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-line p-5 text-muted">
           The prep list is made from the week&apos;s dinners.{" "}
-          <Link href={`/week?week=${weekStart}`} className="text-terracotta underline">
+          <Link href={`/week?week=${weekStart}`} className="text-accent underline">
             {plan ? "Choose the dinners first" : "Set up the week and choose the dinners first"}
           </Link>
           .

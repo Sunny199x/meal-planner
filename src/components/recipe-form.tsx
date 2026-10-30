@@ -23,7 +23,7 @@ type Props = {
 };
 
 const inputClass =
-  "mt-1 block w-full rounded-xl border border-line bg-cream px-3 py-2 text-base outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/30";
+  "mt-1 block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/30";
 
 export function RecipeForm({
   initial,
@@ -154,7 +154,7 @@ export function RecipeForm({
               <label
                 key={diet}
                 className={`cursor-pointer rounded-full border px-4 py-2 text-sm capitalize ${
-                  values.diet === diet ? "border-terracotta bg-terracotta text-white" : "border-line"
+                  values.diet === diet ? "border-accent bg-accent text-white" : "border-line"
                 }`}
               >
                 <input
@@ -213,7 +213,7 @@ export function RecipeForm({
         {ingredients.length > 0 && (
           <div>
             <p className="text-sm font-medium">How the app reads them</p>
-            <ul className="mt-1 divide-y divide-line rounded-xl border border-line bg-cream text-sm">
+            <ul className="mt-1 divide-y divide-line rounded-xl border border-line bg-soft text-sm">
               {ingredients.map((item, i) => (
                 <li key={i} className="px-3 py-2">
                   {item.group && (i === 0 || ingredients[i - 1].group !== item.group) && (
@@ -256,7 +256,7 @@ export function RecipeForm({
           <textarea {...text("makeAhead")} rows={4} className={inputClass} />
         </Field>
         {notYetAdded.length > 0 && (
-          <div className="rounded-xl bg-sage-light px-3 py-2">
+          <div className="rounded-xl bg-good-light px-3 py-2">
             <p className="text-sm">
               Suggested for this recipe: your other recipes already share these, so the same name lets them share a
               batch (tap to add):
@@ -267,7 +267,7 @@ export function RecipeForm({
                   key={task.name}
                   type="button"
                   onClick={() => addTaskLine(`${task.name}: ${task.description}`)}
-                  className="rounded-full border border-sage/40 bg-paper px-3 py-1 text-sm hover:border-sage"
+                  className="rounded-full border border-good/40 bg-paper px-3 py-1 text-sm hover:border-good"
                 >
                   + {task.name}
                 </button>
@@ -284,7 +284,7 @@ export function RecipeForm({
                   key={name}
                   type="button"
                   onClick={() => addPrepName(name)}
-                  className="rounded-full border border-line px-3 py-1 text-sm hover:border-sage"
+                  className="rounded-full border border-line px-3 py-1 text-sm hover:border-good"
                 >
                   + {name}
                 </button>
@@ -320,7 +320,7 @@ export function RecipeForm({
           <button
             type="submit"
             disabled={saving || leaving}
-            className="rounded-xl bg-terracotta px-5 py-3 font-medium text-white hover:bg-terracotta-dark disabled:opacity-60"
+            className="rounded-full bg-accent px-5 py-3 font-medium text-white hover:bg-accent-dark disabled:opacity-60"
           >
             {saving ? "Saving…" : leaving ? "Saved, opening…" : submitLabel}
           </button>
@@ -340,8 +340,8 @@ function isMeasuredUnit(unit: string | null): boolean {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="space-y-4 rounded-2xl border border-line bg-paper p-5 shadow-sm">
-      <h2 className="font-display text-xl font-semibold">{title}</h2>
+    <section className="space-y-4 rounded-2xl border border-line bg-paper p-5">
+      <h2 className="font-display text-xl font-extrabold tracking-tight">{title}</h2>
       {children}
     </section>
   );
@@ -400,7 +400,7 @@ function Checkbox({
         name={name}
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-1 h-5 w-5 accent-terracotta"
+        className="mt-1 h-5 w-5 accent-ink"
       />
       <span>
         <span className="block font-medium">{label}</span>

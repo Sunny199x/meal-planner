@@ -39,7 +39,7 @@ export function PhotoControls({ recipeId, hasPhoto }: { recipeId: string; hasPho
     } else window.location.reload();
   }
 
-  const pill = "rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50";
+  const pill = "rounded-full border border-line px-3 py-1 text-sm hover:border-accent/50";
   return (
     <>
       {busy ? (
