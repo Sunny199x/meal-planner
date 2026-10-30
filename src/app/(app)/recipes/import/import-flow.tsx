@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { RecipeForm } from "@/components/recipe-form";
 import { fetchPhotoAction, readRecipeAction } from "@/lib/import/actions";
 import type { Normalised } from "@/lib/import/normalise";
+import { MAX_READ_PHOTOS } from "@/lib/import/photo-limits";
 import { setRecipePhotoAction } from "@/lib/recipes/actions";
 import { createRecipeAction } from "@/lib/recipes/form-actions";
-import { shrinkPhoto } from "@/lib/recipes/shrink-photo";
+import { READING_LONG_SIDE, shrinkPhoto } from "@/lib/recipes/shrink-photo";
 import { describeSourceLink } from "@/lib/recipes/source-link";
 
 const inputClass =
@@ -18,10 +19,13 @@ const LINK_HINTS = {
     "The app reads the video's description, where most cooking videos write the recipe. If the recipe is only said out loud, paste or type it below.",
   youtubeNoKey:
     "Paste the video's description below. (Reading it automatically needs a YouTube key in Vercel, which isn't set up yet.)",
-  instagram: "The app can't read Instagram posts yet: copy the caption and paste it below.",
+  instagram: "The app can't read Instagram posts yet: copy the caption and paste it below, or add screenshots of the post.",
+  withPhotos: "With photos, the recipe is read from the photos (and any text below); the link is kept as the source.",
 } as const;
 
 type Reading = { normalised: Normalised; language: string; photo: string | null };
+/** A photo of the recipe, shrunk on the phone, with a preview address. */
+type RecipePhoto = { id: number; blob: Blob; url: string };
 
 /** The imported photo is fetched by the server, shrunk on the phone and saved with the new recipe. */
 async function attachPhoto(savedPath: string, photo: string, link: string) {
@@ -62,13 +66,54 @@ export function ImportFlow({
   const [keepPhoto, setKeepPhoto] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, startReading] = useTransition();
+  const [photos, setPhotos] = useState<RecipePhoto[]>([]);
+  const [preparing, setPreparing] = useState(0);
+  const nextPhotoId = useRef(0);
   const kind = link.trim() ? (describeSourceLink(link.trim())?.kind ?? null) : null;
+
+  // Previews are freed when the page is left.
+  const previews = useRef(new Set<string>());
+  useEffect(() => {
+    const urls = previews.current;
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, []);
+
+  async function addPhotos(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = [...(event.target.files ?? [])].slice(0, MAX_READ_PHOTOS - photos.length - preparing);
+    event.target.value = "";
+    if (files.length === 0) return;
+    setError(null);
+    setPreparing((n) => n + files.length);
+    for (const file of files) {
+      try {
+        const blob = await shrinkPhoto(file, READING_LONG_SIDE);
+        const photo = { id: nextPhotoId.current++, blob, url: URL.createObjectURL(blob) };
+        previews.current.add(photo.url);
+        setPhotos((current) => [...current, photo]);
+      } catch (problem) {
+        setError(problem instanceof Error ? problem.message : "That photo couldn't be used.");
+      } finally {
+        setPreparing((n) => n - 1);
+      }
+    }
+  }
+
+  function removePhoto(photo: RecipePhoto) {
+    URL.revokeObjectURL(photo.url);
+    previews.current.delete(photo.url);
+    setPhotos((current) => current.filter((p) => p.id !== photo.id));
+  }
 
   function read(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
+    const form = new FormData();
+    form.set("link", link);
+    form.set("text", text);
+    form.set("from", from);
+    photos.forEach((p, i) => form.append("photos", p.blob, `photo-${i + 1}.jpg`));
     startReading(async () => {
-      const answer = await readRecipeAction(link, text, from);
+      const answer = await readRecipeAction(form);
       if (answer.normalised && answer.language) {
         setReading({ normalised: answer.normalised, language: answer.language, photo: answer.photo ?? null });
         setKeepPhoto(true);
@@ -95,6 +140,19 @@ export function ImportFlow({
               Start again
             </button>
           </div>
+          {photos.length > 0 && (
+            <div>
+              <p className="font-medium">Your photos, to compare (tap to enlarge):</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {photos.map((p, i) => (
+                  <a key={p.id} href={p.url} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- a local preview of the phone's own photo */}
+                    <img src={p.url} alt={`Photo ${i + 1}`} className="h-20 w-16 rounded-lg border border-line object-cover" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           {photo && (
             <label className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element -- a preview of the source's own photo */}
@@ -159,10 +217,9 @@ export function ImportFlow({
   return (
     <form onSubmit={read} className="space-y-4">
       <p className="rounded-xl border border-line bg-paper px-4 py-3 text-sm text-muted">
-        Paste a link to a recipe website, YouTube video or Instagram post, or paste the recipe text itself (from a
-        website, a caption, a video description, or the text of a photo via iPhone Live Text or Google Lens). Any
-        language works: Claude reads it and writes it out in English with metric units, then you check it before
-        saving. Each recipe costs about 1–3 öre.
+        Paste a link to a recipe website, YouTube video or Instagram post, paste the recipe text itself, or add
+        photos of a cookbook page, a handwritten recipe or screenshots. Any language works: Claude reads it and writes
+        it out in English with metric units, then you check it before saving. Each recipe costs about 1–3 öre.
       </p>
       {!ready && (
         <p role="alert" className="rounded-xl bg-danger-light px-4 py-3 text-sm text-danger">
@@ -182,14 +239,52 @@ export function ImportFlow({
         />
         {kind && (
           <span className="mt-1 block text-sm text-muted">
-            {LINK_HINTS[kind === "youtube" && !youtube ? "youtubeNoKey" : kind]}
+            {LINK_HINTS[photos.length ? "withPhotos" : kind === "youtube" && !youtube ? "youtubeNoKey" : kind]}
           </span>
         )}
       </label>
+      <div>
+        <p>
+          <span className="font-medium">Photos</span>{" "}
+          <span className="text-sm text-muted">(optional, up to {MAX_READ_PHOTOS})</span>
+        </p>
+        <p className="text-sm text-muted">
+          A cookbook page, a handwritten recipe or screenshots, in order. Keep the whole recipe in view and the text
+          sharp.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-3">
+          {photos.map((p, i) => (
+            <div key={p.id} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element -- a local preview of the phone's own photo */}
+              <img src={p.url} alt={`Photo ${i + 1}`} className="h-24 w-20 rounded-lg border border-line object-cover" />
+              <button
+                type="button"
+                onClick={() => removePhoto(p)}
+                aria-label={`Remove photo ${i + 1}`}
+                className="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-sm text-paper"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          {preparing > 0 && (
+            <div className="flex h-24 w-20 items-center justify-center rounded-lg border border-line text-center text-xs text-muted">
+              Preparing…
+            </div>
+          )}
+          {photos.length + preparing < MAX_READ_PHOTOS && (
+            <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink">
+              <span className="text-2xl leading-none">+</span>
+              Take or choose
+              <input type="file" accept="image/*" multiple onChange={addPhotos} className="sr-only" />
+            </label>
+          )}
+        </div>
+      </div>
       <label className="block">
         <span className="font-medium">Recipe text</span>{" "}
         <span className="text-sm text-muted">
-          {kind === "website" || (kind === "youtube" && youtube) ? "(optional with this link)" : ""}
+          {photos.length ? "(optional with photos)" : kind === "website" || (kind === "youtube" && youtube) ? "(optional with this link)" : ""}
         </span>
         <textarea
           value={text}
@@ -224,7 +319,7 @@ export function ImportFlow({
       )}
       <button
         type="submit"
-        disabled={busy || (!text.trim() && !link.trim())}
+        disabled={busy || preparing > 0 || (!text.trim() && !link.trim() && photos.length === 0)}
         className="rounded-xl bg-terracotta px-5 py-3 font-medium text-white hover:bg-terracotta-dark disabled:opacity-50"
       >
         {busy ? "Reading the recipe… (a few seconds)" : "Read recipe"}

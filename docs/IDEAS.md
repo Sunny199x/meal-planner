@@ -112,8 +112,9 @@ as written.
 
 ## Noticed while building milestone 4 (Open)
 
-- **Instagram links on their own:** today the caption has to be pasted. Instagram's official
-  access needs a Meta developer app and is mainly for business accounts, so it needs a closer look.
+- **Instagram links on their own:** today the caption has to be pasted, or screenshots of the post
+  added as photos. Instagram's official access needs a Meta developer app and is mainly for
+  business accounts, so it needs a closer look.
   Saketh: "let's see how we can fix it later" (29 October 2026).
 
 - **Remember corrections from the review screen:** if Claude keeps translating a word the same
@@ -136,8 +137,8 @@ Small things that may or may not matter once the app is used for real weeks:
 
 ## Parked earlier (decided "later")
 
-- **Reading photos with the Claude API** (about $0.04–0.05 per photo, needs an Anthropic API key).
-  Only if the free "paste recipe text" import (milestone 4) shows a real need.
+- **Reading photos with the Claude API:** done in milestone 4 (30 October 2026), up to 4 photos per
+  recipe, at about the same cost as a text import.
 - **Remember "Not this one"** for the week, instead of forgetting it when you leave the Week tab.
 - **Named collections** beyond favourites and tags.
 - **TikTok links:** not used in the household.

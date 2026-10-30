@@ -50,8 +50,9 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
   passcode like everything else.
 - **Importing a recipe** (Recipes → Import): paste a link to a recipe website (read from the page
   directly), a YouTube link (its description is read automatically once `YOUTUBE_API_KEY` is set;
-  until then, paste the description), an Instagram link plus its caption, or any recipe text, in
-  any language. The website's or video's photo can come along. Claude reads it and writes it
+  until then, paste the description), an Instagram link plus its caption, any recipe text, or up
+  to 4 photos (a cookbook page, a handwritten recipe, screenshots of a post), in any language. The
+  website's or video's photo can come along. Claude reads it and writes it
   in English with metric units (about 1–3 öre per recipe); the app's own rules then match units,
   names, cuisine and make-ahead tasks to the household's recipes. You check everything in the
   normal recipe form before saving. Needs `ANTHROPIC_API_KEY` in Vercel.
@@ -113,7 +114,8 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 ## Not built yet (and labelled in the app where it shows)
 
 - Saved meal combinations and past weeks ("repeat a past week"): milestone 5.
-- Instagram posts can't be read by the app yet: the caption is pasted (see `docs/IDEAS.md`).
+- Instagram posts can't be read by the app yet: the caption is pasted, or screenshots of the post
+  are added as photos (see `docs/IDEAS.md`).
 - YouTube recipes that are only said out loud in the video, not written in its description.
 - TikTok: not supported (not used).
 - Named collections beyond favourites and tags.
@@ -159,6 +161,9 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
   October the page reader found the recipe and photo on real pages from BBC Good Food,
   HelloFresh.se, RecipeTin Eats, Jamie Oliver and NYT Cooking. Allrecipes, Serious Eats and ICA.se
   refused to send their pages to a test session, and may do the same to the app; paste those.
+- **Photo import** was tested with a stand-in for Claude, not yet with real photos read by Claude.
+  Blurry photos and messy handwriting can be misread; parts Claude can't make out are marked "?"
+  and listed on the review screen. The photos aren't kept.
 - **The three template recipes** are illustrative and untested. Delete their files once real
   recipes are in, then press *Load recipes from files*.
 
@@ -171,6 +176,7 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 5. Tap **Recipes** → **Import**, paste a link to a recipe website (or a recipe in any language) and
    tap **Read recipe**. Check the "Check before saving" box, tick "Good as leftovers" if it is, and
    save. Then add a photo on the recipe page with **Add photo** (or keep the website's photo).
+   Try a cookbook page too: **Take or choose** under *Photos*, then **Read recipe**.
 
 ### Choosing a week together (about 10 minutes, the real test)
 

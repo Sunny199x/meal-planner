@@ -224,6 +224,10 @@ export function normalise(draft: ImportDraft, household: Household): Normalised 
   const parsed = ingredients.map((i) => parseIngredientLine(i.line));
   const unread = parsed.filter((p) => p.problems.length > 0).map((p) => p.line);
   if (unread.length) check.push(`These lines couldn't be fully read: ${unread.map((l) => `“${l}”`).join(", ")}.`);
+  // Claude writes "?" for what it couldn't make out in a photo, instead of guessing.
+  const short = (text: string) => (text.length > 60 ? `${text.slice(0, 60)}…` : text);
+  const unclear = [...ingredients.map((i) => i.line), ...instructions].filter((text) => /(^|\s)\?(\s|$)/.test(text));
+  if (unclear.length) check.push(`Fill in the parts marked “?”, which couldn't be read: ${unclear.map((t) => `“${short(t)}”`).join(", ")}.`);
 
   // Cuisine: the household's spelling where it's the same cuisine.
   let cuisine = draft.cuisine?.trim() ?? "";

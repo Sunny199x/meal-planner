@@ -6,6 +6,7 @@ import { getImportHousehold } from "../recipes/queries";
 import { normalise, type Household, type Normalised } from "./normalise";
 import { photoType } from "../recipes/photos";
 import { fetchPublic } from "./fetch-page";
+import { readPhotos } from "./read-photos";
 import { readWithClaude } from "./read-with-claude";
 import { NO_RECIPE_IN_VIDEO, prepareImport } from "./sources";
 import { fakeClaude } from "./test-reader";
@@ -23,11 +24,13 @@ export async function readerReady(): Promise<boolean> {
 }
 
 /**
- * Reads a recipe from a link, pasted text or both (see sources.ts) with Claude,
- * then runs the normalising layer for the review screen.
+ * Reads a recipe from a link, pasted text, photos or a mix (see sources.ts) with
+ * Claude, then runs the normalising layer for the review screen. The form has
+ * `link`, `text`, `from` and up to four `photos`, shrunk on the phone.
  */
-export async function readRecipeAction(link: string, text: string, from: string): Promise<ImportResult> {
+export async function readRecipeAction(form: FormData): Promise<ImportResult> {
   await requireSignedIn();
+  const [link, text, from] = ["link", "text", "from"].map((key) => form.get(key) ?? "");
   if (typeof link !== "string" || typeof text !== "string" || typeof from !== "string") {
     return { error: "Something wasn't valid. Please reload and try again." };
   }
@@ -36,10 +39,12 @@ export async function readRecipeAction(link: string, text: string, from: string)
       error: "Reading recipes needs an Anthropic API key. Add ANTHROPIC_API_KEY in Vercel's environment variables, then try again.",
     };
   }
-  const prepared = await prepareImport(link, text, from);
+  const checked = await readPhotos(form.getAll("photos"));
+  if ("error" in checked) return { error: checked.error };
+  const prepared = await prepareImport(link, text, from, checked.photos.length);
   if ("error" in prepared) return { error: prepared.error };
   const testing = process.env.IMPORT_TEST_READER === "1";
-  const result = await readWithClaude(prepared.text, prepared.source, testing ? fakeClaude() : undefined);
+  const result = await readWithClaude(prepared.text, prepared.source, testing ? fakeClaude() : undefined, checked.photos);
   if ("error" in result) {
     return { error: result.notARecipe && prepared.fromVideoDescription ? NO_RECIPE_IN_VIDEO : result.error };
   }

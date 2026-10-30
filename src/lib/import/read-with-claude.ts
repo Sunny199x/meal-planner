@@ -1,11 +1,12 @@
-// Reads a recipe from text in any language with Claude, which returns it in the
-// app's format: English, metric units, one ingredient per line. Server-side only
+// Reads a recipe from text or photos in any language with Claude, which returns it
+// in the app's format: English, metric units, one ingredient per line. Server-side only
 // (it needs ANTHROPIC_API_KEY). The suggestion rules never use Claude; this only
 // reads recipes, and the review screen says so.
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { ImportDraft } from "./normalise";
+import type { ReadPhoto } from "./read-photos";
 
 /** The cheapest current model, chosen by Saketh for reading and translating recipes. */
 export const READER_MODEL = "claude-haiku-5-5";
@@ -39,16 +40,35 @@ const INSTRUCTIONS = `You read one recipe and write it out for a household's rec
 - Do not add storage times, food-safety advice or nutrition figures.
 - List in "seafood" every fish or shellfish ingredient, including fish sauce and shrimp paste, as written in the original.
 - Put anything you were unsure about in "checks", briefly.
+- The recipe may come as photos: cookbook pages, a handwritten card or screenshots, in order. Read only what you can see. If an amount, unit or word can't be read clearly, don't guess: put "?" in its place (for example "? g plain flour") and say in "checks" what was unclear. If the photos show more than one recipe, read the main one and say in "checks" that there was another.
 - If the text isn't a recipe, set "isRecipe" to false and leave the other fields empty.`;
 
 export type ReadResult = { draft: ImportDraft; language: string } | { error: string; notARecipe?: true };
 
+/** `photos` (cookbook pages, a handwritten card, screenshots) are read before the text, in order. */
 export async function readWithClaude(
   text: string,
   source: { name: string; url: string | null },
   client: Pick<Anthropic, "messages"> = new Anthropic(),
+  photos: ReadPhoto[] = [],
 ): Promise<ReadResult> {
   if (text.length > MAX_RECIPE_TEXT) return { error: "That text is too long for one recipe. Paste just the recipe." };
+  const about = `Source: ${source.name}${source.url ? ` (${source.url})` : ""}`;
+  const content: string | Anthropic.ContentBlockParam[] =
+    photos.length === 0
+      ? `${about}\n\nRecipe text:\n${text}`
+      : [
+          ...photos.map((photo) => ({
+            type: "image" as const,
+            source: { type: "base64" as const, media_type: photo.type, data: photo.base64 },
+          })),
+          {
+            type: "text" as const,
+            text: `${about}\n\nThe recipe is in the ${photos.length === 1 ? "photo" : `${photos.length} photos`} above${
+              text ? `, with this text:\n${text}` : "."
+            }`,
+          },
+        ];
   let response;
   try {
     response = await client.messages.parse({
@@ -56,21 +76,24 @@ export async function readWithClaude(
       max_tokens: 16000,
       system: INSTRUCTIONS,
       output_config: { effort: "low", format: zodOutputFormat(ReadRecipe) },
-      messages: [
-        {
-          role: "user",
-          content: `Source: ${source.name}${source.url ? ` (${source.url})` : ""}\n\nRecipe text:\n${text}`,
-        },
-      ],
+      messages: [{ role: "user", content }],
     });
   } catch (error) {
     return { error: describeClaudeError(error) };
   }
-  if (response.stop_reason === "refusal") return { error: "Claude declined to read this text." };
+  const what = photos.length ? "these photos" : "this text";
+  if (response.stop_reason === "refusal") return { error: `Claude declined to read ${what}.` };
   if (response.stop_reason === "max_tokens") return { error: "The recipe was too long to read in one go." };
   const read = response.parsed_output;
   if (!read) return { error: "Claude's answer couldn't be read. Please try again." };
-  if (!read.isRecipe) return { error: "That doesn't look like a recipe. Paste the ingredients and steps.", notARecipe: true };
+  if (!read.isRecipe) {
+    return {
+      error: photos.length
+        ? "Couldn't find a recipe in the photos. Try a sharper photo of the whole recipe, or paste the text."
+        : "That doesn't look like a recipe. Paste the ingredients and steps.",
+      notARecipe: true,
+    };
+  }
   return { draft: toDraft(read, source), language: read.language };
 }
 

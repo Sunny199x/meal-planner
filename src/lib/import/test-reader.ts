@@ -33,9 +33,18 @@ export const SAMPLE_READING: ReadRecipe = {
   seafood: [],
 };
 
-/** Something with the same `messages.parse` as the real client, answering with `reading`. */
-export function fakeClaude(reading: ReadRecipe | null = SAMPLE_READING, stopReason = "end_turn"): Pick<Anthropic, "messages"> {
+/** Something with the same `messages.parse` as the real client, answering with `reading`. Requests go into `seen`. */
+export function fakeClaude(
+  reading: ReadRecipe | null = SAMPLE_READING,
+  stopReason = "end_turn",
+  seen: unknown[] = [],
+): Pick<Anthropic, "messages"> {
   return {
-    messages: { parse: async () => ({ stop_reason: stopReason, parsed_output: reading }) },
+    messages: {
+      parse: async (request: unknown) => {
+        seen.push(request);
+        return { stop_reason: stopReason, parsed_output: reading };
+      },
+    },
   } as unknown as Pick<Anthropic, "messages">;
 }

@@ -107,6 +107,20 @@ describe("the normalising layer", () => {
     expect(bare.values.servings).toBe("");
   });
 
+  it("asks for whatever Claude marked “?” because it couldn't be read in a photo", () => {
+    const result = normalise(
+      draft({
+        ingredients: [{ line: "? g plain flour", group: null }, { line: "2 eggs", group: null }],
+        instructions: ["Bake for ? minutes at 180°C.", "Ready? Serve warm."],
+      }),
+      household,
+    );
+    expect(result.check).toContain(
+      "Fill in the parts marked “?”, which couldn't be read: “? g plain flour”, “Bake for ? minutes at 180°C.”.",
+    );
+    expect(normalise(draft(), household).check.some((c) => c.startsWith("Fill in the parts"))).toBe(false);
+  });
+
   it("offers make-ahead tasks the household already shares, when the ingredients fit", () => {
     expect(result.suggestedMakeAhead.map((t) => t.name)).toEqual(["Cook rice"]);
     const withYoghurt = normalise(

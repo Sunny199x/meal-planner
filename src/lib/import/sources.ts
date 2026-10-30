@@ -21,12 +21,16 @@ const videoText = (video: Video, description: string) =>
 
 const MAX_PAGE_BYTES = 3_000_000;
 
-export async function prepareImport(link: string, text: string, from: string): Promise<Prepared | { error: string }> {
+/**
+ * `photos` is how many photos of the recipe come with it. With photos, the recipe
+ * is read from them (plus any pasted text), and a link is kept only as the source.
+ */
+export async function prepareImport(link: string, text: string, from: string, photos = 0): Promise<Prepared | { error: string }> {
   const pasted = text.trim();
   const named = from.trim().slice(0, 80);
   if (!link.trim()) {
-    if (!pasted) return { error: "Paste a link or the recipe text first." };
-    return { text: pasted, source: { name: named || "Pasted text", url: null }, photo: null };
+    if (!pasted && !photos) return { error: "Paste a link or the recipe text, or add photos, first." };
+    return { text: pasted, source: { name: named || (photos ? "Photo" : "Pasted text"), url: null }, photo: null };
   }
 
   const url = readWebAddress(link);
@@ -34,8 +38,15 @@ export async function prepareImport(link: string, text: string, from: string): P
   const address = url.toString();
   const kind = describeSourceLink(address)?.kind ?? "website";
 
+  if (photos) {
+    const name = kind === "instagram" ? "Instagram" : kind === "youtube" ? "YouTube" : url.hostname.replace(/^www\./, "");
+    return { text: pasted, source: { name: named || name, url: address }, photo: null };
+  }
+
   if (kind === "instagram") {
-    if (!pasted) return { error: "The app can't read Instagram posts yet. Copy the post's caption and paste it below." };
+    if (!pasted) {
+      return { error: "The app can't read Instagram posts yet. Copy the post's caption and paste it below, or add screenshots of the post." };
+    }
     return { text: pasted, source: { name: named || "Instagram", url: address }, photo: null };
   }
 

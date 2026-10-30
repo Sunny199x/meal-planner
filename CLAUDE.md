@@ -38,7 +38,7 @@ dishes fit together.
   Quantities matter: using the rest of a 100 g spinach bag is useful; mentioning spinach isn't.
 - Shared preparation means the same make-ahead component (matched by name in the recipe files),
   not just a shared ingredient.
-- Label anything simulated or not yet supported (e.g. Instagram/TikTok links, photo import) clearly
+- Label anything simulated or not yet supported (e.g. Instagram/TikTok links) clearly
   in the UI.
 - Recipes in `seed-recipes/` with `template: true` are illustrative examples; show them as such.
 

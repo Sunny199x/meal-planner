@@ -13,7 +13,7 @@ describe("what gets read for each kind of paste", () => {
 
   it("asks for the caption, or the description when there's no YouTube key", async () => {
     expect(await prepareImport("https://www.instagram.com/p/abc/", "", "")).toEqual({
-      error: "The app can't read Instagram posts yet. Copy the post's caption and paste it below.",
+      error: "The app can't read Instagram posts yet. Copy the post's caption and paste it below, or add screenshots of the post.",
     });
     // Without YOUTUBE_API_KEY the description has to be pasted.
     expect(await prepareImport("https://youtu.be/dQw4w9WgXcQ", "", "")).toMatchObject({
@@ -37,8 +37,26 @@ describe("what gets read for each kind of paste", () => {
     });
   });
 
+  it("reads photos on their own, and keeps a link only as the source", async () => {
+    expect(await prepareImport("", "", "", 2)).toEqual({ text: "", source: { name: "Photo", url: null }, photo: null });
+    expect(await prepareImport("", "Serves 4", "Ottolenghi Simple", 1)).toEqual({
+      text: "Serves 4",
+      source: { name: "Ottolenghi Simple", url: null },
+      photo: null,
+    });
+    // Screenshots of an Instagram post need no caption, and a website isn't fetched.
+    expect(await prepareImport("https://www.instagram.com/p/abc/", "", "", 3)).toEqual({
+      text: "",
+      source: { name: "Instagram", url: "https://www.instagram.com/p/abc/" },
+      photo: null,
+    });
+    expect(await prepareImport("https://www.bbcgoodfood.com/recipes/dal", "", "", 1)).toMatchObject({
+      source: { name: "bbcgoodfood.com", url: "https://www.bbcgoodfood.com/recipes/dal" },
+    });
+  });
+
   it("explains what's wrong instead of failing", async () => {
-    expect(await prepareImport("", "  ", "")).toEqual({ error: "Paste a link or the recipe text first." });
+    expect(await prepareImport("", "  ", "")).toEqual({ error: "Paste a link or the recipe text, or add photos, first." });
     expect(await prepareImport("not a link", "", "")).toMatchObject({ error: expect.stringContaining("isn't a web address") });
     expect(await prepareImport("http://192.168.1.1/recipe", "", "")).toEqual({ error: "That address isn't on the public internet." });
   });

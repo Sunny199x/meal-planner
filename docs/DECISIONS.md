@@ -25,7 +25,7 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
 | Instagram | Link + pasted caption, read by Claude (milestone 4) | Instagram's official access is locked down; a better way is in `docs/IDEAS.md` for later. |
 | YouTube | Link only: the official YouTube Data API reads the title, description and thumbnail (`YOUTUBE_API_KEY`, free; Saketh's OK 29 October 2026). Without the key, the description is pasted. | Most cooking videos write the recipe in the description. |
 | TikTok | Not supported | Saketh and Victoria don't use it (decided 29 October 2026). |
-| Photo import | A photo's text (iPhone Live Text, Google Lens) pasted into Import and read by Claude; dish photos attached to recipes (milestone 4) | No reading of photos themselves yet; see `docs/IDEAS.md`. |
+| Photo import | Up to 4 photos (cookbook pages, a handwritten recipe, screenshots) read by Claude on the Import page; dish photos attached to recipes (milestone 4) | Added 30 October 2026 with Saketh's OK, once the cheap model made it about the same cost as text. |
 | Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Saketh writes his own recipes there. See `seed-recipes/README.md`. |
 
 **Caveat:** Vercel's Hobby plan is for personal, non-commercial use. That fits a household app.
@@ -122,7 +122,8 @@ the repo, then check it for real on the Vercel preview deployment.
     YouTube description.
   - It will be built together with website / Instagram / YouTube import in the capture milestone.
   - Reading photos with the Claude API (about $0.04–0.05 per photo with Anthropic's most capable
-    model, needs an Anthropic API key) waits until the free version shows a real need.
+    model, needs an Anthropic API key) waits until the free version shows a real need. (Built in
+    milestone 4 after all: see "Photo import" below.)
 - **Real recipes for testing:** the household's recipes are files in `seed-recipes/`, so suggestion
   rules are checked against them directly (no export step needed).
 - **Week plans:** one row per week, named by its Monday, in Stockholm time.
@@ -359,6 +360,21 @@ and a change in one should show in the other.
   - **"1 day ahead" means the day before the dinner,** so rice cooked on Sunday afternoon for
     Monday's dinner can pass 24 hours; Settings suggests cooking it late on the prep day.
   - The household can choose stricter limits than the guidance, never longer ones.
+- **Photo import** (30 October 2026, Saketh: "Add it now"). On Import, up to 4 photos (cookbook
+  pages, a handwritten recipe, screenshots of a post), taken or chosen on the phone:
+  - **Shrunk on the phone** to about 2,000 px on the long side (JPEG, under 900 KB each), larger
+    than dish photos so small print stays legible, and still within what the model reads without
+    downscaling (2,576 px / 4,784 image tokens).
+  - **Cost:** an image costs ⌈width ÷ 28⌉ × ⌈height ÷ 28⌉ tokens, so a 1,500 × 2,000 photo is
+    3,888 tokens, about $0.0004 at Claude Haiku 5.5's $0.10 per million input tokens (Anthropic's
+    vision and pricing pages, read 29 October 2026). A photo import costs about the same as a text
+    import.
+  - **Sent with the link and text** in one request (Next.js's server-action limit raised to 4 MB;
+    Vercel accepts 4.5 MB). With photos, a link is kept only as the source and isn't fetched.
+  - **Never stored:** the photos are read and then dropped; they show on the review screen to
+    compare against. A dish photo is still added on the recipe page.
+  - **Nothing unreadable is guessed:** Claude writes "?" for what it can't make out, and the review
+    screen asks for every line or step with a "?".
 - **Recipe check** (Settings → Recipe check, `src/lib/recipes/health.ts`): lists recipes with no
   make-ahead tasks, lines the app can't fully read, no cuisine or main protein, seafood, or that
   are illustrative templates; and make-ahead tasks that work on the same things under different
