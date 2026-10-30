@@ -19,8 +19,8 @@ export default function NewRecipePage() {
           then links back to it.
         </p>
         <p>
-          To add a photo, save the recipe first, then use <strong className="text-ink">Add photo</strong> on its
-          page.
+          To add a photo, save the recipe first, then use <strong className="text-ink">Take photo</strong> or{" "}
+          <strong className="text-ink">Choose photo</strong> on its page.
         </p>
         <p>
           Have the recipe as text, in any language? Use{" "}

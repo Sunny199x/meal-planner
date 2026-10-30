@@ -249,8 +249,8 @@ export function ImportFlow({
           <span className="text-sm text-muted">(optional, up to {MAX_READ_PHOTOS})</span>
         </p>
         <p className="text-sm text-muted">
-          A cookbook page, a handwritten recipe or screenshots, in order. Keep the whole recipe in view and the text
-          sharp.
+          A cookbook page, a handwritten recipe or screenshots, in order: one photo per page. Keep the whole recipe in
+          view and the text sharp.
         </p>
         <div className="mt-2 flex flex-wrap gap-3">
           {photos.map((p, i) => (
@@ -273,11 +273,19 @@ export function ImportFlow({
             </div>
           )}
           {photos.length + preparing < MAX_READ_PHOTOS && (
-            <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink">
-              <span className="text-2xl leading-none">+</span>
-              Take or choose
-              <input type="file" accept="image/*" multiple onChange={addPhotos} className="sr-only" />
-            </label>
+            <>
+              {/* Android only offers the camera when asked for it directly; computers have no use for it. */}
+              <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink pointer-fine:hidden">
+                <span className="text-2xl leading-none">+</span>
+                Take photo
+                <input type="file" accept="image/*" capture="environment" onChange={addPhotos} className="sr-only" />
+              </label>
+              <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink">
+                <span className="text-2xl leading-none">+</span>
+                Choose photos
+                <input type="file" accept="image/*" multiple onChange={addPhotos} className="sr-only" />
+              </label>
+            </>
           )}
         </div>
       </div>

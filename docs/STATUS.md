@@ -44,10 +44,10 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
   - labels, with the reason shown ("62.5 g red lentils per serving")
   - grouped ingredients, steps, make-ahead tasks and notes
 - **Favourites**, shared by both phones.
-- **Dish photos:** on a recipe page, *Add photo* takes a picture or picks one from the phone. It
-  is shrunk on the phone (about 1,200 px) before it is saved, and shows on the recipe cards, the
-  recipe page, the week's suggestion cards and *Browse all recipes*. Photos are behind the
-  passcode like everything else.
+- **Dish photos:** on a recipe page, *Take photo* uses the phone's camera and *Choose photo* picks
+  one from the phone. It is shrunk on the phone (about 1,200 px) before it is saved, and shows on
+  the recipe cards, the recipe page, the week's suggestion cards and *Browse all recipes*. Photos
+  are behind the passcode like everything else.
 - **Importing a recipe** (Recipes → Import): paste a link to a recipe website (read from the page
   directly), a YouTube link (its description is read automatically once `YOUTUBE_API_KEY` is set;
   until then, paste the description), an Instagram link plus its caption, any recipe text, or up
@@ -175,8 +175,8 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 4. Tap the heart. It shows on both phones.
 5. Tap **Recipes** → **Import**, paste a link to a recipe website (or a recipe in any language) and
    tap **Read recipe**. Check the "Check before saving" box, tick "Good as leftovers" if it is, and
-   save. Then add a photo on the recipe page with **Add photo** (or keep the website's photo).
-   Try a cookbook page too: **Take or choose** under *Photos*, then **Read recipe**.
+   save. Then add a photo on the recipe page with **Take photo** (or keep the website's photo).
+   Try a cookbook page too: **Take photo** under *Photos* (once per page), then **Read recipe**.
 
 ### Choosing a week together (about 10 minutes, the real test)
 

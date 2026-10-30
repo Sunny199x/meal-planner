@@ -4,7 +4,10 @@ import { useState } from "react";
 import { removeRecipePhotoAction, setRecipePhotoAction } from "@/lib/recipes/actions";
 import { shrinkPhoto } from "@/lib/recipes/shrink-photo";
 
-/** Add, change or remove the recipe's photo. On a phone, "Add photo" offers the camera or the photo library. */
+/**
+ * Add, change or remove the recipe's photo. Phones get "Take photo" for the camera, because Android
+ * only offers the photo library unless the camera is asked for directly.
+ */
 export function PhotoControls({ recipeId, hasPhoto }: { recipeId: string; hasPhoto: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +46,20 @@ export function PhotoControls({ recipeId, hasPhoto }: { recipeId: string; hasPho
   const pill = "rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50";
   return (
     <>
-      <label className={`${pill} cursor-pointer ${busy ? "pointer-events-none opacity-60" : ""}`}>
-        {busy ?? (hasPhoto ? "Change photo" : "Add photo")}
-        <input type="file" accept="image/*" onChange={choose} disabled={busy !== null} className="sr-only" />
-      </label>
+      {busy ? (
+        <span className={`${pill} opacity-60`}>{busy}</span>
+      ) : (
+        <>
+          <label className={`${pill} cursor-pointer pointer-fine:hidden`}>
+            Take photo
+            <input type="file" accept="image/*" capture="environment" onChange={choose} className="sr-only" />
+          </label>
+          <label className={`${pill} cursor-pointer`}>
+            {hasPhoto ? "Change photo" : "Choose photo"}
+            <input type="file" accept="image/*" onChange={choose} className="sr-only" />
+          </label>
+        </>
+      )}
       {hasPhoto && !busy && (
         <button type="button" onClick={remove} className={pill}>
           Remove photo
