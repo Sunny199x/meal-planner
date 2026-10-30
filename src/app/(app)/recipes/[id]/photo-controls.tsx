@@ -1,20 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { PhotoMenu } from "@/components/photo-menu";
 import { removeRecipePhotoAction, setRecipePhotoAction } from "@/lib/recipes/actions";
 import { shrinkPhoto } from "@/lib/recipes/shrink-photo";
 
-/**
- * Add, change or remove the recipe's photo. Phones get "Take photo" for the camera, because Android
- * only offers the photo library unless the camera is asked for directly.
- */
+/** Add, change or remove the recipe's photo, from one button with a small menu (see PhotoMenu). */
 export function PhotoControls({ recipeId, hasPhoto }: { recipeId: string; hasPhoto: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function choose(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
+  async function choose([file]: File[]) {
     if (!file) return;
     setBusy("Saving photo…");
     setError(null);
@@ -49,21 +45,9 @@ export function PhotoControls({ recipeId, hasPhoto }: { recipeId: string; hasPho
       {busy ? (
         <span className={`${pill} opacity-60`}>{busy}</span>
       ) : (
-        <>
-          <label className={`${pill} cursor-pointer pointer-fine:hidden`}>
-            Take photo
-            <input type="file" accept="image/*" capture="environment" onChange={choose} className="sr-only" />
-          </label>
-          <label className={`${pill} cursor-pointer`}>
-            {hasPhoto ? "Change photo" : "Choose photo"}
-            <input type="file" accept="image/*" onChange={choose} className="sr-only" />
-          </label>
-        </>
-      )}
-      {hasPhoto && !busy && (
-        <button type="button" onClick={remove} className={pill}>
-          Remove photo
-        </button>
+        <PhotoMenu onFiles={choose} extra={hasPhoto ? [{ label: "Remove photo", onSelect: remove }] : []} className={pill}>
+          {hasPhoto ? "Photo" : "Add photo"}
+        </PhotoMenu>
       )}
       {error && (
         <p role="alert" className="w-full text-sm text-danger">

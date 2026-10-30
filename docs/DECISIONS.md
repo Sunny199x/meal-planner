@@ -375,6 +375,11 @@ and a change in one should show in the other.
     compare against. A dish photo is still added on the recipe page.
   - **Nothing unreadable is guessed:** Claude writes "?" for what it can't make out, and the review
     screen asks for every line or step with a "?".
+  - **One photo button with a menu** (*Take photo* / *Choose from gallery*, and *Remove photo* on a
+    recipe page), the same for import and dish photos. Android's Chrome offers only the gallery
+    unless a web page asks for the camera directly, and two separate buttons cluttered the page
+    (Saketh, 30 October). Computers see only the choose option. An in-app camera like WhatsApp's is
+    in `docs/IDEAS.md`.
 - **Recipe check** (Settings → Recipe check, `src/lib/recipes/health.ts`): lists recipes with no
   make-ahead tasks, lines the app can't fully read, no cuisine or main protein, seafood, or that
   are illustrative templates; and make-ahead tasks that work on the same things under different

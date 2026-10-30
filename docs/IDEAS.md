@@ -112,6 +112,16 @@ as written.
 
 ## Noticed while building milestone 4 (Open)
 
+- **A camera screen inside the app, like WhatsApp's** (*Saketh, 30 October 2026: "note this as a
+  feature for future releases"*). Today one photo button opens a small menu (*Take photo* /
+  *Choose from gallery*) that hands over to the phone's own camera or picker. A camera screen in
+  the app would show a viewfinder with a shutter button and a gallery icon, all in one place.
+  - **Not possible in a web app:** WhatsApp's strip of recent photos. Browsers never let a website
+    list the phone's photos, only receive the ones picked in the phone's picker.
+  - **Trade-offs:** photos are usually a little less sharp than the phone's own camera app (which
+    matters for small cookbook print); the phone asks for camera permission the first time; about
+    half a day of work.
+
 - **Instagram links on their own:** today the caption has to be pasted, or screenshots of the post
   added as photos. Instagram's official access needs a Meta developer app and is mainly for
   business accounts, so it needs a closer look.

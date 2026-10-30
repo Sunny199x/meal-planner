@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { PhotoMenu } from "@/components/photo-menu";
 import { RecipeForm } from "@/components/recipe-form";
 import { fetchPhotoAction, readRecipeAction } from "@/lib/import/actions";
 import type { Normalised } from "@/lib/import/normalise";
@@ -78,9 +79,8 @@ export function ImportFlow({
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
-  async function addPhotos(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = [...(event.target.files ?? [])].slice(0, MAX_READ_PHOTOS - photos.length - preparing);
-    event.target.value = "";
+  async function addPhotos(chosen: File[]) {
+    const files = chosen.slice(0, MAX_READ_PHOTOS - photos.length - preparing);
     if (files.length === 0) return;
     setError(null);
     setPreparing((n) => n + files.length);
@@ -273,19 +273,10 @@ export function ImportFlow({
             </div>
           )}
           {photos.length + preparing < MAX_READ_PHOTOS && (
-            <>
-              {/* Android only offers the camera when asked for it directly; computers have no use for it. */}
-              <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink pointer-fine:hidden">
-                <span className="text-2xl leading-none">+</span>
-                Take photo
-                <input type="file" accept="image/*" capture="environment" onChange={addPhotos} className="sr-only" />
-              </label>
-              <label className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink">
-                <span className="text-2xl leading-none">+</span>
-                Choose photos
-                <input type="file" accept="image/*" multiple onChange={addPhotos} className="sr-only" />
-              </label>
-            </>
+            <PhotoMenu multiple onFiles={addPhotos} className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink">
+              <span className="text-2xl leading-none">+</span>
+              {photos.length ? "Add another" : "Add photos"}
+            </PhotoMenu>
           )}
         </div>
       </div>
