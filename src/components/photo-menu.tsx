@@ -53,7 +53,7 @@ export function PhotoMenu({
 
   // Closing waits until the click has opened the camera or picker.
   const closeSoon = () => setTimeout(() => setOpen(false), 0);
-  const item = "block w-full cursor-pointer px-4 py-3 text-left text-sm hover:bg-cream";
+  const item = "block w-full cursor-pointer px-4 py-3 text-left text-sm hover:bg-soft";
   return (
     <div ref={box} className="relative">
       <button type="button" onClick={() => setOpen(!open)} aria-haspopup="menu" aria-expanded={open} className={className}>

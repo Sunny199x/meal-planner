@@ -16,7 +16,7 @@ import { RecipeFilesPanel } from "./recipe-files-panel";
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl font-semibold">Settings</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-settings">Settings</h1>
 
       <Section title="Database">
         <Suspense fallback={<p className="text-muted">Checking the database…</p>}>
@@ -59,7 +59,7 @@ export default function SettingsPage() {
         <form action={signOut}>
           <button
             type="submit"
-            className="rounded-xl border border-line px-4 py-3 font-medium hover:bg-cream"
+            className="rounded-xl border border-line px-4 py-3 font-medium hover:bg-soft"
           >
             Sign out
           </button>
@@ -71,8 +71,8 @@ export default function SettingsPage() {
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-4 rounded-2xl border border-line bg-paper p-5 shadow-sm sm:p-6">
-      <h2 className="mb-3 font-display text-xl font-semibold">{title}</h2>
+    <section id={id} className="scroll-mt-4 rounded-2xl border border-line bg-paper p-5 sm:p-6">
+      <h2 className="mb-3 font-display text-xl font-extrabold tracking-tight">{title}</h2>
       {children}
     </section>
   );
@@ -94,7 +94,7 @@ async function DatabaseStatus() {
   }
   return (
     <p>
-      <span className="text-sage">✓</span> Connected to{" "}
+      <span className="text-good">✓</span> Connected to{" "}
       {kind === "neon"
         ? "the Neon database"
         : "the local stand-in database (this only happens during development)"}
@@ -128,7 +128,7 @@ async function PrepLimitsSection() {
 /** The guidance behind the limits, in its own words with links. */
 function PrepGuidance() {
   const link = (url: string, text: string) => (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="text-terracotta underline">
+    <a href={url} target="_blank" rel="noopener noreferrer" className="text-accent underline">
       {text}
     </a>
   );
@@ -172,7 +172,7 @@ async function RecipeCheck() {
     );
   }
   if (result.recipes.length === 0 && result.similarTasks.length === 0) {
-    return <p><span className="text-sage">✓</span> Every recipe is ready for the suggestions.</p>;
+    return <p><span className="text-good">✓</span> Every recipe is ready for the suggestions.</p>;
   }
   return (
     <div className="space-y-4 text-sm">
@@ -181,7 +181,7 @@ async function RecipeCheck() {
           <p className="font-medium">Probably the same make-ahead task under different names:</p>
           <ul className="mt-1 space-y-2">
             {result.similarTasks.map((group, i) => (
-              <li key={i} className="rounded-xl bg-saffron-light px-3 py-2">
+              <li key={i} className="rounded-xl bg-note-light px-3 py-2">
                 {group.names.map((n, j) => (
                   <span key={n.name}>
                     {j > 0 && " · "}
@@ -198,7 +198,7 @@ async function RecipeCheck() {
         <ul className="divide-y divide-line">
           {result.recipes.map((recipe) => (
             <li key={recipe.id} className="py-2">
-              <Link href={`/recipes/${recipe.id}`} className="font-medium hover:text-terracotta">
+              <Link href={`/recipes/${recipe.id}`} className="font-medium hover:text-accent">
                 {recipe.title}
               </Link>
               {recipe.fromFile && <span className="text-muted"> · from a recipe file</span>}

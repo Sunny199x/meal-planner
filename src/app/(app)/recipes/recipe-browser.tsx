@@ -85,7 +85,7 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
               update({ q: e.target.value });
             }}
             placeholder="Search recipes, ingredients, cuisines…"
-            className="block w-full rounded-xl border border-line bg-paper px-4 py-3 text-base shadow-sm outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/30"
+            className="block w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </label>
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -94,7 +94,7 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
             aria-expanded={panelOpen}
             aria-controls="filter-panel"
             onClick={() => setPanelOpen(!panelOpen)}
-            className="rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium hover:border-terracotta/50"
+            className="rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium hover:border-accent/50"
           >
             Filters{activeCount > 0 && ` (${activeCount})`} {panelOpen ? "▴" : "▾"}
           </button>
@@ -115,13 +115,13 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
                   if (chip.clear.withoutIngredients) setWithoutText("");
                   update(chip.clear);
                 }}
-                className="rounded-full bg-sage-light px-3 py-1 text-sm text-sage"
+                className="rounded-full bg-good-light px-3 py-1 text-sm text-good"
                 aria-label={`Remove filter: ${chip.label}`}
               >
                 {chip.label} ×
               </button>
             ))}
-            <button type="button" onClick={clearAll} className="px-2 py-1 text-sm text-terracotta underline">
+            <button type="button" onClick={clearAll} className="px-2 py-1 text-sm text-accent underline">
               Clear all
             </button>
           </div>
@@ -129,7 +129,7 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
       </div>
 
       {panelOpen && (
-        <div id="filter-panel" className="space-y-5 rounded-2xl border border-line bg-paper p-4 shadow-sm">
+        <div id="filter-panel" className="space-y-5 rounded-2xl border border-line bg-paper p-4">
           <FilterGroup title="Cooking time (start to plate)">
             <Segmented
               options={[
@@ -171,8 +171,8 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
                   onClick={() => update({ [key]: !filters[key] })}
                   className={
                     filters[key]
-                      ? "rounded-full bg-sage px-3 py-2 text-sm text-white"
-                      : "rounded-full border border-line px-3 py-2 text-sm hover:border-sage"
+                      ? "rounded-full bg-good px-3 py-2 text-sm text-white"
+                      : "rounded-full border border-line px-3 py-2 text-sm hover:border-good"
                   }
                 >
                   {label}
@@ -216,7 +216,7 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
       {results.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line p-8 text-center">
           <p className="font-medium">No recipes match.</p>
-          <button type="button" onClick={clearAll} className="mt-2 text-terracotta underline">
+          <button type="button" onClick={clearAll} className="mt-2 text-accent underline">
             Clear search and filters
           </button>
         </div>
@@ -281,8 +281,8 @@ function Segmented<T extends string | number | null>({
           onClick={() => onSelect(option.value)}
           className={
             option.value === selected
-              ? "rounded-full bg-terracotta px-3 py-2 text-sm text-white"
-              : "rounded-full border border-line px-3 py-2 text-sm hover:border-terracotta/50"
+              ? "rounded-full bg-accent px-3 py-2 text-sm text-white"
+              : "rounded-full border border-line px-3 py-2 text-sm hover:border-accent/50"
           }
         >
           {option.label}
@@ -305,7 +305,7 @@ function Select({
     <select
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value || null)}
-      className="block w-full rounded-xl border border-line bg-cream px-3 py-2 text-base"
+      className="block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base"
     >
       <option value="">Any</option>
       {options.map((option) => (
@@ -331,7 +331,7 @@ function TextFilter({
       value={value}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className="block w-full rounded-xl border border-line bg-cream px-3 py-2 text-base"
+      className="block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base"
     />
   );
 }

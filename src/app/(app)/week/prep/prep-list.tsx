@@ -88,11 +88,11 @@ export function PrepList({
         {onTheEvening} done on the day of the dinner. {doneCount} ticked off.
       </p>
       {noLimit.length > 0 && (
-        <p className="rounded-xl bg-saffron-light px-4 py-3 text-sm">
+        <p className="rounded-xl bg-note-light px-4 py-3 text-sm">
           {noLimit.length} make-ahead {noLimit.length === 1 ? "task has" : "tasks have"} no &ldquo;how far
           ahead&rdquo; limit yet ({noLimit.join(", ")}), so {noLimit.length === 1 ? "it's" : "they're"} done on the
           day of the dinner.{" "}
-          <Link href="/settings#prep-limits" className="text-terracotta underline">
+          <Link href="/settings#prep-limits" className="text-accent underline">
             Set limits in Settings
           </Link>
           .
@@ -107,8 +107,8 @@ export function PrepList({
       {prepDays.map((day) => {
         const today = tasks.filter((t) => t.prepDay === day);
         return (
-          <section key={day} className="rounded-2xl border border-line bg-paper p-4 shadow-sm">
-            <h2 className="font-display text-lg font-semibold">{prepDayName(day)}</h2>
+          <section key={day} className="rounded-2xl border border-line bg-paper p-4">
+            <h2 className="font-display text-lg font-extrabold tracking-tight">{prepDayName(day)}</h2>
             {today.length === 0 ? (
               <p className="mt-1 text-sm text-muted">Nothing to prep ahead on this day.</p>
             ) : (
@@ -128,8 +128,8 @@ export function PrepList({
         );
       })}
 
-      <section className="rounded-2xl border border-line bg-paper p-4 shadow-sm">
-        <h2 className="font-display text-lg font-semibold">Each evening</h2>
+      <section className="rounded-2xl border border-line bg-paper p-4">
+        <h2 className="font-display text-lg font-extrabold tracking-tight">Each evening</h2>
         <ul className="mt-1 divide-y divide-line">
           {evenings.map((evening) => (
             <EveningRow key={evening.day} weekStart={weekStart} evening={evening} isDone={isDone} />
@@ -170,7 +170,7 @@ function TaskRow({
         checked={done}
         onChange={(e) => onToggle(e.target.checked)}
         aria-label={`Done: ${task.name}`}
-        className="mt-1 h-5 w-5 shrink-0 accent-terracotta"
+        className="mt-1 h-5 w-5 shrink-0 accent-ink"
       />
       <div className="min-w-0 flex-1 space-y-1">
         <p>
@@ -245,7 +245,7 @@ function EveningRow({
         <>
           <Link
             href={`/recipes/${cook.recipeId}?portions=${cook.portions}&week=${weekStart}`}
-            className="font-medium hover:text-terracotta"
+            className="font-medium hover:text-accent"
           >
             {cook.title}
           </Link>

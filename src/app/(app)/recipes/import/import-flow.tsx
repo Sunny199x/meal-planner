@@ -12,7 +12,7 @@ import { READING_LONG_SIDE, shrinkPhoto } from "@/lib/recipes/shrink-photo";
 import { describeSourceLink } from "@/lib/recipes/source-link";
 
 const inputClass =
-  "mt-1 block w-full rounded-xl border border-line bg-paper px-3 py-2 text-base outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/30";
+  "mt-1 block w-full rounded-xl border border-line bg-paper px-3 py-2 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/30";
 
 const LINK_HINTS = {
   website: "The app reads the recipe from the page. If the site blocks it, paste the recipe text below instead.",
@@ -133,10 +133,10 @@ export function ImportFlow({
     const { normalised } = reading;
     return (
       <div className="space-y-4">
-        <section className="space-y-3 rounded-2xl border border-saffron/50 bg-saffron-light p-4 text-sm">
+        <section className="space-y-3 rounded-2xl border border-note/50 bg-note-light p-4 text-sm">
           <div className="flex items-start justify-between gap-3">
-            <h2 className="font-display text-lg font-semibold">Check before saving</h2>
-            <button type="button" onClick={() => setReading(null)} className="shrink-0 text-terracotta underline">
+            <h2 className="font-display text-lg font-extrabold tracking-tight">Check before saving</h2>
+            <button type="button" onClick={() => setReading(null)} className="shrink-0 text-accent underline">
               Start again
             </button>
           </div>
@@ -158,7 +158,7 @@ export function ImportFlow({
               {/* eslint-disable-next-line @next/next/no-img-element -- a preview of the source's own photo */}
               <img src={photo} alt="" className="h-16 w-24 shrink-0 rounded-lg object-cover" referrerPolicy="no-referrer" />
               <span className="flex items-center gap-2">
-                <input type="checkbox" checked={keepPhoto} onChange={(e) => setKeepPhoto(e.target.checked)} className="h-5 w-5 accent-terracotta" />
+                <input type="checkbox" checked={keepPhoto} onChange={(e) => setKeepPhoto(e.target.checked)} className="h-5 w-5 accent-ink" />
                 Use this photo
               </span>
             </label>
@@ -273,7 +273,7 @@ export function ImportFlow({
             </div>
           )}
           {photos.length + preparing < MAX_READ_PHOTOS && (
-            <PhotoMenu multiple onFiles={addPhotos} className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-terracotta hover:text-ink">
+            <PhotoMenu multiple onFiles={addPhotos} className="flex h-24 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-accent hover:text-ink">
               <span className="text-2xl leading-none">+</span>
               {photos.length ? "Add another" : "Add photos"}
             </PhotoMenu>
@@ -319,7 +319,7 @@ export function ImportFlow({
       <button
         type="submit"
         disabled={busy || preparing > 0 || (!text.trim() && !link.trim() && photos.length === 0)}
-        className="rounded-xl bg-terracotta px-5 py-3 font-medium text-white hover:bg-terracotta-dark disabled:opacity-50"
+        className="rounded-full bg-accent px-5 py-3 font-medium text-white hover:bg-accent-dark disabled:opacity-50"
       >
         {busy ? "Reading the recipe… (a few seconds)" : "Read recipe"}
       </button>

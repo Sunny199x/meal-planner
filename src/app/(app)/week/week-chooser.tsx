@@ -99,9 +99,9 @@ export function WeekChooser({
 
   return (
     <>
-      <section className="space-y-3 rounded-2xl border border-line bg-paper p-5 shadow-sm">
+      <section className="space-y-3 rounded-2xl border border-line bg-paper p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-xl font-semibold">
+          <h2 className="font-display text-xl font-extrabold tracking-tight">
             Your week{" "}
             <span className="text-base font-normal text-muted">
               · {cookingDays.length - open.length} of {cookingDays.length} chosen
@@ -111,7 +111,7 @@ export function WeekChooser({
             type="button"
             onClick={undo}
             disabled={history.length === 0}
-            className="rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50 disabled:opacity-40"
+            className="rounded-full border border-line px-3 py-1 text-sm hover:border-accent/50 disabled:opacity-40"
           >
             Undo
           </button>
@@ -162,7 +162,7 @@ export function WeekChooser({
 
       {open.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="font-display text-xl font-semibold">
+          <h2 className="font-display text-xl font-extrabold tracking-tight">
             {known.length === 0 ? "Pick a first dish" : "Suggestions for the rest of the week"}
           </h2>
           {known.length === 0 && (
@@ -193,7 +193,7 @@ export function WeekChooser({
               <button
                 type="button"
                 onClick={() => setPage(hasMore ? page + 1 : 0)}
-                className="rounded-full border border-line px-4 py-2 text-sm hover:border-terracotta/50"
+                className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
               >
                 {hasMore ? "Show others" : "Back to the best suggestions"}
               </button>
@@ -202,12 +202,12 @@ export function WeekChooser({
               type="button"
               onClick={() => setBrowsing(!browsing)}
               aria-expanded={browsing}
-              className="rounded-full border border-line px-4 py-2 text-sm hover:border-terracotta/50"
+              className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
             >
               {browsing ? "Hide all recipes" : "Browse all recipes"}
             </button>
             {dismissed.length > 0 && (
-              <button type="button" onClick={() => setDismissed([])} className="px-2 py-2 text-sm text-terracotta underline">
+              <button type="button" onClick={() => setDismissed([])} className="px-2 py-2 text-sm text-accent underline">
                 Bring back {dismissed.length} hidden
               </button>
             )}
@@ -224,17 +224,17 @@ export function WeekChooser({
           )}
         </section>
       ) : (
-        <section className="rounded-2xl border border-sage/40 bg-sage-light p-5">
-          <h2 className="font-display text-xl font-semibold text-sage">All {cookingDays.length} dinners chosen</h2>
+        <section className="rounded-2xl border border-good/40 bg-good-light p-5">
+          <h2 className="font-display text-xl font-extrabold tracking-tight text-good">All {cookingDays.length} dinners chosen</h2>
           <p className="mt-1 text-sm">
             {minutes !== null && <>Chosen in {minutes} {minutes === 1 ? "minute" : "minutes"}. </>}
             Check the portions above: <strong>Change</strong> on a dish moves lunch boxes, adds freezer
             portions or plans it again as leftovers. Then open the{" "}
-            <Link href={`/week/shopping?week=${weekStart}`} className="text-terracotta underline">
+            <Link href={`/week/shopping?week=${weekStart}`} className="text-accent underline">
               shopping list
             </Link>{" "}
             and the{" "}
-            <Link href={`/week/prep?week=${weekStart}`} className="text-terracotta underline">
+            <Link href={`/week/prep?week=${weekStart}`} className="text-accent underline">
               prep list
             </Link>
             .
@@ -273,7 +273,7 @@ function RemainingNeeds({
       {!automatic && (
         <>
           {" "}
-          <button type="button" onClick={onShareOut} className="text-terracotta underline">
+          <button type="button" onClick={onShareOut} className="text-accent underline">
             Share lunch boxes out automatically
           </button>
         </>
@@ -338,7 +338,7 @@ function ChosenDish({
         <div className="min-w-0 flex-1">
           <Link
             href={`/recipes/${recipe.id}?portions=${portions.total}&week=${weekStart}`}
-            className="font-medium hover:text-terracotta"
+            className="font-medium hover:text-accent"
           >
             {recipe.title}
           </Link>
@@ -351,7 +351,7 @@ function ChosenDish({
           aria-label={`Move ${recipe.title}`}
           value={dish.day ?? ""}
           onChange={(e) => onMove(e.target.value === "" ? null : Number(e.target.value))}
-          className="w-20 shrink-0 rounded-xl border border-line bg-cream px-2 py-1 text-sm"
+          className="w-20 shrink-0 rounded-xl border border-line bg-soft px-2 py-1 text-sm"
         >
           {cookingDays.map((day) => (
             <option key={day} value={day}>
@@ -364,7 +364,7 @@ function ChosenDish({
           type="button"
           onClick={onRemove}
           aria-label={`Remove ${recipe.title}`}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-cream hover:text-ink"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-soft hover:text-ink"
         >
           ×
         </button>
@@ -379,7 +379,7 @@ function ChosenDish({
               type="button"
               onClick={() => setEditing(!editing)}
               aria-expanded={editing}
-              className="text-terracotta underline"
+              className="text-accent underline"
             >
               {editing ? "Done" : "Change"}
             </button>
@@ -387,7 +387,7 @@ function ChosenDish({
         )}
       </p>
       {editing && (
-        <div className="mt-2 space-y-2 rounded-xl bg-cream p-3 text-sm">
+        <div className="mt-2 space-y-2 rounded-xl bg-soft p-3 text-sm">
           {lunchPeople.map((i) => (
             <Stepper
               key={i}
@@ -471,7 +471,7 @@ function RepeatDinner({ dish, recipe, onStop }: { dish: PlannedDish; recipe: Pla
         type="button"
         onClick={onStop}
         aria-label={`Don't eat ${recipe.title} again`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-cream hover:text-ink"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-soft hover:text-ink"
       >
         ×
       </button>
@@ -494,14 +494,14 @@ function SuggestionCard({
   const { recipe, reasons, notes } = suggestion;
   const visible = allReasons ? reasons : reasons.slice(0, 3);
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-sm">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper">
       {recipe.photo && (
         // eslint-disable-next-line @next/next/no-img-element -- photos are already shrunk and served by the app
         <img src={recipe.photo} alt="" loading="lazy" className="aspect-[16/9] w-full object-cover" />
       )}
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="font-medium leading-snug">
-          <Link href={`/recipes/${recipe.id}`} className="hover:text-terracotta">
+          <Link href={`/recipes/${recipe.id}`} className="hover:text-accent">
             {recipe.title}
           </Link>
         </h3>
@@ -512,7 +512,7 @@ function SuggestionCard({
           <ul className="space-y-1 text-sm">
             {visible.map((r) => (
               <li key={r.text} className="flex gap-2">
-                <span aria-hidden className="text-sage">
+                <span aria-hidden className="text-good">
                   ✓
                 </span>
                 <span>{r.text}</span>
@@ -521,7 +521,7 @@ function SuggestionCard({
           </ul>
         )}
         {reasons.length > 3 && (
-          <button type="button" onClick={() => setAllReasons(!allReasons)} className="self-start text-sm text-terracotta underline">
+          <button type="button" onClick={() => setAllReasons(!allReasons)} className="self-start text-sm text-accent underline">
             {allReasons ? "Fewer reasons" : `${reasons.length - 3} more ${reasons.length - 3 === 1 ? "reason" : "reasons"}`}
           </button>
         )}
@@ -539,11 +539,11 @@ function SuggestionCard({
           <button
             type="button"
             onClick={onAdd}
-            className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
+            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark"
           >
             {day === null ? "Add" : `Add to ${DAY_NAMES[day]}`}
           </button>
-          <button type="button" onClick={onDismiss} className="rounded-xl border border-line px-3 py-2 text-sm hover:bg-cream">
+          <button type="button" onClick={onDismiss} className="rounded-xl border border-line px-3 py-2 text-sm hover:bg-soft">
             Not this one
           </button>
         </div>
@@ -575,7 +575,7 @@ function BrowseAll({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by name or cuisine"
-        className="block w-full rounded-xl border border-line bg-cream px-3 py-2 text-base"
+        className="block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base"
       />
       <ul className="divide-y divide-line">
         {list.map((r) => (
@@ -590,7 +590,7 @@ function BrowseAll({
             <button
               type="button"
               onClick={() => onAdd(r)}
-              className="shrink-0 rounded-xl border border-line px-3 py-1 text-sm hover:border-terracotta/50"
+              className="shrink-0 rounded-xl border border-line px-3 py-1 text-sm hover:border-accent/50"
             >
               Add
             </button>

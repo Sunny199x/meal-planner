@@ -44,7 +44,7 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const week = readWeekStart(Array.isArray(query.week) ? query.week[0] : query.week);
   const back = week ? (
-    <Link href={`/week?week=${week}`} className="text-sm text-terracotta hover:underline">
+    <Link href={`/week?week=${week}`} className="text-sm text-accent hover:underline">
       ← Back to the week
     </Link>
   ) : (
@@ -82,7 +82,7 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
         {!photo && <RecipeTile title={recipe.title} cuisine={recipe.cuisine} size="lg" />}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">{recipe.title}</h1>
+            <h1 className="font-display text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">{recipe.title}</h1>
             <FavouriteButton id={recipe.id} isFavourite={recipe.isFavourite} className="-mt-1 -mr-2 shrink-0" />
           </div>
           <p className="mt-1 text-muted">
@@ -91,7 +91,7 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Link
               href={`/recipes/${recipe.id}/edit`}
-              className="rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50"
+              className="rounded-full border border-line px-3 py-1 text-sm hover:border-accent/50"
             >
               Edit
             </Link>
@@ -101,7 +101,7 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
       </header>
 
       {recipe.isTemplate && (
-        <p className="rounded-xl bg-saffron-light px-4 py-3 text-sm">
+        <p className="rounded-xl bg-note-light px-4 py-3 text-sm">
           <strong>Illustrative example.</strong> Written by Claude to show the recipe format and not
           tested in a kitchen. Replace it with your own recipes.
         </p>
@@ -139,7 +139,7 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
         {sourceLink && (
           <>
             {" · "}
-            <a href={recipe.sourceUrl!} target="_blank" rel="noopener noreferrer" className="text-terracotta underline">
+            <a href={recipe.sourceUrl!} target="_blank" rel="noopener noreferrer" className="text-accent underline">
               {sourceLink.label}
             </a>
           </>
@@ -218,7 +218,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 function LabelLine({ name, result }: { name: string; result: LabelResult }) {
   return (
     <li>
-      <span className={result.applies ? "font-medium text-sage" : "font-medium text-muted"}>
+      <span className={result.applies ? "font-medium text-good" : "font-medium text-muted"}>
         {result.applies ? "✓" : "✗"} {name}
       </span>
       {result.counted.length > 0 && <span className="text-muted">: {result.counted.join("; ")}</span>}

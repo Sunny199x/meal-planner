@@ -5,8 +5,10 @@ import { LoginForm } from "./login-form";
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-paper p-6 shadow-sm">
-        <h1 className="font-display text-3xl font-semibold text-terracotta-dark">
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-paper p-6">
+        <h1 className="flex items-center gap-3 font-display text-3xl font-extrabold tracking-tight">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" width={40} height={40} className="rounded-xl" />
           Meal Planner
         </h1>
         <Suspense fallback={<p className="mt-4 text-muted">Loading…</p>}>

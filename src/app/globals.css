@@ -1,24 +1,31 @@
 @import "tailwindcss";
 
-/* Warm, calm palette. Colours are defined once here and used through Tailwind
-   classes such as bg-cream, text-ink and bg-terracotta. */
+/* Modern and minimal: black and white, grey for quiet details, one earthy
+   colour per part of the app for its page title. Colours are defined once here
+   and used through Tailwind classes such as bg-soft, text-ink and bg-accent. */
 @theme {
-  --color-cream: #fbf7f0;
-  --color-paper: #ffffff;
-  --color-ink: #2b2622;
-  --color-muted: #6f655c;
-  --color-line: #e8ddd0;
-  --color-terracotta: #b8562a;
-  --color-terracotta-dark: #96441f;
-  --color-sage: #5c7a57;
-  --color-sage-light: #e6eee3;
-  --color-saffron: #e3a33b;
-  --color-saffron-light: #fbefd9;
-  --color-danger: #a83a32;
-  --color-danger-light: #f8e3e0;
+  --color-soft: #f4f4f5; /* page background and quiet fills */
+  --color-paper: #ffffff; /* cards */
+  --color-ink: #0a0a0a;
+  --color-muted: #5f5f66;
+  --color-line: #e4e4e7;
+  --color-accent: #0a0a0a; /* main buttons and links */
+  --color-accent-dark: #3f3f46; /* main buttons when pointed at */
+  --color-good: #166534;
+  --color-good-light: #e8f5ec;
+  --color-note: #e0b84a;
+  --color-note-light: #fff7d6;
+  --color-danger: #b42318;
+  --color-danger-light: #fdecea;
+
+  /* Each part of the app has its own title colour. */
+  --color-groceries: #166534;
+  --color-recipes: #6b3a5b;
+  --color-week: #2f5d62;
+  --color-settings: #8a6a1f;
 
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-display: "Inter Tight Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -26,7 +33,7 @@
 }
 
 body {
-  background: var(--color-cream);
+  background: var(--color-soft);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

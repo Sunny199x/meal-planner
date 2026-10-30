@@ -63,9 +63,9 @@ export function ShoppingList({
         {known.length === 1 ? "dish" : "dishes"}, with lunch boxes and freezer portions.
       </p>
       {onGroceryList && (
-        <p className="rounded-xl bg-sage-light px-4 py-3 text-sm">
+        <p className="rounded-xl bg-good-light px-4 py-3 text-sm">
           These are also on the{" "}
-          <Link href="/" className="font-medium text-sage underline">
+          <Link href="/" className="font-medium text-good underline">
             grocery list
           </Link>
           , together with anything you add there. A tick in either place shows in both.
@@ -91,7 +91,7 @@ export function ShoppingList({
         );
       })}
       {todoCount === 0 && (
-        <p className="rounded-2xl border border-sage/40 bg-sage-light p-5 font-medium text-sage">Everything is ticked off.</p>
+        <p className="rounded-2xl border border-good/40 bg-good-light p-5 font-medium text-good">Everything is ticked off.</p>
       )}
 
       {basket.length > 0 && (

@@ -25,7 +25,7 @@ const TIME_OPTION_LABEL: Record<TimeSlot, string> = {
 /** The weekend before the week first, then Monday to Friday. */
 const PREP_DAY_ORDER = [5, 6, 0, 1, 2, 3, 4];
 
-const selectClass = "rounded-xl border border-line bg-cream px-2 py-2 text-base";
+const selectClass = "rounded-xl border border-line bg-soft px-2 py-2 text-base";
 
 export function WeekSetupPanel({
   weekStart,
@@ -47,9 +47,9 @@ export function WeekSetupPanel({
 
   if (!editing && saved) {
     return (
-      <section className="space-y-3 rounded-2xl border border-line bg-paper p-5 shadow-sm">
+      <section className="space-y-3 rounded-2xl border border-line bg-paper p-5">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="font-display text-xl font-semibold">This week&apos;s setup</h2>
+          <h2 className="font-display text-xl font-extrabold tracking-tight">This week&apos;s setup</h2>
           <button
             type="button"
             onClick={() => {
@@ -57,7 +57,7 @@ export function WeekSetupPanel({
               setIngredientsText(saved.ingredientsToUse.join(", "));
               setEditing(true);
             }}
-            className="rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50"
+            className="rounded-full border border-line px-3 py-1 text-sm hover:border-accent/50"
           >
             Edit setup
           </button>
@@ -101,8 +101,8 @@ export function WeekSetupPanel({
   const cooking = cookingEvenings(draft).length;
 
   return (
-    <section className="space-y-5 rounded-2xl border border-line bg-paper p-5 shadow-sm">
-      <h2 className="font-display text-xl font-semibold">Set up the week</h2>
+    <section className="space-y-5 rounded-2xl border border-line bg-paper p-5">
+      <h2 className="font-display text-xl font-extrabold tracking-tight">Set up the week</h2>
 
       <fieldset className="min-w-0">
         <legend className="text-sm font-medium">Which evenings are you cooking, and how much time is there?</legend>
@@ -114,7 +114,7 @@ export function WeekSetupPanel({
                   type="checkbox"
                   checked={evening.cooking}
                   onChange={(e) => updateEvening(day, { cooking: e.target.checked })}
-                  className="h-5 w-5 accent-terracotta"
+                  className="h-5 w-5 accent-ink"
                 />
                 <span className={evening.cooking ? "font-medium" : "text-muted"}>{DAY_NAMES[day]}</span>
               </label>
@@ -192,10 +192,10 @@ export function WeekSetupPanel({
               <label
                 key={day}
                 className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-sm ${
-                  on ? "border-sage bg-sage-light text-sage" : "border-line"
+                  on ? "border-good bg-good-light text-good" : "border-line"
                 }`}
               >
-                <input type="checkbox" checked={on} onChange={() => togglePrepDay(day)} className="h-4 w-4 accent-terracotta" />
+                <input type="checkbox" checked={on} onChange={() => togglePrepDay(day)} className="h-4 w-4 accent-ink" />
                 {DAY_SHORT[day]}
               </label>
             );
@@ -212,7 +212,7 @@ export function WeekSetupPanel({
           value={ingredientsText}
           onChange={(e) => setIngredientsText(e.target.value)}
           placeholder="e.g. spinach, feta, aubergine"
-          className="mt-1 block w-full rounded-xl border border-line bg-cream px-3 py-2 text-base"
+          className="mt-1 block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base"
         />
       </label>
 
@@ -230,7 +230,7 @@ export function WeekSetupPanel({
           type="button"
           onClick={save}
           disabled={saving || cooking === 0}
-          className="rounded-xl bg-terracotta px-5 py-3 font-medium text-white hover:bg-terracotta-dark disabled:opacity-60"
+          className="rounded-full bg-accent px-5 py-3 font-medium text-white hover:bg-accent-dark disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save setup"}
         </button>
@@ -255,7 +255,7 @@ function SetupSummary({ setup }: { setup: WeekSetup }) {
             key={day}
             className={
               evening.cooking
-                ? "rounded-full bg-sage-light px-3 py-1 text-sage"
+                ? "rounded-full bg-good-light px-3 py-1 text-good"
                 : "rounded-full border border-line px-3 py-1 text-muted line-through"
             }
           >

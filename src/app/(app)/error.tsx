@@ -9,8 +9,8 @@ export default function AppError({ error, retry }: { error: unknown; retry: () =
   }, [error]);
 
   return (
-    <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-line bg-paper p-6 text-center shadow-sm">
-      <h1 className="font-display text-2xl font-semibold">Something went wrong</h1>
+    <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-line bg-paper p-6 text-center">
+      <h1 className="font-display text-2xl font-extrabold tracking-tight">Something went wrong</h1>
       <p className="text-muted">
         This page couldn&apos;t be shown. Your recipes are safe. Try again, and if it keeps happening,
         tell Claude what you were doing.
@@ -18,7 +18,7 @@ export default function AppError({ error, retry }: { error: unknown; retry: () =
       <button
         type="button"
         onClick={() => retry()}
-        className="rounded-xl bg-terracotta px-4 py-3 font-medium text-white hover:bg-terracotta-dark"
+        className="rounded-full bg-accent px-4 py-3 font-medium text-white hover:bg-accent-dark"
       >
         Try again
       </button>

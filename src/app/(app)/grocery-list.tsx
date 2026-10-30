@@ -154,7 +154,7 @@ export function GroceryList({ initial, recipes }: { initial: GroceryListData; re
           aria-label="Add to the grocery list"
           className="block min-w-0 flex-1 rounded-xl border border-line bg-paper px-3 py-2 text-base"
         />
-        <button type="submit" className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark">
+        <button type="submit" className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark">
           Add
         </button>
       </form>
@@ -166,7 +166,7 @@ export function GroceryList({ initial, recipes }: { initial: GroceryListData; re
             {data.weeks.map((w, i) => (
               <span key={w.weekStart}>
                 {i > 0 && " and "}
-                <Link href={`/week/shopping?week=${w.weekStart}`} className="text-terracotta underline">
+                <Link href={`/week/shopping?week=${w.weekStart}`} className="text-accent underline">
                   {formatWeek(w.weekStart)}
                 </Link>
               </span>
@@ -176,7 +176,7 @@ export function GroceryList({ initial, recipes }: { initial: GroceryListData; re
         ) : (
           <>
             No dinners chosen for this week or next yet;{" "}
-            <Link href="/week" className="text-terracotta underline">
+            <Link href="/week" className="text-accent underline">
               choose them
             </Link>{" "}
             and their ingredients appear here.
@@ -208,7 +208,7 @@ export function GroceryList({ initial, recipes }: { initial: GroceryListData; re
         </p>
       ) : (
         todo.length === 0 && (
-          <p className="rounded-2xl border border-sage/40 bg-sage-light p-5 font-medium text-sage">Everything is ticked off.</p>
+          <p className="rounded-2xl border border-good/40 bg-good-light p-5 font-medium text-good">Everything is ticked off.</p>
         )
       )}
 
@@ -217,7 +217,7 @@ export function GroceryList({ initial, recipes }: { initial: GroceryListData; re
           <summary className="cursor-pointer font-medium">In the basket ({basket.length})</summary>
           <ul className="mt-2 divide-y divide-line">{basket.map(row)}</ul>
           {boughtOwn > 0 && (
-            <button type="button" onClick={clearBought} className="mt-2 text-sm text-terracotta underline">
+            <button type="button" onClick={clearBought} className="mt-2 text-sm text-accent underline">
               Remove the {boughtOwn} bought {boughtOwn === 1 ? "item" : "items"} you added
             </button>
           )}

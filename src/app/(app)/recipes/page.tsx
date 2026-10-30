@@ -12,17 +12,17 @@ export default function RecipesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-semibold">Recipes</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-recipes">Recipes</h1>
         <div className="flex gap-2">
           <Link
             href="/recipes/import"
-            className="rounded-xl border border-terracotta px-4 py-2 text-sm font-medium text-terracotta hover:bg-cream"
+            className="rounded-xl border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-soft"
           >
             Import
           </Link>
           <Link
             href="/recipes/new"
-            className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
+            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark"
           >
             + Add recipe
           </Link>
@@ -50,11 +50,11 @@ async function Collection() {
         <p className="font-medium">No recipes yet.</p>
         <p className="mt-2 text-muted">
           Go to{" "}
-          <Link href="/settings" className="text-terracotta underline">
+          <Link href="/settings" className="text-accent underline">
             Settings
           </Link>{" "}
           and press <strong>Load recipes from files</strong>, or{" "}
-          <Link href="/recipes/new" className="text-terracotta underline">
+          <Link href="/recipes/new" className="text-accent underline">
             add one by hand
           </Link>
           .

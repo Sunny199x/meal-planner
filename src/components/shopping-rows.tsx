@@ -34,8 +34,8 @@ export function changedNote(shopping: ShoppingState, row: ShoppingRow): string |
 
 export function Group({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-line bg-paper p-4 shadow-sm">
-      <h2 className="font-display text-lg font-semibold">{title}</h2>
+    <section className="rounded-2xl border border-line bg-paper p-4">
+      <h2 className="font-display text-lg font-extrabold tracking-tight">{title}</h2>
       {note && <p className="text-sm text-muted">{note}</p>}
       <ul className="mt-1 divide-y divide-line">{children}</ul>
     </section>
@@ -65,7 +65,7 @@ export function ItemRow({
   return (
     <li className="flex items-start gap-3 py-2.5">
       {status === "home" ? (
-        <span aria-hidden className="mt-0.5 w-5 shrink-0 text-center text-sage">
+        <span aria-hidden className="mt-0.5 w-5 shrink-0 text-center text-good">
           ✓
         </span>
       ) : (
@@ -74,7 +74,7 @@ export function ItemRow({
           checked={status === "basket"}
           onChange={(e) => onBought(e.target.checked)}
           aria-label={`Bought: ${item.name}`}
-          className="mt-1 h-5 w-5 shrink-0 accent-terracotta"
+          className="mt-1 h-5 w-5 shrink-0 accent-ink"
         />
       )}
       <div className="min-w-0 flex-1">
@@ -90,19 +90,19 @@ export function ItemRow({
           {item.amount && <span className="max-w-[55%] text-right text-sm">{item.amount}</span>}
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-muted">
-          {tag && <span className="font-medium text-sage">{tag}</span>}
+          {tag && <span className="font-medium text-good">{tag}</span>}
           {item.sources.length > 0 && (
             <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="hover:text-ink">
               For {days.join(", ")} {open ? "▴" : "▾"}
             </button>
           )}
           {onHave && (
-            <button type="button" onClick={onHave} className="text-terracotta underline">
+            <button type="button" onClick={onHave} className="text-accent underline">
               {status === "home" ? "Need to buy" : "Have it"}
             </button>
           )}
           {onRemove && (
-            <button type="button" onClick={onRemove} className="text-terracotta underline">
+            <button type="button" onClick={onRemove} className="text-accent underline">
               Remove
             </button>
           )}
