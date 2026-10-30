@@ -5,6 +5,7 @@ import { ErrorBox } from "@/components/ui";
 import { describeDatabaseError, getDb } from "@/lib/db";
 import type { RecipeRow, WeekPlanRow } from "@/lib/db/schema";
 import { defaultWeekStart, readWeekStart, stockholmToday } from "@/lib/plan/dates";
+import { getPrepLimits } from "@/lib/plan/prep-limits";
 import { getPlan } from "@/lib/plan/store";
 import { toPlanRecipe } from "@/lib/plan/suggest";
 import { getAllRecipes } from "@/lib/recipes/queries";
@@ -29,8 +30,10 @@ async function Prep({ searchParams }: Pick<PageProps<"/week/prep">, "searchParam
 
   let plan: WeekPlanRow | null;
   let recipeRows: RecipeRow[];
+  let limits: Record<string, number>;
   try {
-    [plan, recipeRows] = await Promise.all([getPlan(await getDb(), weekStart), getAllRecipes()]);
+    const db = await getDb();
+    [plan, recipeRows, limits] = await Promise.all([getPlan(db, weekStart), getAllRecipes(), getPrepLimits(db)]);
   } catch (error) {
     return <ErrorBox>{describeDatabaseError(error)}</ErrorBox>;
   }
@@ -52,6 +55,7 @@ async function Prep({ searchParams }: Pick<PageProps<"/week/prep">, "searchParam
           weekStart={weekStart}
           initial={{ setup: plan.setup, dishes: plan.dishes, shopping: plan.shopping, prep: plan.prep }}
           recipes={recipeRows.map(toPlanRecipe)}
+          limits={limits}
         />
       )}
     </>

@@ -78,6 +78,7 @@ const pages = [
   ["recipe", firstRecipe],
   ["edit", `${firstRecipe}/edit`],
   ["add", "/recipes/new"],
+  ["import", "/recipes/import"],
   ["settings", "/settings"],
   ["not-found", "/recipes/00000000-0000-0000-0000-000000000000"],
 ];

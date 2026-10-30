@@ -13,12 +13,20 @@ export default function RecipesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-semibold">Recipes</h1>
-        <Link
-          href="/recipes/new"
-          className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
-        >
-          + Add recipe
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/recipes/import"
+            className="rounded-xl border border-terracotta px-4 py-2 text-sm font-medium text-terracotta hover:bg-cream"
+          >
+            Import
+          </Link>
+          <Link
+            href="/recipes/new"
+            className="rounded-xl bg-terracotta px-4 py-2 text-sm font-medium text-white hover:bg-terracotta-dark"
+          >
+            + Add recipe
+          </Link>
+        </div>
       </div>
       <Suspense fallback={<CollectionSkeleton />}>
         <Collection />

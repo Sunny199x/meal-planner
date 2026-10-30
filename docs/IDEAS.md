@@ -51,7 +51,7 @@ Related:
   instead would handle more but costs money per recipe and needs an API key; only if the word
   list proves too limited.
 
-### Show a photo of each dish when choosing (Planned: milestone 4)
+### Show a photo of each dish when choosing (Done)
 
 *Saketh, 29 October 2026, after milestone 2.*
 
@@ -71,7 +71,11 @@ Show the dish's photo on the "Pick a first dish" options, the suggestion cards, 
   disappear if the site changes it. Keeping our own copy avoids that and needs the same storage
   as uploads.
 
-### Shared prep only matches identical make-ahead names (Open)
+### Shared prep only matches identical make-ahead names (Partly done)
+
+Done in milestone 4: imports suggest the names already shared by your recipes, and Settings →
+Recipe check lists probably-duplicate names. Still open: the one-tap rename (option 1 below) and the
+hint while typing (option 2), worth building once duplicates actually turn up.
 
 *Saketh, 29 October 2026, after milestone 2.*
 
@@ -106,6 +110,27 @@ See `docs/DECISIONS.md`.
 salt") now follow the portions control and are highlighted. Times, temperatures and counts stay
 as written.
 
+## Noticed while building milestone 4 (Open)
+
+- **A camera screen inside the app, like WhatsApp's** (*Saketh, 30 October 2026: "note this as a
+  feature for future releases"*). Today one photo button opens a small menu (*Take photo* /
+  *Choose from gallery*) that hands over to the phone's own camera or picker. A camera screen in
+  the app would show a viewfinder with a shutter button and a gallery icon, all in one place.
+  - **Not possible in a web app:** WhatsApp's strip of recent photos. Browsers never let a website
+    list the phone's photos, only receive the ones picked in the phone's picker.
+  - **Trade-offs:** photos are usually a little less sharp than the phone's own camera app (which
+    matters for small cookbook print); the phone asks for camera permission the first time; about
+    half a day of work.
+
+- **Instagram links on their own:** today the caption has to be pasted, or screenshots of the post
+  added as photos. Instagram's official access needs a Meta developer app and is mainly for
+  business accounts, so it needs a closer look.
+  Saketh: "let's see how we can fix it later" (29 October 2026).
+
+- **Remember corrections from the review screen:** if Claude keeps translating a word the same
+  wrong way, or a name keeps needing the same fix, remember the fix and pass it to Claude next
+  time. Worth building only once the same fix repeats.
+
 ## Noticed while building milestone 3 (Open)
 
 Small things that may or may not matter once the app is used for real weeks:
@@ -122,8 +147,8 @@ Small things that may or may not matter once the app is used for real weeks:
 
 ## Parked earlier (decided "later")
 
-- **Reading photos with the Claude API** (about $0.04–0.05 per photo, needs an Anthropic API key).
-  Only if the free "paste recipe text" import (milestone 4) shows a real need.
+- **Reading photos with the Claude API:** done in milestone 4 (30 October 2026), up to 4 photos per
+  recipe, at about the same cost as a text import.
 - **Remember "Not this one"** for the week, instead of forgetting it when you leave the Week tab.
 - **Named collections** beyond favourites and tags.
 - **TikTok links:** not used in the household.

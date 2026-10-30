@@ -27,6 +27,7 @@ function recipe(overrides: Partial<RecipeSummary>): RecipeSummary {
     carbFocused: false,
     seafood: null,
     ingredients: [],
+    photo: null,
     ...overrides,
   };
 }

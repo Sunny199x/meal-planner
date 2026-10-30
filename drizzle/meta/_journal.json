@@ -36,6 +36,20 @@
       "when": 1793294845203,
       "tag": "0004_grocery_list",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793309889623,
+      "tag": "0005_recipe_photos",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793311321533,
+      "tag": "0006_prep_limits",
+      "breakpoints": true
     }
   ]
 }

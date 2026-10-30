@@ -31,11 +31,28 @@ const TILE_COLOURS = [
   ["#d9e4e6", "#35585e"],
 ];
 
-export function RecipeTile({ title, cuisine, size = "md" }: { title: string; cuisine: string; size?: "md" | "lg" }) {
+const TILE_SIZES = { sm: "h-12 w-12 text-xl", md: "h-16 w-16 text-3xl", lg: "h-20 w-20 text-4xl" } as const;
+
+/** The recipe's photo, or a coloured tile with its first letter when there is none. */
+export function RecipeTile({
+  title,
+  cuisine,
+  photo = null,
+  size = "md",
+}: {
+  title: string;
+  cuisine: string;
+  photo?: string | null;
+  size?: keyof typeof TILE_SIZES;
+}) {
+  const dimensions = TILE_SIZES[size];
+  if (photo) {
+    // eslint-disable-next-line @next/next/no-img-element -- photos are already shrunk and served by the app
+    return <img src={photo} alt="" loading="lazy" className={`shrink-0 rounded-xl object-cover ${dimensions}`} />;
+  }
   let hash = 0;
   for (const char of cuisine.toLowerCase()) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
   const [background, colour] = TILE_COLOURS[hash % TILE_COLOURS.length];
-  const dimensions = size === "lg" ? "h-20 w-20 text-4xl" : "h-16 w-16 text-3xl";
   return (
     <div
       aria-hidden

@@ -10,6 +10,7 @@ import {
   TIME_SLOTS,
   cookingEvenings,
   portionsNeeded,
+  prepDaysOf,
   type TimeSlot,
   type WeekSetup,
 } from "@/lib/plan/types";
@@ -20,6 +21,9 @@ const TIME_OPTION_LABEL: Record<TimeSlot, string> = {
   normal: "Normal · 45 min",
   relaxed: "Relaxed · no limit",
 };
+
+/** The weekend before the week first, then Monday to Friday. */
+const PREP_DAY_ORDER = [5, 6, 0, 1, 2, 3, 4];
 
 const selectClass = "rounded-xl border border-line bg-cream px-2 py-2 text-base";
 
@@ -65,6 +69,12 @@ export function WeekSetupPanel({
 
   function updateEvening(day: number, change: Partial<WeekSetup["evenings"][number]>) {
     setDraft((d) => ({ ...d, evenings: d.evenings.map((e, i) => (i === day ? { ...e, ...change } : e)) }));
+  }
+  function togglePrepDay(day: number) {
+    setDraft((d) => {
+      const days = prepDaysOf(d);
+      return { ...d, prepDays: days.includes(day) ? days.filter((x) => x !== day) : [...days, day].sort((a, b) => a - b) };
+    });
   }
   function updatePerson(index: number, change: Partial<WeekSetup["people"][number]>) {
     setDraft((d) => ({ ...d, people: d.people.map((p, i) => (i === index ? { ...p, ...change } : p)) }));
@@ -169,6 +179,30 @@ export function WeekSetupPanel({
         </div>
       </fieldset>
 
+      <fieldset className="min-w-0">
+        <legend className="text-sm font-medium">Prep days</legend>
+        <p className="text-sm text-muted">
+          Days with time for bigger prep. Saturday and Sunday mean the weekend before the week. Each task is done on
+          the latest prep day its &ldquo;how far ahead&rdquo; limit allows.
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {PREP_DAY_ORDER.map((day) => {
+            const on = prepDaysOf(draft).includes(day);
+            return (
+              <label
+                key={day}
+                className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-sm ${
+                  on ? "border-sage bg-sage-light text-sage" : "border-line"
+                }`}
+              >
+                <input type="checkbox" checked={on} onChange={() => togglePrepDay(day)} className="h-4 w-4 accent-terracotta" />
+                {DAY_SHORT[day]}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+
       <label className="block">
         <span className="text-sm font-medium">Anything you&apos;d like to use up? (optional)</span>
         <span className="block text-sm text-muted">
@@ -242,6 +276,13 @@ function SetupSummary({ setup }: { setup: WeekSetup }) {
             .map((p) => `${p.name} ${p.lunches}`)
             .join(", ")}. `}
         About {formatQuantity(portions.total)} portions in total.
+      </p>
+      <p>
+        Prep days:{" "}
+        {prepDaysOf(setup).length > 0
+          ? [...prepDaysOf(setup)].sort((a, b) => PREP_DAY_ORDER.indexOf(a) - PREP_DAY_ORDER.indexOf(b)).map((d) => DAY_NAMES[d]).join(", ")
+          : "none"}
+        .
       </p>
       {setup.ingredientsToUse.length > 0 && <p>To use up: {setup.ingredientsToUse.join(", ")}.</p>}
     </div>

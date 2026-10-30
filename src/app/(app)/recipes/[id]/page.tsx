@@ -15,10 +15,12 @@ import {
   type LabelResult,
 } from "@/lib/recipes/labels";
 import { parseIngredientLine } from "@/lib/recipes/parse-ingredient-line";
+import { photoUrl } from "@/lib/recipes/photo-url";
 import { getRecipe } from "@/lib/recipes/queries";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
 import { describeSourceLink } from "@/lib/recipes/source-link";
 import { BackToRecipes } from "./back-link";
+import { PhotoControls } from "./photo-controls";
 import { RecipeBody, Section } from "./recipe-body";
 import { SavedNotice } from "./saved-notice";
 
@@ -66,13 +68,18 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
   const protein = proteinLabel(parsed, recipe.servings);
   const carb = carbLabel(parsed, recipe.servings);
   const sourceLink = recipe.sourceUrl ? describeSourceLink(recipe.sourceUrl) : null;
+  const photo = photoUrl(recipe.id, recipe.photoVersion);
 
   return (
     <article className="space-y-5">
       {back}
       <SavedNotice />
+      {photo && (
+        // eslint-disable-next-line @next/next/no-img-element -- photos are already shrunk and served by the app
+        <img src={photo} alt={recipe.title} className="aspect-[4/3] w-full rounded-2xl object-cover sm:aspect-[16/7]" />
+      )}
       <header className="flex gap-4">
-        <RecipeTile title={recipe.title} cuisine={recipe.cuisine} size="lg" />
+        {!photo && <RecipeTile title={recipe.title} cuisine={recipe.cuisine} size="lg" />}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <h1 className="font-display text-2xl leading-tight font-semibold sm:text-3xl">{recipe.title}</h1>
@@ -81,12 +88,15 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
           <p className="mt-1 text-muted">
             {recipe.cuisine} · {DIET_LABEL[recipe.diet]}
           </p>
-          <Link
-            href={`/recipes/${recipe.id}/edit`}
-            className="mt-2 inline-block rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50"
-          >
-            Edit
-          </Link>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Link
+              href={`/recipes/${recipe.id}/edit`}
+              className="rounded-full border border-line px-3 py-1 text-sm hover:border-terracotta/50"
+            >
+              Edit
+            </Link>
+            <PhotoControls recipeId={recipe.id} hasPhoto={photo !== null} />
+          </div>
         </div>
       </header>
 

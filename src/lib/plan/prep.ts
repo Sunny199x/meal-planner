@@ -1,20 +1,26 @@
-// The Sunday prep list: the make-ahead tasks of the week's dishes, with the
-// same task in several dishes merged into one batch (matched by name, as the
-// recipe files write them), and for each evening what is left to do then:
-// what was done on Sunday, leftovers, lunch boxes to pack, portions to freeze.
-// Nothing here says how long prepared food keeps.
+// The prep list: the make-ahead tasks of the week's dishes, each planned for a
+// prep day (Sunday and Wednesday by default) only if that is within how far
+// ahead the task may be done (see food-safety.ts); otherwise it's done on the
+// evening of the dinner. The same task on the same prep day is one batch
+// (matched by name, as the recipe files write them). For each evening: what
+// was prepped and when, what's left, leftovers, lunch boxes and freezing.
 import { scaleLine } from "../recipes/scale";
 import { ingredientKey, prepKey } from "./ingredients";
+import { limitFor, type PrepLimit } from "./food-safety";
 import type { DishPortions } from "./portions";
 import { shoppingKey, shoppingSection } from "./shopping";
 import type { PlanRecipe } from "./suggest";
-import type { PlannedDish, WeekSetup } from "./types";
+import { prepDaysOf, type PlannedDish, type WeekSetup } from "./types";
 
 type Recipe = Pick<PlanRecipe, "id" | "title" | "servings" | "timeTotalMin" | "ingredients" | "makeAhead">;
 
 export type PrepTask = {
+  /** The task and its prep day, e.g. "cook rice@-1"; ticks are stored under this. */
   key: string;
   name: string;
+  /** When: −2/−1 = Saturday/Sunday before the week, 0–6 = Monday–Sunday of it. */
+  prepDay: number;
+  limit: PrepLimit | null;
   dishes: { recipeId: string; title: string; day: number | null; portions: number; description: string }[];
   /** For a shared task: the ingredient lines it works on, scaled per dish ("410 g basmati rice"). */
   amounts: { recipeId: string; day: number | null; line: string }[];
@@ -28,7 +34,7 @@ const VERBS = new Set([
 ]);
 
 /** "Cut potato fries" → ["fry", "potato"]: what the task works on, main word first. */
-function taskWords(name: string): string[][] {
+export function taskWords(name: string): string[][] {
   return name
     .split(/\band\b|,/i)
     .map((part) => ingredientKey(part.replace(/-/g, " ")).split(" ").filter((w) => w.length >= 3 && !VERBS.has(w)).reverse())
@@ -50,20 +56,38 @@ function amountsFor(name: string, dishes: { recipe: Recipe; day: number | null; 
   return lines.filter((l) => found.has(l)).map(({ recipeId, day, line }) => ({ recipeId, day, line }));
 }
 
+/** A prep weekday as a day of the week being planned: Saturday and Sunday are the weekend before it. */
+export function prepDayOffset(weekday: number): number {
+  return weekday >= 5 ? weekday - 7 : weekday;
+}
+
+/** The latest prep day on or before the dinner and within the limit; null means "do it on the evening". */
+export function choosePrepDay(dinnerDay: number, limit: PrepLimit | null, prepDays: number[]): number | null {
+  const days = limit?.days ?? 0;
+  const fitting = prepDays.map(prepDayOffset).filter((p) => p <= dinnerDay && dinnerDay - p <= days);
+  return fitting.length > 0 ? Math.max(...fitting) : null;
+}
+
 export function buildPrepList(
+  setup: WeekSetup,
   dishes: PlannedDish[],
   recipes: Map<string, Recipe>,
   portions: Map<string, DishPortions>,
+  household: Map<string, number>,
 ): PrepTask[] {
+  const prepDays = prepDaysOf(setup);
   const tasks = new Map<string, PrepTask & { cooks: { recipe: Recipe; day: number | null; factor: number }[] }>();
   const ordered = [...dishes].sort((a, b) => (a.day ?? 7) - (b.day ?? 7));
   for (const dish of ordered) {
     const recipe = recipes.get(dish.recipeId);
     const total = portions.get(dish.recipeId)?.total;
-    if (!recipe || !total) continue;
+    if (!recipe || !total || dish.day === null) continue;
     for (const task of recipe.makeAhead) {
-      const key = prepKey(task.name);
-      const entry = tasks.get(key) ?? { key, name: task.name, dishes: [], amounts: [], cooks: [] };
+      const limit = limitFor(task.name, household);
+      const prepDay = choosePrepDay(dish.day, limit, prepDays);
+      if (prepDay === null) continue;
+      const key = `${prepKey(task.name)}@${prepDay}`;
+      const entry = tasks.get(key) ?? { key, name: task.name, prepDay, limit, dishes: [], amounts: [], cooks: [] };
       entry.dishes.push({ recipeId: recipe.id, title: recipe.title, day: dish.day, portions: total, description: task.description });
       entry.cooks.push({ recipe, day: dish.day, factor: total / recipe.servings });
       tasks.set(key, entry);
@@ -71,13 +95,23 @@ export function buildPrepList(
   }
   return [...tasks.values()]
     .map(({ cooks, ...task }) => ({ ...task, amounts: task.dishes.length > 1 ? amountsFor(task.name, cooks) : [] }))
-    .sort((a, b) => b.dishes.length - a.dishes.length || (a.dishes[0].day ?? 7) - (b.dishes[0].day ?? 7));
+    .sort(
+      (a, b) =>
+        a.prepDay - b.prepDay || b.dishes.length - a.dishes.length || (a.dishes[0].day ?? 7) - (b.dishes[0].day ?? 7),
+    );
 }
 
 export type EveningPlan = {
   day: number;
   /** The dish cooked tonight, if any. */
-  cook: { recipeId: string; title: string; timeTotalMin: number; portions: number; prepped: string[] } | null;
+  cook: {
+    recipeId: string;
+    title: string;
+    timeTotalMin: number;
+    portions: number;
+    /** Its make-ahead tasks and when they're done; prepDay null = on the evening itself. */
+    tasks: { name: string; key: string | null; prepDay: number | null; limit: PrepLimit | null }[];
+  } | null;
   /** A dish eaten again tonight, cooked on an earlier evening. */
   leftovers: { recipeId: string; title: string; cookedOn: number } | null;
   /** Lunch boxes to pack from tonight's dish, per person. */
@@ -85,13 +119,15 @@ export type EveningPlan = {
   freezer: number;
 };
 
-/** What each cooking evening holds once Sunday's prep is done. */
+/** What each cooking evening holds once the prep days' work is done. */
 export function eveningPlans(
   setup: WeekSetup,
   dishes: PlannedDish[],
   recipes: Map<string, Recipe>,
   portions: Map<string, DishPortions>,
+  household: Map<string, number>,
 ): EveningPlan[] {
+  const prepDays = prepDaysOf(setup);
   return setup.evenings.flatMap((evening, day) => {
     if (!evening.cooking) return [];
     const dish = dishes.find((d) => d.day === day && recipes.has(d.recipeId));
@@ -108,7 +144,11 @@ export function eveningPlans(
                 title: recipe.title,
                 timeTotalMin: recipe.timeTotalMin,
                 portions: dishPortions.total,
-                prepped: recipe.makeAhead.map((t) => t.name),
+                tasks: recipe.makeAhead.map((t) => {
+                  const limit = limitFor(t.name, household);
+                  const prepDay = choosePrepDay(day, limit, prepDays);
+                  return { name: t.name, key: prepDay === null ? null : `${prepKey(t.name)}@${prepDay}`, prepDay, limit };
+                }),
               }
             : null,
         leftovers: repeat ? { recipeId: repeat.recipeId, title: recipes.get(repeat.recipeId)!.title, cookedOn: repeat.day! } : null,

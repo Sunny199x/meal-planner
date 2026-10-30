@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 29 October 2026, end of milestone 3 (Using the week).
+Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 
 ## Where the app is
 
@@ -44,11 +44,26 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   - labels, with the reason shown ("62.5 g red lentils per serving")
   - grouped ingredients, steps, make-ahead tasks and notes
 - **Favourites**, shared by both phones.
+- **Dish photos:** on a recipe page, *Add photo* opens a small menu: *Take photo* (the phone's
+  camera) or *Choose from gallery*. It is shrunk on the phone (about 1,200 px) before it is saved,
+  and shows on the recipe cards, the recipe page, the week's suggestion cards and *Browse all
+  recipes*. Photos are behind the passcode like everything else.
+- **Importing a recipe** (Recipes → Import): paste a link to a recipe website (read from the page
+  directly), a YouTube link (its description is read automatically once `YOUTUBE_API_KEY` is set;
+  until then, paste the description), an Instagram link plus its caption, any recipe text, or up
+  to 4 photos (a cookbook page, a handwritten recipe, screenshots of a post), in any language. The
+  website's or video's photo can come along. Claude reads it and writes it
+  in English with metric units (about 1–3 öre per recipe); the app's own rules then match units,
+  names, cuisine and make-ahead tasks to the household's recipes. You check everything in the
+  normal recipe form before saving. Needs `ANTHROPIC_API_KEY` in Vercel.
 - **Adding, editing and deleting recipes** in the app:
   - Same format as the recipe files.
   - Live preview of how each ingredient line is read.
   - Live seafood warning.
   - Tap-to-add make-ahead names already used elsewhere.
+- **Recipe check** (Settings): recipes that won't work well with the suggestions yet (no make-ahead
+  tasks, unreadable lines, no cuisine or protein, seafood, templates) and probably-duplicate
+  make-ahead names.
 - **Recipe files** in `seed-recipes/`: Settings → *Load recipes from files* adds and updates them
   and reports problems line by line. Settings → *Reset everything* starts over (type RESET).
 - **Seafood rule:** recipes with seafood get a red warning. Ingredients that often contain fish
@@ -83,27 +98,27 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
   - Tick **Bought**, or **Have it** for things already at home. Ticks are shared by both phones
     and with the grocery list. If the plan later needs more of something ticked, it comes back
     with a note. Other things to buy are added on the grocery list.
-- **Sunday prep:**
-  - Make-ahead tasks of the chosen dishes; the same task in several dishes is one batch, with the
-    amounts each dish needs ("410 g basmati rice (Mon) + 300 g basmati rice (Tue)").
+- **Prep (Week → Prep):**
+  - Prep days are set in the week setup (default Sunday before the week and Wednesday). Each
+    make-ahead task goes on the latest prep day within how far ahead it may be done, or on the day
+    of the dinner; the same task on the same day is one batch, with the amounts each dish needs.
+  - "How far ahead" limits come from published food-safety guidance for cooked food (cooked rice:
+    1 day; other cooked food: 2 days; UK Food Standards Agency, linked), or are set per task in
+    Settings → Prep limits, never longer than the guidance. A task with neither is done on the
+    day.
   - Tick tasks off; ticks are shared by both phones.
-  - Each evening: what was done on Sunday, the rest to do, lunch boxes to pack and portions to
-    freeze, or an evening of leftovers with no cooking.
+  - Each evening: what was prepped and when, what's done that day and why, lunch boxes to pack
+    and portions to freeze, or an evening of leftovers with no cooking.
 - **Phones:** every page works at 375 px wide. "Add to Home Screen" gives the app its own icon.
 
 ## Not built yet (and labelled in the app where it shows)
 
-- Saved meal combinations and past weeks ("repeat a past week"): milestone 4.
-- Reading a recipe automatically from a website link, and attaching photos: milestone 4. The Add
-  page says so.
-- Pasting recipe text (for example from a photo via iPhone Live Text or Google Lens) and having
-  it sorted into the form: milestone 4, together with link import.
-- Instagram: link only, by design; the recipe has to be typed.
-- YouTube: link only for now. Fetching the video title and thumbnail is planned for milestone 4.
+- Saved meal combinations and past weeks ("repeat a past week"): milestone 5.
+- Instagram posts can't be read by the app yet: the caption is pasted, or screenshots of the post
+  are added as photos (see `docs/IDEAS.md`).
+- YouTube recipes that are only said out loud in the video, not written in its description.
 - TikTok: not supported (not used).
 - Named collections beyond favourites and tags.
-- Recipe photos on cards and suggestions: cards use a coloured tile with the first letter
-  instead. Planned with link import (milestone 4); see `docs/IDEAS.md`.
 - Prices: none, by design.
 
 ## Known limitations
@@ -133,10 +148,22 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 - **Scaled recipe steps:** amounts with a unit ("300 ml", "½ tsp") are scaled and highlighted;
   times, temperatures and counts ("10 minutes", "4 tortillas") stay as written, and pan sizes
   aren't adjusted.
+- **Food-safety guidance** covers only cooked food, and only when the task's name says so
+  ("Cook…", "Roast…"). Livsmedelsverket gives no limit per food, so the day limits are the UK Food
+  Standards Agency's (stricter). Raw prep (pickling, marinating, sauces) is done on the day until
+  you set a limit. "1 day ahead" means the day before, which can be a little over 24 hours.
 - **Prep amounts** for a shared task are found by its main word ("rice" in "Cook rice"); a task
-  like "Chop aromatics" shows no amounts. The app never says how long prepared food keeps.
+  like "Chop aromatics" shows no amounts. The app never makes up how long prepared food keeps.
 - **First load after a quiet spell** can take a second or two (the free Neon database sleeps).
 - **The passcode** keeps strangers out; it is not bank-level security.
+- **Importing needs `ANTHROPIC_API_KEY`** in Vercel, and costs about 1–3 öre per recipe. Some
+  websites block apps from reading their pages; pasting the recipe text always works. On 29
+  October the page reader found the recipe and photo on real pages from BBC Good Food,
+  HelloFresh.se, RecipeTin Eats, Jamie Oliver and NYT Cooking. Allrecipes, Serious Eats and ICA.se
+  refused to send their pages to a test session, and may do the same to the app; paste those.
+- **Photo import** was tested with a stand-in for Claude, not yet with real photos read by Claude.
+  Blurry photos and messy handwriting can be misread; parts Claude can't make out are marked "?"
+  and listed on the review screen. The photos aren't kept.
 - **The three template recipes** are illustrative and untested. Delete their files once real
   recipes are in, then press *Load recipes from files*.
 
@@ -146,7 +173,11 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 2. Search "daal", then clear it. Tap **Filters** → **Vegetarian** → **≤ 45 min**.
 3. Open a recipe: point out the labels and why they apply, and the make-ahead tasks.
 4. Tap the heart. It shows on both phones.
-5. Tap **Add** and paste a real recipe. Watch the "How the app reads them" box, then save.
+5. Tap **Recipes** → **Import**, paste a link to a recipe website (or a recipe in any language) and
+   tap **Read recipe**. Check the "Check before saving" box, tick "Good as leftovers" if it is, and
+   save. Then add a photo on the recipe page with **Add photo** → **Take photo** (or keep the
+   website's photo). Try a cookbook page too: **Add photos** → **Take photo** under *Photos* (once
+   per page), then **Read recipe**.
 
 ### Choosing a week together (about 10 minutes, the real test)
 
@@ -166,14 +197,18 @@ Last updated: 29 October 2026, end of milestone 3 (Using the week).
 1. **Groceries** (the home page): tap **Have it** for what's already at home (start with "Check
    the cupboard"), and add anything else you need. In the shop, tick items as they go in the
    basket. The other phone sees the ticks when it is opened.
-2. **Sunday prep** tab: work down the list; shared tasks come first. Tick each one off.
-3. During the week, open **Sunday prep** → *Each evening* to see what's left to do tonight and
-   which lunch boxes to pack.
+2. **Week → Prep**: work down Sunday's list; shared tasks come first. Tick each one off. On
+   Wednesday, do Wednesday's list.
+3. During the week, open **Prep** → *Each evening* to see what's left to do tonight and which
+   lunch boxes to pack.
+4. Once: Settings → **Prep limits**, set how far ahead the raw prep may be done (pickled onions,
+   pomegranate, sauces). Cooked rice and other cooked food already follow the guidance shown
+   there.
 
 ## Next
 
-1. Merge milestones 2 and 3 into `main` so Victoria has them on the production address.
-2. Use the app for one or two real weeks and note what feels wrong in `docs/IDEAS.md`.
-3. Milestone 4 (capture and history): reading recipes from website links (with their photos),
-   Instagram and YouTube links, the free "paste recipe text" import, saved meal combinations and
-   past weeks. Before weekly use, revisit the shared preview/production database.
+1. ~~Add `ANTHROPIC_API_KEY` in Vercel~~ Done 29 October; try importing a few real recipes on
+   the preview.
+2. Merge milestone 4 into `main`.
+3. Milestone 5 (history): past weeks, "repeat a past week" and liked meal combinations feeding
+   the suggestions. Before weekly use, revisit the shared preview/production database.

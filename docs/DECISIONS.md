@@ -22,10 +22,10 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
 | Database | Postgres from Neon, added through Vercel's Storage / Marketplace | No separate account to manage; the database URL is injected automatically. |
 | Sign-in | One shared household passcode (environment variable), cookie session | Two people, one household. Real user accounts are out of scope. |
 | Recipe URL import | Server-side fetch, parse schema.org `Recipe` JSON-LD, then a review screen | Works for most food blogs. Falls back to "save link + manual entry" when there is no structured data. |
-| Instagram | Save link (as the recipe's source) + type the recipe, clearly labelled | Instagram doesn't let apps read posts without a business developer account. |
-| YouTube | Save link now. Milestone 4: also fetch title, channel and thumbnail automatically (YouTube's public oEmbed, no key needed) | The recipe text is usually in the video description, which needs a YouTube Data API key; only with Saketh's OK. |
+| Instagram | Link + pasted caption, read by Claude (milestone 4) | Instagram's official access is locked down; a better way is in `docs/IDEAS.md` for later. |
+| YouTube | Link only: the official YouTube Data API reads the title, description and thumbnail (`YOUTUBE_API_KEY`, free; Saketh's OK 29 October 2026). Without the key, the description is pasted. | Most cooking videos write the recipe in the description. |
 | TikTok | Not supported | Saketh and Victoria don't use it (decided 29 October 2026). |
-| Photo import | Attach a photo to a recipe as a reference, then type the recipe manually | No OCR in the MVP. Label it honestly. |
+| Photo import | Up to 4 photos (cookbook pages, a handwritten recipe, screenshots) read by Claude on the Import page; dish photos attached to recipes (milestone 4) | Added 30 October 2026 with Saketh's OK, once the cheap model made it about the same cost as text. |
 | Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Saketh writes his own recipes there. See `seed-recipes/README.md`. |
 
 **Caveat:** Vercel's Hobby plan is for personal, non-commercial use. That fits a household app.
@@ -122,7 +122,8 @@ the repo, then check it for real on the Vercel preview deployment.
     YouTube description.
   - It will be built together with website / Instagram / YouTube import in the capture milestone.
   - Reading photos with the Claude API (about $0.04–0.05 per photo with Anthropic's most capable
-    model, needs an Anthropic API key) waits until the free version shows a real need.
+    model, needs an Anthropic API key) waits until the free version shows a real need. (Built in
+    milestone 4 after all: see "Photo import" below.)
 - **Real recipes for testing:** the household's recipes are files in `seed-recipes/`, so suggestion
   rules are checked against them directly (no export step needed).
 - **Week plans:** one row per week, named by its Monday, in Stockholm time.
@@ -273,6 +274,125 @@ and a change in one should show in the other.
 - **Recipes moved** to `/recipes` (a Recipes link in the menu). On phones the menu shows the
   app icon instead of the words "Meal Planner" so four links fit.
 
+## Decisions for milestone 4: adding recipes (29 October 2026)
+
+- **Scope:** dish photos, importing (website links, pasted text, YouTube, Instagram), the
+  normalising layer with a review screen, prep timing (prep days and how far ahead each task can
+  be done), and a recipe health check. History (past weeks, repeat a week, liked combinations)
+  moves to milestone 5.
+- **Sources first:** English recipe websites, Instagram and YouTube (Saketh's answer), then
+  others. Recipes may be in English, Swedish, Hindi, Romanian or Russian.
+- **Reading and translating with Claude** (Saketh's choice): an import is sent once to Claude
+  Haiku 5.5 (`claude-haiku-5-5`, $0.10 / $0.50 per million input / output tokens; roughly 1–3 öre
+  per recipe), which returns the recipe in the app's format: English, metric units, flags where a
+  conversion is uncertain (a "glass" can be 200 or 250 ml). Needs `ANTHROPIC_API_KEY` in Vercel.
+  The review screen says the recipe was read and translated automatically and must be checked.
+  The suggestion rules stay plain rules; Claude only reads recipes.
+- **After Claude, the app's own rules** check and tidy the result the same way for every source:
+  units, names matched to ones already used, the seafood check, suggested make-ahead tasks from
+  existing names, and the fields the suggestion rules need.
+- **Import screen** (Recipes → Import): paste text in any language plus where it's from; Claude
+  reads it; the normalising rules run; the normal recipe form opens pre-filled under a "Check
+  before saving" box (what to fill in, what to check, seafood, what the app changed). Suggested
+  make-ahead tasks are one tap in the form. Nothing is saved until "Save recipe".
+  - Remembering corrections made in the review was planned, but with Claude translating it only
+    pays off if the same fix keeps coming up; it is in `docs/IDEAS.md` until then.
+- **Links** (`src/lib/import/sources.ts`): a website link is fetched by the server and the
+  recipe is read from the page's schema.org Recipe block (JSON-LD), sent to Claude as short clean
+  text; without such a block, the page's visible text is sent instead. Pasted text always wins
+  over fetching. YouTube and Instagram don't let apps read descriptions or captions, so those are
+  pasted.
+  - **YouTube** (corrected 29 October 2026; the first version wrongly said apps can't read
+    descriptions): with `YOUTUBE_API_KEY` set, the official YouTube Data API v3 (`videos.list`,
+    part snippet; free, 1 unit of the 10,000-unit daily allowance per import) gives the title,
+    channel, description and thumbnail, and Claude reads the recipe from the description. If the
+    description has no recipe (it's only said out loud), the app says so and asks for it to be
+    pasted or typed. Pasted text always wins. Without the key, the description is pasted and the
+    public oEmbed adds title, channel and thumbnail.
+  - **Fetching safely** (`src/lib/import/fetch-page.ts`): only plain http(s) addresses on the
+    public internet, checked again after every redirect (no localhost, home networks or cloud
+    metadata addresses); 10 seconds and 3 MB per page, 8 MB per picture.
+  - **Photos from imports:** the page's or video's photo is shown in the review with "Use this
+    photo". After saving, the server fetches it and the phone shrinks it like any other photo
+    (no image library on the server, so nothing new to break on Vercel).
+- **The normalising rules** (`src/lib/import/normalise.ts`), applied to every import after it is
+  read, listing each change, guess and gap for the review screen:
+  - US units to metric: cups (taken as 240 ml, flagged: sizes vary and dry food is better
+    weighed), ounces, pounds, fluid ounces, pints (US, flagged), quarts, sticks of butter (113 g,
+    flagged), "(14 oz)" can sizes; °F to °C (to the nearest 10, as oven dials go) and inches to cm
+    in the steps. Rounded like the kitchen amounts.
+  - US names to the ones used here: cilantro → coriander, ground beef → beef mince, scallions →
+    spring onions, heavy cream → double cream, all-purpose flour → plain flour, and a few more.
+  - Cuisine takes the household's spelling when it's the same cuisine ("Mexican" →
+    "Mexican-inspired"). Main protein (heaviest protein ingredient) and diet (meat if any meat,
+    vegetarian if any dairy/egg/honey, otherwise vegan) are guessed and marked as guesses.
+  - Missing title, servings, time, cuisine, "good as leftovers" and "freezer-friendly" are listed
+    as questions; they are never filled in silently.
+  - Make-ahead tasks are offered under names at least two household recipes already share, when
+    the new recipe has all of the task's key ingredients ("Garlic yoghurt" needs garlic and
+    yoghurt). One tap adds one.
+  - The seafood check runs as for every recipe.
+- **Photos are stored in the database,** shrunk on the phone first (about 1,200 px, roughly
+  150 KB), so there is no extra service to set up. A few hundred photos fit easily in the free
+  database.
+- **Prep timing (built):** prep days are chosen in the week setup (Saturday/Sunday mean the weekend
+  before the week; default Sunday and Wednesday). Each task goes on the latest prep day on or
+  before its dinner that is within its "at most N days ahead" limit, otherwise on the day of the
+  dinner; the same task on the same prep day is one batch. Limits are set per task name in
+  Settings → Prep limits (on the day, or 1–6 days ahead), checked on the server, and can never be
+  longer than published guidance. Old ticks from before prep days don't carry over.
+- **Food-safety guidance for prep limits** (29 October 2026, read from the sources themselves; the
+  table is `src/lib/plan/food-safety.ts`):
+  - **Livsmedelsverket gives no limit per food.** Its pages say cooked food in the fridge "often
+    keeps several days, sometimes up to about a week", mainly depending on the fridge's
+    temperature (4 °C), if it is cooled quickly and kept covered. That can't be planned with.
+  - **So the day limits come from the UK Food Standards Agency** ("a similar official source", as
+    agreed), which gives them: cooked rice no more than one day in the fridge (Home food fact
+    checker), and other cooked leftovers within two days (How to chill, freeze and defrost food
+    safely). Both are stricter than Livsmedelsverket's advice. Settings shows both agencies' own
+    words with links.
+  - **Which tasks they cover is decided from the task's name:** a cooking word (cook, roast, bake,
+    simmer, fry, boil, steam, grill…) means cooked food; with "rice" as well, the rice rule. Raw
+    prep (chopping, pickling, marinating, mixing mince, sauces like tzatziki) isn't covered by
+    either rule and stays "on the day" until the household sets a limit. A cooked task whose name
+    doesn't say so ("Harissa bulgur") is also left to the household; renaming it "Cook harissa
+    bulgur" would bring it under the guidance.
+  - **"1 day ahead" means the day before the dinner,** so rice cooked on Sunday afternoon for
+    Monday's dinner can pass 24 hours; Settings suggests cooking it late on the prep day.
+  - The household can choose stricter limits than the guidance, never longer ones.
+- **Photo import** (30 October 2026, Saketh: "Add it now"). On Import, up to 4 photos (cookbook
+  pages, a handwritten recipe, screenshots of a post), taken or chosen on the phone:
+  - **Shrunk on the phone** to about 2,000 px on the long side (JPEG, under 900 KB each), larger
+    than dish photos so small print stays legible, and still within what the model reads without
+    downscaling (2,576 px / 4,784 image tokens).
+  - **Cost:** an image costs ⌈width ÷ 28⌉ × ⌈height ÷ 28⌉ tokens, so a 1,500 × 2,000 photo is
+    3,888 tokens, about $0.0004 at Claude Haiku 5.5's $0.10 per million input tokens (Anthropic's
+    vision and pricing pages, read 29 October 2026). A photo import costs about the same as a text
+    import.
+  - **Sent with the link and text** in one request (Next.js's server-action limit raised to 4 MB;
+    Vercel accepts 4.5 MB). With photos, a link is kept only as the source and isn't fetched.
+  - **Never stored:** the photos are read and then dropped; they show on the review screen to
+    compare against. A dish photo is still added on the recipe page.
+  - **Nothing unreadable is guessed:** Claude writes "?" for what it can't make out, and the review
+    screen asks for every line or step with a "?".
+  - **One photo button with a menu** (*Take photo* / *Choose from gallery*, and *Remove photo* on a
+    recipe page), the same for import and dish photos. Android's Chrome offers only the gallery
+    unless a web page asks for the camera directly, and two separate buttons cluttered the page
+    (Saketh, 30 October). Computers see only the choose option. An in-app camera like WhatsApp's is
+    in `docs/IDEAS.md`.
+- **Recipe check** (Settings → Recipe check, `src/lib/recipes/health.ts`): lists recipes with no
+  make-ahead tasks, lines the app can't fully read, no cuisine or main protein, seafood, or that
+  are illustrative templates; and make-ahead tasks that work on the same things under different
+  names ("Cook rice" / "Make rice"). It points to the recipes rather than renaming them for you:
+  the household's recipes have no such near-duplicates today, and a rename of a recipe from a
+  file would mark it as edited in the app. A one-tap rename stays in `docs/IDEAS.md` for when
+  duplicates appear.
+- **Prep timing (plan):** Sunday and Wednesday are prep days by default (a setting). Each make-ahead task
+  has a "done at most N days ahead" limit, taken from published food-safety guidance
+  (Livsmedelsverket, the Swedish Food Agency, or a similar official source) with the source shown;
+  tasks the guidance doesn't cover default to "on the day" until the household sets them. The app
+  never makes up storage times. (Built as above; the limits ended up from the UK agency.)
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and
@@ -303,7 +423,8 @@ solved problem in other apps. So test the risky part early:
 3. **Executing the week:** weekly plan (move/swap, time conflicts, lunch and freezer allocations),
    consolidated shopping list with checkboxes.
 4. **Capture and prep:** URL import with review, photo/link entries, Sunday prep checklist, saved
-   combinations, past weeks.
+   combinations, past weeks. (As built: the Sunday prep list came in milestone 3; importing,
+   photos and prep timing are milestone 4; saved combinations and past weeks are milestone 5.)
 
 ## Success measures
 

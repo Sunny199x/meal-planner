@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireSignedIn } from "../auth/server";
 import { describeDatabaseError, getDb } from "../db";
 import { readWeekStart } from "./dates";
+import { guidanceFor, MAX_PREP_DAYS } from "./food-safety";
+import { setPrepLimit } from "./prep-limits";
 import { getPlan, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
@@ -98,6 +100,26 @@ export async function loadWeekAction(weekStart: string): Promise<{ week?: SavedW
     return plan
       ? { week: { setup: plan.setup, dishes: plan.dishes, shopping: plan.shopping, prep: plan.prep } }
       : { error: "Save the week's setup first." };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+/** Sets how far ahead a make-ahead task may be done (null clears it: on the evening). Never longer than the guidance. */
+export async function setPrepLimitAction(name: string, days: number | null): Promise<{ limits?: Record<string, number>; error?: string }> {
+  await requireSignedIn();
+  if (typeof name !== "string" || !name.trim() || name.length > 120) return { error: "Something wasn't valid. Please reload and try again." };
+  if (days !== null && !(Number.isInteger(days) && days >= 0 && days <= MAX_PREP_DAYS)) {
+    return { error: "Something wasn't valid. Please reload and try again." };
+  }
+  const guidance = guidanceFor(name);
+  if (days !== null && guidance && days > guidance.days) {
+    return { error: `The guidance allows at most ${guidance.days} ${guidance.days === 1 ? "day" : "days"} ahead for this.` };
+  }
+  try {
+    const limits = await setPrepLimit(await getDb(), name.trim(), days);
+    revalidatePath("/", "layout");
+    return { limits };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

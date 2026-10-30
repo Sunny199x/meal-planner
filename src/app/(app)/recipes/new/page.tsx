@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { RecipeForm } from "@/components/recipe-form";
@@ -18,9 +19,15 @@ export default function NewRecipePage() {
           then links back to it.
         </p>
         <p>
-          <strong className="text-ink">Not available yet:</strong> reading the recipe automatically from a
-          website link, and attaching photos. Both are planned for a later milestone. Instagram posts can&apos;t
-          be read automatically, so for those the link plus typing is how it will stay.
+          To add a photo, save the recipe first, then use <strong className="text-ink">Add photo</strong> on its
+          page.
+        </p>
+        <p>
+          Have the recipe as text, in any language? Use{" "}
+          <Link href="/recipes/import" className="text-terracotta underline">
+            Import
+          </Link>{" "}
+          instead: Claude reads it and fills in this form for you to check.
         </p>
       </div>
       <Suspense fallback={<p className="text-muted">Loading the form…</p>}>

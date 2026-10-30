@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   // at runtime instead of being bundled, and left out of Vercel deployments,
   // which always use Neon.
   serverExternalPackages: ["@electric-sql/pglite"],
+  // Up to four recipe photos (each under 1 MB after shrinking) are sent to be
+  // read in one go; Vercel accepts up to 4.5 MB per request.
+  experimental: {
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   outputFileTracingExcludes: {
     "/**": ["./node_modules/@electric-sql/pglite/**"],
   },

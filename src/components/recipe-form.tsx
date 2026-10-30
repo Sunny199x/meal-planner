@@ -7,6 +7,7 @@ import type { RecipeFormState } from "@/lib/recipes/form-actions";
 import { formatAmount, formatMetric } from "@/lib/recipes/format";
 import { parseIngredientLine } from "@/lib/recipes/parse-ingredient-line";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
+import type { MakeAheadTask } from "@/lib/recipes/types";
 
 type Props = {
   initial: RecipeFormValues;
@@ -15,12 +16,25 @@ type Props = {
   cancelHref: string;
   cuisines: string[];
   prepNames: string[];
+  /** Make-ahead tasks offered for this recipe, e.g. by an import (one tap adds the whole line). */
+  suggestedMakeAhead?: MakeAheadTask[];
+  /** Runs after a successful save, before the saved recipe opens (e.g. to attach an imported photo). */
+  afterSave?: (savedPath: string) => Promise<void>;
 };
 
 const inputClass =
   "mt-1 block w-full rounded-xl border border-line bg-cream px-3 py-2 text-base outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/30";
 
-export function RecipeForm({ initial, action, submitLabel, cancelHref, cuisines, prepNames }: Props) {
+export function RecipeForm({
+  initial,
+  action,
+  submitLabel,
+  cancelHref,
+  cuisines,
+  prepNames,
+  suggestedMakeAhead = [],
+  afterSave,
+}: Props) {
   const [values, setValues] = useState(initial);
   const [state, formAction, saving] = useActionState(action, {});
   const leaving = Boolean(state.openNext);
@@ -29,8 +43,11 @@ export function RecipeForm({ initial, action, submitLabel, cancelHref, cuisines,
   // shows the saved version straight away (see form-actions.ts). This also
   // leaves the form empty for the next recipe.
   useEffect(() => {
-    if (state.openNext) window.location.assign(state.openNext);
-  }, [state.openNext]);
+    const next = state.openNext;
+    if (!next) return;
+    if (afterSave) afterSave(next).finally(() => window.location.assign(next));
+    else window.location.assign(next);
+  }, [state.openNext, afterSave]);
 
   // Errors come from the last save attempt; each one disappears as soon as its
   // field is changed, so a fixed field doesn't keep showing an old message.
@@ -61,9 +78,15 @@ export function RecipeForm({ initial, action, submitLabel, cancelHref, cuisines,
   );
   const makeAhead = useMemo(() => readMakeAhead(values.makeAhead), [values.makeAhead]);
 
-  function addPrepName(name: string) {
+  const notYetAdded = suggestedMakeAhead.filter(
+    (task) => !makeAhead.tasks.some((t) => t.name.toLowerCase() === task.name.toLowerCase()),
+  );
+  function addTaskLine(line: string) {
     const current = values.makeAhead.trimEnd();
-    set("makeAhead", `${current ? current + "\n" : ""}${name}: `);
+    set("makeAhead", `${current ? current + "\n" : ""}${line}`);
+  }
+  function addPrepName(name: string) {
+    addTaskLine(`${name}: `);
   }
 
   const text = (key: keyof RecipeFormValues) => ({
@@ -232,6 +255,26 @@ export function RecipeForm({ initial, action, submitLabel, cancelHref, cuisines,
         >
           <textarea {...text("makeAhead")} rows={4} className={inputClass} />
         </Field>
+        {notYetAdded.length > 0 && (
+          <div className="rounded-xl bg-sage-light px-3 py-2">
+            <p className="text-sm">
+              Suggested for this recipe: your other recipes already share these, so the same name lets them share a
+              batch (tap to add):
+            </p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {notYetAdded.map((task) => (
+                <button
+                  key={task.name}
+                  type="button"
+                  onClick={() => addTaskLine(`${task.name}: ${task.description}`)}
+                  className="rounded-full border border-sage/40 bg-paper px-3 py-1 text-sm hover:border-sage"
+                >
+                  + {task.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {prepNames.length > 0 && (
           <div>
             <p className="text-sm text-muted">Names already used in other recipes (tap to add):</p>

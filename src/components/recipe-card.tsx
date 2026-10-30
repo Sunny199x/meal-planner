@@ -6,7 +6,7 @@ import { Chip, DIET_LABEL, formatMinutes, RecipeTile } from "./ui";
 export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
   return (
     <article className="relative flex gap-3 rounded-2xl border border-line bg-paper p-3 shadow-sm transition hover:border-terracotta/40">
-      <RecipeTile title={recipe.title} cuisine={recipe.cuisine} />
+      <RecipeTile title={recipe.title} cuisine={recipe.cuisine} photo={recipe.photo} />
       <div className="min-w-0 flex-1 pr-9">
         <h2 className="font-medium leading-snug">
           {/* The link covers the whole card; the heart button sits above it. */}
