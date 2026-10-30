@@ -1,4 +1,4 @@
-# Meal Planner — instructions for Claude Code
+# Forkcast (the meal planner) — instructions for Claude Code
 
 A web app that helps Saketh and Victoria (a couple in Stockholm) turn their recipe collection into a
 weekly dinner plan, a shopping list and a Sunday prep list. The core idea being tested: a small

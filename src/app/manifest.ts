@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 // Lets phones add the app to the home screen with its own name and icon.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Meal Planner",
-    short_name: "Meals",
+    name: "Forkcast",
+    short_name: "Forkcast",
     description: "Our recipes and weekly dinner plan.",
     start_url: "/",
     display: "standalone",

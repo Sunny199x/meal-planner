@@ -9,7 +9,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
         <h1 className="flex items-center gap-3 font-display text-3xl font-extrabold tracking-tight">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon.svg" alt="" width={40} height={40} className="rounded-xl" />
-          Meal Planner
+          Forkcast
         </h1>
         <Suspense fallback={<p className="mt-4 text-muted">Loading…</p>}>
           <LoginPanel searchParams={searchParams} />

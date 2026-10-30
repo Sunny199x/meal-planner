@@ -15,7 +15,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             {/* On phones the name doesn't fit next to four links, so only the app icon shows. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icon.svg" alt="" width={32} height={32} className="rounded-lg" />
-            <span className="max-sm:sr-only">Meal Planner</span>
+            <span className="max-sm:sr-only">Forkcast</span>
           </Link>
           <Suspense fallback={<Menu path={null} />}>
             <NavLinks />
