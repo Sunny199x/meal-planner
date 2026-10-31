@@ -9,6 +9,8 @@ function recipe(id: string, overrides: Partial<Omit<PlanRecipe, "ingredients">> 
   return {
     id,
     title: id,
+    source: "Own recipe",
+    site: null,
     cuisine: "Swedish",
     mainProtein: null,
     timeTotalMin: 30,

@@ -1,6 +1,7 @@
 // The suggestion rules. Every rule that applies to a recipe adds a reason with
 // a number of points (negative for "why lower"); the score is simply the sum.
 // So the reasons shown are exactly the ones that produced the ranking.
+import { linkSite } from "../recipes/source-link";
 import type { RecipeRow } from "../db/schema";
 import { formatQuantity } from "../recipes/format";
 import { photoUrl } from "../recipes/photo-url";
@@ -21,6 +22,9 @@ import { DAY_NAMES, TIME_SLOTS, type PlannedDish, type WeekSetup } from "./types
 export type PlanRecipe = {
   id: string;
   title: string;
+  /** Where it's from ("HelloFresh Sweden", "YouTube: Andy Cooks") and its link's website, for searching. */
+  source: string;
+  site: string | null;
   cuisine: string;
   mainProtein: string | null;
   timeTotalMin: number;
@@ -42,6 +46,8 @@ export function toPlanRecipe(row: RecipeRow): PlanRecipe {
   return {
     id: row.id,
     title: row.title,
+    source: row.source,
+    site: linkSite(row.sourceUrl),
     cuisine: row.cuisine,
     mainProtein: row.mainProtein,
     timeTotalMin: row.timeTotalMin,

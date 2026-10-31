@@ -3,6 +3,7 @@ import {
   activeFilterCount,
   filterRecipes,
   filtersFromParams,
+  matchesWords,
   filtersToParams,
   NO_FILTERS,
   type Filters,
@@ -14,6 +15,7 @@ function recipe(overrides: Partial<RecipeSummary>): RecipeSummary {
     id: overrides.title ?? "x",
     title: "Untitled",
     source: "Own recipe",
+    site: null,
     cuisine: "Indian",
     diet: "vegetarian",
     timeTotalMin: 30,
@@ -84,6 +86,20 @@ describe("filterRecipes", () => {
     expect(titles({ q: "chicken lentils" })).toEqual([]);
   });
 
+  it("searches where a recipe is from and its website, ignoring spaces", () => {
+    const fromYouTube = recipe({ title: "Smash burgers", source: "YouTube: Andy Cooks", site: "youtube.com" });
+    const fromHelloFresh = recipe({ title: "Lentil korma", source: "HelloFresh Sweden", site: "hellofresh.se" });
+    const fromCard = recipe({ title: "Chicken stew", source: "HelloFresh card", site: null });
+    const list = [fromYouTube, fromHelloFresh, fromCard];
+    const found = (q: string) => filterRecipes(list, { ...NO_FILTERS, q }).map((r) => r.title);
+    expect(found("andy cooks")).toEqual(["Smash burgers"]);
+    expect(found("AndyCooks")).toEqual(["Smash burgers"]);
+    expect(found("hello fresh")).toEqual(["Lentil korma", "Chicken stew"]);
+    expect(found("hellofresh.se")).toEqual(["Lentil korma"]);
+    expect(found("youtube burgers")).toEqual(["Smash burgers"]);
+    expect(found("andy korma")).toEqual([]);
+  });
+
   it("filters by maximum total time", () => {
     expect(titles({ maxTime: 30 })).toEqual(["Black"]);
     expect(titles({ maxTime: 45 })).toEqual(["Tadka", "Chicken", "Black"]);
@@ -113,6 +129,17 @@ describe("filterRecipes", () => {
   it("does not rule a recipe out for an optional ingredient", () => {
     expect(titles({ withoutIngredients: ["chilli"] })).toEqual(["Tadka", "Chicken", "Black"]);
     expect(titles({ withIngredients: ["chilli"] })).toEqual(["Tadka"]);
+  });
+});
+
+describe("the search used by Week → Browse all recipes", () => {
+  it("needs every word, in any of the texts, ignoring case, accents and spaces", () => {
+    const texts = ["Crème brûlée", "French", "YouTube: Andy Cooks", "youtube.com"];
+    expect(matchesWords(texts, "")).toBe(true);
+    expect(matchesWords(texts, "creme andy")).toBe(true);
+    expect(matchesWords(texts, "andycooks")).toBe(true);
+    expect(matchesWords(texts, "creme hellofresh")).toBe(false);
+    expect(matchesWords([null, undefined, "Daal"], "daal")).toBe(true);
   });
 });
 

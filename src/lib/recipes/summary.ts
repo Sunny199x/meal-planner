@@ -1,5 +1,6 @@
 // The small version of a recipe that the collection page sends to the browser
 // for instant search and filtering.
+import { linkSite } from "./source-link";
 import type { RecipeRow } from "../db/schema";
 import { carbLabel, proteinLabel } from "./labels";
 import { parseIngredientLine } from "./parse-ingredient-line";
@@ -11,6 +12,8 @@ export type RecipeSummary = {
   id: string;
   title: string;
   source: string;
+  /** The website of the recipe's link ("hellofresh.se"), or null. */
+  site: string | null;
   cuisine: string;
   diet: Diet;
   timeTotalMin: number;
@@ -35,6 +38,7 @@ export function toSummary(row: RecipeRow): RecipeSummary {
     id: row.id,
     title: row.title,
     source: row.source,
+    site: linkSite(row.sourceUrl),
     cuisine: row.cuisine,
     diet: row.diet,
     timeTotalMin: row.timeTotalMin,

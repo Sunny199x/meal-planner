@@ -5,6 +5,19 @@ scheduled until it moves into a milestone plan. Newest first within each section
 
 Status: **Open** (not decided), **Planned** (has a milestone), **Done**, **Dropped**.
 
+## Testing week (from 30 October 2026)
+
+Feedback from using Forkcast for real, newest first. Reviewed together at the end of the week.
+
+- **Search recipes by where they're from** (*Saketh, 31 October*): "not just by name and cuisine
+  but also by where or who it's from, like HelloFresh or Andy Cooks." **Done:** both the Recipes
+  search and Week → *Browse all recipes* now search the source ("HelloFresh Sweden", "YouTube:
+  Andy Cooks") and the link's website, ignoring spaces ("hello fresh", "andycooks").
+  - For Instagram, the app can't see the account from the link, so it only finds what's typed in
+    *Where is it from?* when importing.
+- **The week starts on Sunday** (*Saketh, 31 October*): prep happens on Sunday. **Done** (see
+  `docs/DECISIONS.md`).
+
 ## From using the app
 
 ### Normalise imported recipes so they fit the suggestion rules (Planned: milestone 4)

@@ -8,15 +8,21 @@ export type SourceLink = {
   label: string;
 };
 
-export function describeSourceLink(url: string): SourceLink | null {
-  let host: string;
+/** The website a link points to ("hellofresh.se"), or null if it isn't a web address. */
+export function linkSite(url: string | null): string | null {
+  if (!url) return null;
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
-    host = parsed.hostname.toLowerCase().replace(/^(www\.|m\.)/, "");
+    return parsed.hostname.toLowerCase().replace(/^(www\.|m\.)/, "");
   } catch {
     return null;
   }
+}
+
+export function describeSourceLink(url: string): SourceLink | null {
+  const host = linkSite(url);
+  if (!host) return null;
   if (host === "youtube.com" || host === "youtu.be" || host.endsWith(".youtube.com")) {
     return { kind: "youtube", label: "Watch on YouTube" };
   }

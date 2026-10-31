@@ -15,7 +15,7 @@ import {
 import { openEvenings, rankCandidates, shortlist, type PlanRecipe, type Suggestion } from "@/lib/plan/suggest";
 import { DAY_NAMES, DAY_SHORT, MAX_FREEZER, TIME_SLOTS, type PlannedDish, type WeekSetup } from "@/lib/plan/types";
 import { RecipeTile } from "@/components/ui";
-import { normalise } from "@/lib/recipes/filters";
+import { matchesWords } from "@/lib/recipes/filters";
 import { formatQuantity } from "@/lib/recipes/format";
 
 export function WeekChooser({
@@ -563,10 +563,9 @@ function BrowseAll({
 }) {
   const [query, setQuery] = useState("");
   const chosenIds = new Set(chosen.map((d) => d.recipeId));
-  const words = normalise(query).split(/\s+/).filter(Boolean);
   const list = recipes
     .filter((r) => !chosenIds.has(r.id) && r.seafood !== "contains")
-    .filter((r) => words.every((w) => normalise(`${r.title} ${r.cuisine}`).includes(w)))
+    .filter((r) => matchesWords([r.title, r.cuisine, r.source, r.site], query))
     .sort((a, b) => a.title.localeCompare(b.title));
   return (
     <div className="space-y-2 rounded-2xl border border-line bg-paper p-4">
@@ -574,7 +573,7 @@ function BrowseAll({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by name or cuisine"
+        placeholder="Search by name, cuisine or where it's from"
         className="block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base"
       />
       <ul className="divide-y divide-line">
