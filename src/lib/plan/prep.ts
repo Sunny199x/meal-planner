@@ -18,7 +18,7 @@ export type PrepTask = {
   /** The task and its prep day, e.g. "cook rice@-1"; ticks are stored under this. */
   key: string;
   name: string;
-  /** When: −2/−1 = Saturday/Sunday before the week, 0–6 = Monday–Sunday of it. */
+  /** When: −1 = the Saturday before the week, 0–6 = Sunday–Saturday of it. */
   prepDay: number;
   limit: PrepLimit | null;
   dishes: { recipeId: string; title: string; day: number | null; portions: number; description: string }[];
@@ -56,9 +56,9 @@ function amountsFor(name: string, dishes: { recipe: Recipe; day: number | null; 
   return lines.filter((l) => found.has(l)).map(({ recipeId, day, line }) => ({ recipeId, day, line }));
 }
 
-/** A prep weekday as a day of the week being planned: Saturday and Sunday are the weekend before it. */
+/** A prep day as a day of the week being planned: Saturday is the Saturday before it (−1). */
 export function prepDayOffset(weekday: number): number {
-  return weekday >= 5 ? weekday - 7 : weekday;
+  return weekday === 6 ? -1 : weekday;
 }
 
 /** The latest prep day on or before the dinner and within the limit; null means "do it on the evening". */

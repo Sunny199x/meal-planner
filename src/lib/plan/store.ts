@@ -1,23 +1,45 @@
 // Reading and saving weekly plans. Each save is a single write.
-import { desc, eq, lt, sql, type SQL } from "drizzle-orm";
+import { desc, eq, inArray, lt, sql, type SQL } from "drizzle-orm";
 import { weekPlans, type WeekPlanRow } from "../db/schema";
 import type { Db } from "../db/types";
+import { weekday } from "./dates";
+import { isOldWeek, oldWeeksFor, setupFromOldWeek, weekFromOldWeeks } from "./old-weeks";
 import { DEFAULT_SETUP, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
+/**
+ * A week's plan. A Sunday week not saved yet but overlapping weeks saved the
+ * old way (Monday to Sunday) is built from those and saved as a new row; the
+ * old rows are left as they are.
+ */
 export async function getPlan(db: Db, weekStart: string): Promise<WeekPlanRow | null> {
   const [row] = await db.select().from(weekPlans).where(eq(weekPlans.weekStart, weekStart));
-  return row ?? null;
+  if (row || weekday(weekStart) !== 0) return row ?? null;
+  const { current, previous } = oldWeeksFor(weekStart);
+  const old = await db.select().from(weekPlans).where(inArray(weekPlans.weekStart, [current, previous]));
+  const built = weekFromOldWeeks(old.find((r) => r.weekStart === current) ?? null, old.find((r) => r.weekStart === previous) ?? null);
+  if (!built) return null;
+  const [saved] = await db
+    .insert(weekPlans)
+    .values({ weekStart, ...built })
+    .onConflictDoNothing({ target: weekPlans.weekStart })
+    .returning();
+  if (saved) return saved;
+  // The other phone built it at the same moment: use theirs.
+  const [theirs] = await db.select().from(weekPlans).where(eq(weekPlans.weekStart, weekStart));
+  return theirs ?? null;
 }
 
 /** A new week starts from the last week's setup, without its "ingredients to use". */
 export async function setupForNewWeek(db: Db, weekStart: string): Promise<WeekSetup> {
   const [previous] = await db
-    .select({ setup: weekPlans.setup })
+    .select({ weekStart: weekPlans.weekStart, setup: weekPlans.setup })
     .from(weekPlans)
     .where(lt(weekPlans.weekStart, weekStart))
     .orderBy(desc(weekPlans.weekStart))
     .limit(1);
-  return previous ? { ...previous.setup, ingredientsToUse: [] } : DEFAULT_SETUP;
+  if (!previous) return DEFAULT_SETUP;
+  const setup = isOldWeek(previous.weekStart) ? setupFromOldWeek(previous.setup) : previous.setup;
+  return { ...setup, ingredientsToUse: [] };
 }
 
 /**

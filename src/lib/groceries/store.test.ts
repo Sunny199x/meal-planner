@@ -26,13 +26,13 @@ describe("the grocery list storage", () => {
 
   it("loads this week's and next week's plans when they have dishes", async () => {
     const dish = { recipeId: ID(9), day: 2, addedAt: "2026-11-01T10:00:00.000Z", via: "start" as const };
-    await saveSetup(db, "2026-11-02", DEFAULT_SETUP);
-    await saveDishes(db, "2026-11-02", [dish]);
-    await saveSetup(db, "2026-11-09", DEFAULT_SETUP); // set up, no dishes yet
-    await saveSetup(db, "2026-11-16", DEFAULT_SETUP);
-    await saveDishes(db, "2026-11-16", [dish]); // too far ahead
-    const list = await loadGroceryList(db, "2026-11-04");
+    await saveSetup(db, "2026-11-01", DEFAULT_SETUP);
+    await saveDishes(db, "2026-11-01", [dish]);
+    await saveSetup(db, "2026-11-08", DEFAULT_SETUP); // set up, no dishes yet
+    await saveSetup(db, "2026-11-15", DEFAULT_SETUP);
+    await saveDishes(db, "2026-11-15", [dish]); // too far ahead
+    const list = await loadGroceryList(db, "2026-11-04"); // a Wednesday
     expect(list.today).toBe("2026-11-04");
-    expect(list.weeks.map((w) => w.weekStart)).toEqual(["2026-11-02"]);
+    expect(list.weeks.map((w) => w.weekStart)).toEqual(["2026-11-01"]);
   });
 });

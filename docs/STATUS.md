@@ -70,7 +70,7 @@ and the yellow logo. A week of real use starts now.
   and reports problems line by line. Settings → *Reset everything* starts over (type RESET).
 - **Seafood rule:** recipes with seafood get a red warning. Ingredients that often contain fish
   (Worcestershire sauce, curry pastes) get "may contain fish".
-- **Week tab:** arrows move between weeks; it opens on the coming week (Monday to Sunday). Three
+- **Week tab:** arrows move between weeks; it opens on the coming week (Sunday to Saturday). Three
   parts: **Dinners**, **Shopping** and **Sunday prep**.
 - **Dinners (choosing a week):**
   - **Setup:** which evenings you cook and how much time each has (Quick ≤ 25 min, Normal
@@ -101,7 +101,7 @@ and the yellow logo. A week of real use starts now.
     and with the grocery list. If the plan later needs more of something ticked, it comes back
     with a note. Other things to buy are added on the grocery list.
 - **Prep (Week → Prep):**
-  - Prep days are set in the week setup (default Sunday before the week and Wednesday). Each
+  - Prep days are set in the week setup (default Sunday, the week's first day, and Wednesday). Each
     make-ahead task goes on the latest prep day within how far ahead it may be done, or on the day
     of the dinner; the same task on the same day is one batch, with the amounts each dish needs.
   - "How far ahead" limits come from published food-safety guidance for cooked food (cooked rice:

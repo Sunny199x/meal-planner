@@ -8,10 +8,11 @@ export const TIME_SLOTS = {
 } as const;
 export type TimeSlot = keyof typeof TIME_SLOTS;
 
-export const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-export const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// The week runs Sunday to Saturday: day 0 is Sunday, the big prep day.
+export const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-/** One entry per day, Monday first. */
+/** One entry per day, Sunday first. */
 export type Evening = { cooking: boolean; time: TimeSlot };
 
 export type Person = {
@@ -28,14 +29,15 @@ export type WeekSetup = {
   /** "What would you like to use?" Free text, one ingredient per entry. */
   ingredientsToUse: string[];
   /**
-   * Days with time for bigger prep, as weekdays (0 = Monday … 6 = Sunday).
-   * Saturday and Sunday mean the weekend before the week. Unset means the
-   * default, Sunday and Wednesday.
+   * Days with time for bigger prep, as days of the week (0 = Sunday … 6 =
+   * Saturday). Saturday means the Saturday before the week, since one at its
+   * end would come after every dinner. Unset means the default, Sunday and
+   * Wednesday.
    */
   prepDays?: number[];
 };
 
-export const DEFAULT_PREP_DAYS = [6, 2];
+export const DEFAULT_PREP_DAYS = [0, 3];
 
 export function prepDaysOf(setup: WeekSetup): number[] {
   return setup.prepDays ?? DEFAULT_PREP_DAYS;
@@ -43,7 +45,7 @@ export function prepDaysOf(setup: WeekSetup): number[] {
 
 export type PlannedDish = {
   recipeId: string;
-  /** 0 = Monday … 6 = Sunday; null while not yet on an evening. */
+  /** 0 = Sunday … 6 = Saturday; null while not yet on an evening. */
   day: number | null;
   addedAt: string;
   via: "start" | "suggestion" | "browse";
@@ -71,7 +73,11 @@ export const MAX_LUNCHES = 7;
 export const MAX_FREEZER = 12;
 
 export const DEFAULT_SETUP: WeekSetup = {
-  evenings: DAY_NAMES.map((_, day) => ({ cooking: day < 5, time: day < 5 ? "normal" : "relaxed" })),
+  // Cooking Monday to Friday; Sunday (prep) and Saturday are relaxed.
+  evenings: DAY_NAMES.map((_, day) => {
+    const weekday = day >= 1 && day <= 5;
+    return { cooking: weekday, time: weekday ? "normal" : "relaxed" };
+  }),
   people: [
     { name: "Sunny", dinnerPortion: 1.5, lunches: 4 },
     { name: "Victoria", dinnerPortion: 1, lunches: 0 },
