@@ -28,7 +28,7 @@ function recipe(id: string, overrides: Partial<Omit<PlanRecipe, "ingredients">> 
 const setup: WeekSetup = {
   ...DEFAULT_SETUP,
   people: [{ name: "Sunny", dinnerPortion: 1, lunches: 0 }],
-  evenings: DEFAULT_SETUP.evenings.map((e, day) => ({ cooking: day < 3, time: day === 1 ? "quick" : "normal" })),
+  evenings: DEFAULT_SETUP.evenings.map((_, day) => ({ cooking: day < 3, time: day === 1 ? "quick" : "normal" })),
 };
 const plan = (dishes: string[], extra: Partial<PlanState> = {}): PlanState => ({
   setup,

@@ -1,6 +1,7 @@
 # Status
 
-Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
+Last updated: 30 October 2026: milestone 4 (adding recipes), then the new look, the name Forkcast
+and the yellow logo. A week of real use starts now.
 
 ## Where the app is
 
@@ -69,7 +70,7 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
   and reports problems line by line. Settings → *Reset everything* starts over (type RESET).
 - **Seafood rule:** recipes with seafood get a red warning. Ingredients that often contain fish
   (Worcestershire sauce, curry pastes) get "may contain fish".
-- **Week tab:** arrows move between weeks; it opens on the coming week (Monday to Sunday). Three
+- **Week tab:** arrows move between weeks; it opens on the coming week (Sunday to Saturday). Three
   parts: **Dinners**, **Shopping** and **Sunday prep**.
 - **Dinners (choosing a week):**
   - **Setup:** which evenings you cook and how much time each has (Quick ≤ 25 min, Normal
@@ -100,7 +101,7 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
     and with the grocery list. If the plan later needs more of something ticked, it comes back
     with a note. Other things to buy are added on the grocery list.
 - **Prep (Week → Prep):**
-  - Prep days are set in the week setup (default Sunday before the week and Wednesday). Each
+  - Prep days are set in the week setup (default Sunday, the week's first day, and Wednesday). Each
     make-ahead task goes on the latest prep day within how far ahead it may be done, or on the day
     of the dinner; the same task on the same day is one batch, with the amounts each dish needs.
   - "How far ahead" limits come from published food-safety guidance for cooked food (cooked rice:
@@ -110,7 +111,11 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
   - Tick tasks off; ticks are shared by both phones.
   - Each evening: what was prepped and when, what's done that day and why, lunch boxes to pack
     and portions to freeze, or an evening of leftovers with no cooking.
-- **Phones:** every page works at 375 px wide. "Add to Home Screen" gives the app its own icon.
+- **Look:** modern and minimal, with an earthy colour per part of the app (Groceries green,
+  Recipes aubergine, Week teal, Settings ochre). The menu marks the page you're on. The logo is
+  a yellow bowl of soup that smiles.
+- **Phones:** every page works at 375 px wide. Chrome: ⋮ → *Install app*; Safari: Share → *Add
+  to Home Screen*. Either gives Forkcast its own icon.
 
 ## Not built yet (and labelled in the app where it shows)
 
@@ -170,7 +175,8 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 
 ## Demo for Victoria (about 3 minutes)
 
-1. Open the production address, enter the passcode, and choose "Add to Home Screen".
+1. Open https://sunny-forkcast.vercel.app, enter the passcode, and install it (Chrome: ⋮ →
+   *Install app*; Safari: Share → *Add to Home Screen*).
 2. Search "daal", then clear it. Tap **Filters** → **Vegetarian** → **≤ 45 min**.
 3. Open a recipe: point out the labels and why they apply, and the make-ahead tasks.
 4. Tap the heart. It shows on both phones.
@@ -208,8 +214,9 @@ Last updated: 29 October 2026, end of milestone 4 (Adding recipes).
 
 ## Next
 
-1. ~~Add `ANTHROPIC_API_KEY` in Vercel~~ Done 29 October; try importing a few real recipes on
-   the preview.
-2. Merge milestone 4 into `main`.
-3. Milestone 5 (history): past weeks, "repeat a past week" and liked meal combinations feeding
-   the suggestions. Before weekly use, revisit the shared preview/production database.
+1. **A week of real use** (from 30 October) on the main app. Feedback goes into `docs/IDEAS.md`,
+   grouped by part of the app, and is reviewed together at the end of the week.
+2. **Separate databases for preview and production,** before testing previews again: today the
+   preview writes into the household's real data.
+3. **Milestone 5 (history):** past weeks, "repeat a past week" and liked meal combinations feeding
+   the suggestions, plus whatever the testing week shows matters most.

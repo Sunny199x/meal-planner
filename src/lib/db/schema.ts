@@ -54,7 +54,7 @@ export const recipePhotos = pgTable("recipe_photos", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** One row per week (named by its Monday): the setup and the dishes chosen. */
+/** One row per week, named by its Sunday (weeks before 31 October 2026: by their Monday). */
 export const weekPlans = pgTable("week_plans", {
   id: uuid("id").primaryKey().defaultRandom(),
   weekStart: date("week_start", { mode: "string" }).notNull().unique(),

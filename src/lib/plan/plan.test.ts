@@ -9,15 +9,18 @@ describe("week dates", () => {
     expect(stockholmToday(new Date("2026-11-01T22:30:00Z"))).toBe("2026-11-01");
   });
 
-  it("plans the coming week, or this week on a Monday", () => {
-    expect(weekday("2026-11-02")).toBe(0);
-    expect(defaultWeekStart("2026-10-29")).toBe("2026-11-02"); // Thursday
-    expect(defaultWeekStart("2026-11-01")).toBe("2026-11-02"); // Sunday
-    expect(defaultWeekStart("2026-11-02")).toBe("2026-11-02"); // Monday
+  it("plans the coming week, or this week on a Sunday (weeks run Sunday to Saturday)", () => {
+    expect(weekday("2026-11-01")).toBe(0); // Sunday
+    expect(weekday("2026-11-07")).toBe(6); // Saturday
+    expect(defaultWeekStart("2026-10-29")).toBe("2026-11-01"); // Thursday
+    expect(defaultWeekStart("2026-10-31")).toBe("2026-11-01"); // Saturday
+    expect(defaultWeekStart("2026-11-01")).toBe("2026-11-01"); // Sunday: the week starting today
+    expect(defaultWeekStart("2026-11-02")).toBe("2026-11-08"); // Monday
   });
 
-  it("accepts only real Mondays from the address", () => {
-    expect(readWeekStart("2026-11-02")).toBe("2026-11-02");
+  it("accepts only real Sundays from the address", () => {
+    expect(readWeekStart("2026-11-01")).toBe("2026-11-01");
+    expect(readWeekStart("2026-11-02")).toBeNull(); // a Monday, as weeks were named before
     expect(readWeekStart("2026-11-03")).toBeNull();
     expect(readWeekStart("2026-02-30")).toBeNull();
     expect(readWeekStart("next week")).toBeNull();
@@ -25,8 +28,8 @@ describe("week dates", () => {
   });
 
   it("names weeks readably", () => {
-    expect(formatWeek("2026-11-02")).toBe("2–8 November");
-    expect(formatWeek("2026-11-30")).toBe("30 November – 6 December");
+    expect(formatWeek("2026-11-01")).toBe("1–7 November");
+    expect(formatWeek("2026-11-29")).toBe("29 November – 5 December");
     expect(addDays("2026-12-28", 7)).toBe("2027-01-04");
   });
 });

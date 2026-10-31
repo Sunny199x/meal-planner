@@ -22,8 +22,8 @@ const TIME_OPTION_LABEL: Record<TimeSlot, string> = {
   relaxed: "Relaxed · no limit",
 };
 
-/** The weekend before the week first, then Monday to Friday. */
-const PREP_DAY_ORDER = [5, 6, 0, 1, 2, 3, 4];
+/** The Saturday before the week first, then Sunday to Friday. */
+const PREP_DAY_ORDER = [6, 0, 1, 2, 3, 4, 5];
 
 const selectClass = "rounded-xl border border-line bg-soft px-2 py-2 text-base";
 
@@ -182,8 +182,8 @@ export function WeekSetupPanel({
       <fieldset className="min-w-0">
         <legend className="text-sm font-medium">Prep days</legend>
         <p className="text-sm text-muted">
-          Days with time for bigger prep. Saturday and Sunday mean the weekend before the week. Each task is done on
-          the latest prep day its &ldquo;how far ahead&rdquo; limit allows.
+          Days with time for bigger prep. Saturday means the Saturday before the week. Each task is done on the
+          latest prep day its &ldquo;how far ahead&rdquo; limit allows.
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
           {PREP_DAY_ORDER.map((day) => {

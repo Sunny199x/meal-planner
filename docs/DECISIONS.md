@@ -126,7 +126,8 @@ the repo, then check it for real on the Vercel preview deployment.
     milestone 4 after all: see "Photo import" below.)
 - **Real recipes for testing:** the household's recipes are files in `seed-recipes/`, so suggestion
   rules are checked against them directly (no export step needed).
-- **Week plans:** one row per week, named by its Monday, in Stockholm time.
+- **Week plans:** one row per week, named by its first day, in Stockholm time. (Weeks ran Monday to
+  Sunday until 31 October 2026; they now run Sunday to Saturday, see below.)
   - Each row holds the setup (evenings and time per evening, dinner portions per person,
     lunches, ingredients to use up) and the chosen dishes (JSON).
   - A new week starts from the previous week's setup, without its "ingredients to use".
@@ -267,7 +268,7 @@ and a change in one should show in the other.
   on the home page; the week's Shopping tab points there.
   - The migration copies items already added on a week's Shopping tab into the new table (the
     old data is left in place).
-- **Which dinners feed the list:** the week we're in and the next one (Monday to Sunday,
+- **Which dinners feed the list:** the week we're in and the next one (Sunday to Saturday,
   Stockholm time). This week's ingredients leave the list once all the dinners needing them have
   passed; amounts stay the whole week's, so ticks match the week's Shopping tab. When both weeks
   have items, each line says "This week" or "Next week".
@@ -335,8 +336,8 @@ and a change in one should show in the other.
 - **Photos are stored in the database,** shrunk on the phone first (about 1,200 px, roughly
   150 KB), so there is no extra service to set up. A few hundred photos fit easily in the free
   database.
-- **Prep timing (built):** prep days are chosen in the week setup (Saturday/Sunday mean the weekend
-  before the week; default Sunday and Wednesday). Each task goes on the latest prep day on or
+- **Prep timing (built):** prep days are chosen in the week setup (Saturday means the Saturday before
+  the week; default Sunday and Wednesday). Each task goes on the latest prep day on or
   before its dinner that is within its "at most N days ahead" limit, otherwise on the day of the
   dinner; the same task on the same prep day is one batch. Limits are set per task name in
   Settings → Prep limits (on the day, or 1–6 days ahead), checked on the server, and can never be
@@ -419,6 +420,29 @@ replaces the brief's "warm" look:
 - **Colours are named for what they do** in `src/app/globals.css`: `soft`, `paper`, `ink`, `muted`,
   `line`, `accent`, `good`, `note`, `danger`, plus the four page colours. Pages use them as
   classes such as `bg-soft` or `text-recipes`.
+
+## Weeks run Sunday to Saturday (31 October 2026)
+
+Saketh: "the week needs to start from Sunday because that's when prep happens."
+
+- **The week:** Sunday to Saturday, named by its Sunday. Day 0 is Sunday, so Sunday's prep and
+  Sunday's dinner belong to the week they start.
+- **The default setup:**
+  - cooking Monday to Friday, as before; Sunday and Saturday relaxed
+  - prep days Sunday and Wednesday
+  - Saturday as a prep day means the Saturday before the week, since one at its end would come
+    after every dinner
+- **Weeks saved before the change** ran Monday to Sunday and are named by their Monday. The first
+  time a Sunday week is opened, it is built from the old weeks it overlaps and saved as a new row
+  (`src/lib/plan/old-weeks.ts`):
+  - Monday to Saturday come from the week starting the next day.
+  - The Sunday dinner comes from the end of the week before.
+  - Setups, shopping ticks and prep ticks are turned around to match.
+  - The old rows are only read, never changed.
+- **Shared database:** this keeps the change safe while preview and production share one database.
+  The production app (Monday weeks) never sees the new Sunday rows. Its only overlap: a brand-new
+  week there could copy its setup from a Sunday row a preview saved, with its evenings off by a
+  day, until this is merged.
 
 ## Product decisions
 

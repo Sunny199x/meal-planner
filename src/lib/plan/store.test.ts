@@ -19,26 +19,26 @@ beforeEach(async () => {
 
 describe("week plan storage", () => {
   it("starts the very first week from the defaults", async () => {
-    expect(await getPlan(db, "2026-11-02")).toBeNull();
-    expect(await setupForNewWeek(db, "2026-11-02")).toEqual(DEFAULT_SETUP);
+    expect(await getPlan(db, "2026-11-01")).toBeNull();
+    expect(await setupForNewWeek(db, "2026-11-01")).toEqual(DEFAULT_SETUP);
   });
 
   it("saves a setup and updates it in place", async () => {
-    await saveSetup(db, "2026-11-02", DEFAULT_SETUP);
+    await saveSetup(db, "2026-11-01", DEFAULT_SETUP);
     const changed = { ...DEFAULT_SETUP, ingredientsToUse: ["spinach"] };
-    const row = await saveSetup(db, "2026-11-02", changed);
-    expect(row).toMatchObject({ weekStart: "2026-11-02", setup: changed, dishes: [] });
-    expect((await getPlan(db, "2026-11-02"))?.setup.ingredientsToUse).toEqual(["spinach"]);
+    const row = await saveSetup(db, "2026-11-01", changed);
+    expect(row).toMatchObject({ weekStart: "2026-11-01", setup: changed, dishes: [] });
+    expect((await getPlan(db, "2026-11-01"))?.setup.ingredientsToUse).toEqual(["spinach"]);
   });
 
   it("saves dishes and remembers when choosing started", async () => {
     const dish = { recipeId: "00000000-0000-4000-8000-000000000001", day: 0, addedAt: "2026-11-01T10:00:00.000Z", via: "start" as const };
-    expect(await saveDishes(db, "2026-11-02", [dish])).toBeNull(); // no setup yet
-    await saveSetup(db, "2026-11-02", DEFAULT_SETUP);
-    const first = await saveDishes(db, "2026-11-02", [dish]);
+    expect(await saveDishes(db, "2026-11-01", [dish])).toBeNull(); // no setup yet
+    await saveSetup(db, "2026-11-01", DEFAULT_SETUP);
+    const first = await saveDishes(db, "2026-11-01", [dish]);
     expect(first?.dishes).toEqual([dish]);
     expect(first?.choosingStartedAt).toBeInstanceOf(Date);
-    const second = await saveDishes(db, "2026-11-02", []);
+    const second = await saveDishes(db, "2026-11-01", []);
     expect(second?.choosingStartedAt).toEqual(first?.choosingStartedAt);
   });
 
@@ -48,14 +48,86 @@ describe("week plan storage", () => {
       people: [{ name: "Sunny", dinnerPortion: 1, lunches: 2 }],
       ingredientsToUse: ["feta"],
     };
-    await saveSetup(db, "2026-11-02", sunnyEatsLess);
-    await saveSetup(db, "2026-12-07", DEFAULT_SETUP); // a later week must not count
-    expect(await setupForNewWeek(db, "2026-11-09")).toEqual({ ...sunnyEatsLess, ingredientsToUse: [] });
+    await saveSetup(db, "2026-11-01", sunnyEatsLess);
+    await saveSetup(db, "2026-12-06", DEFAULT_SETUP); // a later week must not count
+    expect(await setupForNewWeek(db, "2026-11-08")).toEqual({ ...sunnyEatsLess, ingredientsToUse: [] });
+  });
+});
+
+describe("weeks saved before weeks started on Sunday", () => {
+  const ID = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
+  const dish = (n: number, day: number | null, extra = {}) => ({
+    recipeId: ID(n),
+    day,
+    addedAt: "2026-10-30T10:00:00.000Z",
+    via: "browse" as const,
+    ...extra,
+  });
+  // An old week's evenings ran Monday first; prep days counted 0 = Monday … 6 = Sunday.
+  const oldSetup = {
+    ...DEFAULT_SETUP,
+    evenings: [
+      { cooking: true, time: "quick" as const }, // Mon
+      { cooking: true, time: "normal" as const },
+      { cooking: true, time: "normal" as const },
+      { cooking: true, time: "normal" as const },
+      { cooking: true, time: "normal" as const }, // Fri
+      { cooking: false, time: "relaxed" as const }, // Sat
+      { cooking: true, time: "relaxed" as const }, // Sun
+    ],
+    prepDays: [6, 2], // Sunday before the week, Wednesday
+  };
+
+  it("builds a Sunday week from the old Monday weeks it overlaps, and leaves those as they were", async () => {
+    // Monday 26 October to Sunday 1 November: its Sunday dinner is now the first evening of 1–7 November.
+    await saveSetup(db, "2026-10-26", oldSetup);
+    await saveDishes(db, "2026-10-26", [dish(1, 6), dish(2, 3)]);
+    // Monday 2 to Sunday 8 November.
+    await saveSetup(db, "2026-11-02", oldSetup);
+    await saveDishes(db, "2026-11-02", [dish(3, 0), dish(4, 4, { alsoOn: 5 }), dish(5, 6), dish(6, null)]);
+    await tickShoppingItem(db, "2026-11-02", "bought", "feta", "180 g");
+    await tickPrepTask(db, "2026-11-02", "cook rice@-1", true); // Sunday before the old week
+    await tickPrepTask(db, "2026-11-02", "deseed pomegranate@2", true); // Wednesday
+
+    const week = await getPlan(db, "2026-11-01");
+    expect(week?.weekStart).toBe("2026-11-01");
+    expect(week?.dishes.map((d) => [d.recipeId, d.day, d.alsoOn ?? null])).toEqual([
+      [ID(3), 1, null], // Monday
+      [ID(4), 5, 6], // Friday, eaten again on Saturday
+      [ID(6), null, null], // not on an evening yet
+      [ID(1), 0, null], // Sunday 1 November, from the week before
+    ]);
+    expect(week?.setup.evenings.map((e) => e.time)).toEqual(["relaxed", "quick", "normal", "normal", "normal", "normal", "relaxed"]);
+    expect(week?.setup.prepDays).toEqual([0, 3]); // Sunday and Wednesday, counted from Sunday
+    expect(week?.shopping).toEqual({ bought: { feta: "180 g" } });
+    expect(week?.prep).toEqual({ "cook rice@0": true, "deseed pomegranate@3": true });
+
+    // Saved under its Sunday, so later reads and saves use it.
+    expect((await getPlan(db, "2026-11-01"))?.id).toBe(week?.id);
+    expect(await saveDishes(db, "2026-11-01", [])).not.toBeNull();
+    // The old weeks are unchanged.
+    expect((await getPlan(db, "2026-11-02"))?.dishes.map((d) => d.day)).toEqual([0, 4, 6, null]);
+    expect((await getPlan(db, "2026-10-26"))?.dishes).toHaveLength(2);
+  });
+
+  it("starts the following week with the old week's Sunday dinner", async () => {
+    await saveSetup(db, "2026-11-02", oldSetup);
+    await saveDishes(db, "2026-11-02", [dish(5, 6)]);
+    expect((await getPlan(db, "2026-11-08"))?.dishes.map((d) => [d.recipeId, d.day])).toEqual([[ID(5), 0]]);
+  });
+
+  it("starts a new week from an old week's setup, turned to start on Sunday", async () => {
+    await saveSetup(db, "2026-11-02", { ...oldSetup, ingredientsToUse: ["feta"] });
+    const setup = await setupForNewWeek(db, "2026-11-15");
+    expect(setup.evenings[0]).toEqual({ cooking: true, time: "relaxed" }); // the old Sunday
+    expect(setup.evenings[1]).toEqual({ cooking: true, time: "quick" }); // the old Monday
+    expect(setup.prepDays).toEqual([0, 3]);
+    expect(setup.ingredientsToUse).toEqual([]);
   });
 });
 
 describe("shopping-list ticks", () => {
-  const week = "2026-11-02";
+  const week = "2026-11-01";
   beforeEach(async () => {
     await saveSetup(db, week, DEFAULT_SETUP);
   });
@@ -70,17 +142,17 @@ describe("shopping-list ticks", () => {
   });
 
   it("returns null for a week without a setup", async () => {
-    expect(await tickShoppingItem(db, "2026-11-09", "bought", "rice", "1 kg")).toBeNull();
+    expect(await tickShoppingItem(db, "2026-11-08", "bought", "rice", "1 kg")).toBeNull();
   });
 });
 
 describe("Sunday prep ticks", () => {
   it("ticks tasks off and on, leaving the others", async () => {
-    await saveSetup(db, "2026-11-02", DEFAULT_SETUP);
-    await tickPrepTask(db, "2026-11-02", "cook rice", true);
-    expect(await tickPrepTask(db, "2026-11-02", "deseed pomegranate", true)).toEqual({ "cook rice": true, "deseed pomegranate": true });
-    expect(await tickPrepTask(db, "2026-11-02", "cook rice", false)).toEqual({ "deseed pomegranate": true });
-    expect(await tickPrepTask(db, "2026-11-09", "cook rice", true)).toBeNull();
+    await saveSetup(db, "2026-11-01", DEFAULT_SETUP);
+    await tickPrepTask(db, "2026-11-01", "cook rice", true);
+    expect(await tickPrepTask(db, "2026-11-01", "deseed pomegranate", true)).toEqual({ "cook rice": true, "deseed pomegranate": true });
+    expect(await tickPrepTask(db, "2026-11-01", "cook rice", false)).toEqual({ "deseed pomegranate": true });
+    expect(await tickPrepTask(db, "2026-11-08", "cook rice", true)).toBeNull();
   });
 });
 

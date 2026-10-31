@@ -1,4 +1,6 @@
-// Weeks run Monday to Sunday and are named by their Monday ("2026-11-02").
+// Weeks run Sunday to Saturday, because Sunday is the big prep day, and are
+// named by their Sunday ("2026-11-01"). Weeks saved before 31 October 2026 ran
+// Monday to Sunday and are named by their Monday (see old-weeks.ts).
 // Dates are worked out in Stockholm time, whatever time zone the server uses.
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -18,18 +20,18 @@ export function addDays(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** 0 = Monday … 6 = Sunday. */
+/** 0 = Sunday … 6 = Saturday: the day of the week it falls on. */
 export function weekday(date: string): number {
-  return (toUtc(date).getUTCDay() + 6) % 7;
+  return toUtc(date).getUTCDay();
 }
 
-/** The week to plan: today's if it's Monday, otherwise the coming Monday's. */
+/** The week to plan: today's if it's Sunday, otherwise the coming Sunday's. */
 export function defaultWeekStart(today: string): string {
   const day = weekday(today);
   return day === 0 ? today : addDays(today, 7 - day);
 }
 
-/** A valid Monday from the address, or null. */
+/** A valid Sunday from the address, or null. */
 export function readWeekStart(value: unknown): string | null {
   if (typeof value !== "string" || !DATE.test(value)) return null;
   const parsed = toUtc(value);
