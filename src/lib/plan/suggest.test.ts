@@ -193,6 +193,26 @@ describe("reasons", () => {
   });
 });
 
+describe("combinations the household liked", () => {
+  it("says which chosen dish a suggestion was liked with, and ranks it higher", () => {
+    const recipes = [recipe("korma"), recipe("naan bread"), recipe("tacos")];
+    const state = plan(["korma"], { liked: [["korma", "naan bread"], ["tacos", "somewhere else"]] });
+    const ranked = rank(recipes, state);
+    expect(ranked[0].recipe.id).toBe("naan bread");
+    expect(ranked[0].reasons[0]).toEqual({ kind: "liked", points: POINTS.liked, text: "You liked this with korma." });
+    // A combination whose other dish isn't in the week gives no reason.
+    expect(kinds(recipes, state, "tacos")).not.toContain("liked");
+  });
+
+  it("names up to two chosen dishes once, however many combinations match", () => {
+    const recipes = [recipe("a"), recipe("b"), recipe("c"), recipe("d")];
+    const everyEvening = { ...setup, evenings: setup.evenings.map((e) => ({ ...e, cooking: true })) };
+    const state = plan(["a", "b", "c"], { setup: everyEvening, liked: [["a", "d"], ["b", "d"], ["c", "d"], ["a", "b", "d"]] });
+    const reasons = rank(recipes, state)[0].reasons.filter((r) => r.kind === "liked");
+    expect(reasons).toEqual([{ kind: "liked", points: POINTS.liked, text: "You liked this with a and b." }]);
+  });
+});
+
 describe("shortlist", () => {
   it("avoids three dishes of the same cuisine side by side, and pages through the rest", () => {
     const ranked = rank(

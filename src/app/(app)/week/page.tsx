@@ -5,6 +5,8 @@ import { describeDatabaseError, getDb } from "@/lib/db";
 import type { RecipeRow, WeekPlanRow } from "@/lib/db/schema";
 import { defaultWeekStart, readWeekStart, stockholmToday } from "@/lib/plan/dates";
 import type { PastWeek } from "@/lib/plan/history";
+import type { LikedCombination } from "@/lib/plan/liked";
+import { getLikedCombinations } from "@/lib/plan/liked-store";
 import { getPastWeeks, getPlan, setupForNewWeek } from "@/lib/plan/store";
 import { toPlanRecipe } from "@/lib/plan/suggest";
 import type { WeekSetup } from "@/lib/plan/types";
@@ -32,9 +34,15 @@ async function Week({ searchParams }: Pick<PageProps<"/week">, "searchParams">) 
   let startingSetup: WeekSetup;
   let recipeRows: RecipeRow[];
   let pastWeeks: PastWeek[];
+  let liked: LikedCombination[];
   try {
     const db = await getDb();
-    [plan, recipeRows, pastWeeks] = await Promise.all([getPlan(db, weekStart), getAllRecipes(), getPastWeeks(db, weekStart)]);
+    [plan, recipeRows, pastWeeks, liked] = await Promise.all([
+      getPlan(db, weekStart),
+      getAllRecipes(),
+      getPastWeeks(db, weekStart),
+      getLikedCombinations(db),
+    ]);
     startingSetup = plan?.setup ?? (await setupForNewWeek(db, weekStart));
   } catch (error) {
     return <ErrorBox>{describeDatabaseError(error)}</ErrorBox>;
@@ -55,6 +63,7 @@ async function Week({ searchParams }: Pick<PageProps<"/week">, "searchParams">) 
           choosingStartedAt={plan?.choosingStartedAt?.toISOString() ?? null}
           recipes={recipeRows.map(toPlanRecipe)}
           pastWeeks={pastWeeks}
+          likedCombinations={liked}
         />
       )}
     </>

@@ -466,8 +466,22 @@ soon". The trend of how long choosing takes was left out.
 - **The list** covers the half year before the week shown (26 weeks), weeks with at least one
   dinner, newest first. Weeks saved the old way (Monday to Sunday) are read as Sunday weeks the
   same way opening them would, but listing them saves nothing.
-- **Shared database:** the production app before this change rejects a week with a "repeat"
-  dinner when it saves that week again. So repeating should only be tried on a preview once
+- **Liked combinations** (`src/lib/plan/liked.ts`, table `liked_combinations`): Saketh chose to
+  pick them from a week.
+  - Under the week's dinners, *Save dishes that went well together* asks which 2 or 3 of the
+    week's dishes went well together. Two or three keep it a real pairing; a whole week is what
+    *Repeat a past week* is for. The same recipes saved again are kept once.
+  - They are used two ways, always marked with ♥ and "your combination", apart from the rules'
+    ✓ reasons:
+    - **A starting point:** when a week has no dinners yet, they are offered first (*Add these*).
+      Later, *Combinations you liked* adds the dishes not chosen yet.
+    - **A suggestion reason:** "You liked this with Korean BBQ pork" (25 points, like using an
+      ingredient you want to use up). It counts only when a dish from the combination is
+      already in the week.
+  - Deleted recipes and recipes now containing seafood drop out. A combination left with fewer
+    than two dishes is hidden. *Forget* removes one.
+- **Shared database:** the production app before this change rejects a week with a "repeat" or
+  "liked" dinner when it saves that week again. So repeating should only be tried on a preview once
   preview and production have separate databases.
 
 ## Product decisions

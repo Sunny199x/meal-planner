@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PastWeek } from "@/lib/plan/history";
+import type { LikedCombination } from "@/lib/plan/liked";
 import type { PlanRecipe } from "@/lib/plan/suggest";
 import type { PlannedDish, WeekSetup } from "@/lib/plan/types";
 import { WeekChooser } from "./week-chooser";
@@ -15,6 +16,7 @@ export function WeekView({
   choosingStartedAt,
   recipes,
   pastWeeks,
+  likedCombinations,
 }: {
   weekStart: string;
   savedSetup: WeekSetup | null;
@@ -23,6 +25,7 @@ export function WeekView({
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
   pastWeeks: PastWeek[];
+  likedCombinations: LikedCombination[];
 }) {
   const [setup, setSetup] = useState(savedSetup);
   return (
@@ -36,6 +39,7 @@ export function WeekView({
           choosingStartedAt={choosingStartedAt}
           recipes={recipes}
           pastWeeks={pastWeeks}
+          likedCombinations={likedCombinations}
         />
       )}
     </>

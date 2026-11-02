@@ -72,6 +72,7 @@ export type Reason = {
     | "quick-evening"
     | "lunches"
     | "favourite"
+    | "liked"
     | "new-cuisine"
     | "similar"
     | "same-cuisine"
@@ -100,6 +101,7 @@ export const POINTS = {
   quickEvening: 10,
   lunches: 10,
   favourite: 6,
+  liked: 25,
   newCuisine: 6,
   similar: -40,
   sameCuisine: -8,
@@ -112,6 +114,8 @@ export type PlanState = {
   dishes: PlannedDish[];
   /** "Not this one" for this week. */
   dismissed: string[];
+  /** Combinations the household liked, as lists of recipe ids. */
+  liked?: string[][];
 };
 
 /** Cooking evenings that don't have a dish yet (an evening of leftovers counts as taken). */
@@ -220,6 +224,12 @@ function scoreRecipe(candidate: PlanRecipe, chosen: PlanRecipe[], plan: PlanStat
   }
 
   if (candidate.isFavourite) add("favourite", POINTS.favourite, "One of your favourites.");
+
+  // The household's own judgement: dishes they saved as going well together.
+  const likedWith = chosen.filter((c) => plan.liked?.some((group) => group.includes(candidate.id) && group.includes(c.id)));
+  if (likedWith.length) {
+    add("liked", POINTS.liked, `You liked this with ${joinNames(likedWith.slice(0, 2).map((c) => shortTitle(c.title)))}.`);
+  }
 
   // Variety across the whole week so far.
   const cuisine = cuisineKey(candidate.cuisine);

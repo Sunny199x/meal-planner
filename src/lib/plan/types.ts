@@ -48,8 +48,8 @@ export type PlannedDish = {
   /** 0 = Sunday … 6 = Saturday; null while not yet on an evening. */
   day: number | null;
   addedAt: string;
-  /** How it was added; "repeat" = copied from an earlier week. */
-  via: "start" | "suggestion" | "browse" | "repeat";
+  /** How it was added; "repeat" = copied from an earlier week, "liked" = from a combination the household liked. */
+  via: "start" | "suggestion" | "browse" | "repeat" | "liked";
   /** Lunch boxes from this dish per person (same order as the setup's people). Unset = shared out automatically. */
   lunches?: number[];
   /** Extra portions for the freezer. */
@@ -99,7 +99,7 @@ export function portionsNeeded(setup: WeekSetup) {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const VIA = ["start", "suggestion", "browse", "repeat"];
+const VIA = ["start", "suggestion", "browse", "repeat", "liked"];
 
 const isDay = (value: unknown) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 6;
 const isCount = (value: unknown, max: number) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= max;
