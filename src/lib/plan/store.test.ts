@@ -7,6 +7,7 @@ import {
   getPlan,
   saveDishes,
   saveDishesOrCreate,
+  saveDismissed,
   saveSetup,
   tickPrepTask,
   tickShoppingItem,
@@ -55,6 +56,15 @@ describe("week plan storage", () => {
     await saveUsualWeek(db, { ...sunnyEatsLess, prepDays: [0] }); // saved again: one row, updated
     await saveSetup(db, "2026-11-01", DEFAULT_SETUP); // a planned week doesn't change it
     expect(await getUsualWeek(db)).toEqual({ ...sunnyEatsLess, prepDays: [0], ingredientsToUse: [] });
+  });
+
+  it("keeps \"Not this one\" for the week, creating the week if needed", async () => {
+    const id = "00000000-0000-4000-8000-000000000001";
+    expect(await saveDismissed(db, "2026-11-08", [id], null)).toBe(false);
+    expect(await saveDismissed(db, "2026-11-08", [id], DEFAULT_SETUP)).toBe(true);
+    expect((await getPlan(db, "2026-11-08"))?.dismissed).toEqual([id]);
+    expect(await saveDismissed(db, "2026-11-08", [], null)).toBe(true);
+    expect((await getPlan(db, "2026-11-08"))?.dismissed).toEqual([]);
   });
 
   it("creates a week on its first save of dishes, with the setup shown for it", async () => {

@@ -28,8 +28,8 @@ sizes and what exists today are in the note at its end. Nothing here is agreed y
 - **R2. Show the prep load** (*must*). The task count and dishes per prep day: small. Proposing
   prep days: medium. Minutes need a time on every make-ahead task, which recipes don't have yet.
   Also explain why tasks without a prep limit happen on the evening.
-- **R3. Log what was shown, dismissed and picked** (*must*, medium), and keep "Not this one" for
-  the week. Picks are already saved.
+- **R3. Log what was shown, dismissed and picked** (*must*, medium). **Done (milestone 6):**
+  recorded quietly per week and recipe; "Not this one" now lasts the week.
 - **R4. Rotation, trial and excluded recipes** (*should*, medium). **Done (milestone 6):** In
   rotation / New to try / Not suggested, with a "keep it?" prompt after a new dish.
 - **R5. "Any dishes you really want?" as the first step** (*should*, small).
@@ -187,7 +187,7 @@ Small things that may or may not matter once the app is used for real weeks:
 
 - **Reading photos with the Claude API:** done in milestone 4 (30 October 2026), up to 4 photos per
   recipe, at about the same cost as a text import.
-- **Remember "Not this one"** for the week, instead of forgetting it when you leave the Week tab.
+- ~~**Remember "Not this one"** for the week~~ Done in milestone 6 (it lasts the week, on both phones).
 - **Named collections** beyond favourites and tags.
 - **TikTok links:** not used in the household.
 - ~~**Separate databases for preview and production**~~ Done 2 November 2026: each preview gets its

@@ -121,6 +121,8 @@ and the yellow logo. A week of real use starts now.
   - Tick tasks off; ticks are shared by both phones.
   - Each evening: what was prepped and when, what's done that day and why, lunch boxes to pack
     and portions to freeze, or an evening of leftovers with no cooking.
+- **What's suggested is recorded** quietly (shown, hidden with *Not this one*, picked), per week
+  and recipe, for a later recipe review. *Not this one* now lasts the whole week.
 - **Recipe statuses:** each recipe is *In rotation*, *New to try* (at most one suggested a week;
   imports start here) or *Not suggested* (kept, never suggested). Change it on the recipe page, or
   for several at once on Recipes with *Select*. The week after a new dish, the Week page asks

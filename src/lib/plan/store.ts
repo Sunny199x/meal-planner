@@ -80,6 +80,21 @@ export async function saveDishes(db: Db, weekStart: string, dishes: PlannedDish[
   return row ?? null;
 }
 
+/** Saves this week's "Not this one" list; a week not saved yet is created with `setupIfNew`. */
+export async function saveDismissed(
+  db: Db,
+  weekStart: string,
+  dismissed: string[],
+  setupIfNew: WeekSetup | null,
+): Promise<boolean> {
+  const update = () =>
+    db.update(weekPlans).set({ dismissed }).where(eq(weekPlans.weekStart, weekStart)).returning({ id: weekPlans.id });
+  const [row] = await update();
+  if (row || !setupIfNew) return Boolean(row);
+  await db.insert(weekPlans).values({ weekStart, setup: setupIfNew, dismissed }).onConflictDoNothing({ target: weekPlans.weekStart });
+  return (await update()).length > 0;
+}
+
 export async function saveSetup(db: Db, weekStart: string, setup: WeekSetup): Promise<WeekPlanRow> {
   const [row] = await db
     .insert(weekPlans)

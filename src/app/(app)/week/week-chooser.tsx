@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
-import { saveWeekDishesAction } from "@/lib/plan/actions";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { recordSuggestionEventsAction, saveDismissedAction, saveWeekDishesAction } from "@/lib/plan/actions";
 import { addDays, formatWeek } from "@/lib/plan/dates";
 import { recentDinners, type PastWeek, type Repeated } from "@/lib/plan/history";
 import { usableCombinations, type LikedCombination } from "@/lib/plan/liked";
@@ -31,6 +31,7 @@ export function WeekChooser({
   setupIfNew,
   onWeekSaved,
   initialDishes,
+  initialDismissed,
   choosingStartedAt,
   recipes: recipeRows,
   pastWeeks,
@@ -42,6 +43,8 @@ export function WeekChooser({
   setupIfNew: WeekSetup | null;
   onWeekSaved: () => void;
   initialDishes: PlannedDish[];
+  /** "Not this one" for this week, as saved. */
+  initialDismissed: string[];
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
   /** Earlier weeks with dinners, newest first. */
@@ -51,7 +54,7 @@ export function WeekChooser({
 }) {
   const [dishes, setDishes] = useState(initialDishes);
   const [history, setHistory] = useState<PlannedDish[][]>([]);
-  const [dismissed, setDismissed] = useState<string[]>([]);
+  const [dismissed, setDismissed] = useState<string[]>(initialDismissed);
   const [page, setPage] = useState(0);
   const [browsing, setBrowsing] = useState(false);
   const [showingPast, setShowingPast] = useState(false);
@@ -106,11 +109,34 @@ export function WeekChooser({
   const open = openEvenings(plan);
   const shown = shortlist(ranked, 3, page);
   const hasMore = shortlist(ranked, 3, page + 1).length > 0;
+  // Each suggestion is counted as shown once per visit to the page.
+  const reported = useRef(new Set<string>());
+  const shownIds = shown.map((s) => s.recipe.id).join(",");
+  useEffect(() => {
+    const fresh = shownIds.split(",").filter((id) => id && !reported.current.has(id));
+    fresh.forEach((id) => reported.current.add(id));
+    if (fresh.length > 0) void recordSuggestionEventsAction(weekStart, "shown", fresh);
+  }, [shownIds, weekStart]);
   const cookingDays = setup.evenings.flatMap((e, day) => (e.cooking ? [day] : []));
   const minutes = minutesToChoose(startedAt, known);
   const offEvening = known.filter((d) => d.day === null || !setup.evenings[d.day]?.cooking);
   const portions = useMemo(() => planPortions(setup, known, byId), [setup, known, byId]);
 
+  // What was shown, hidden and picked is recorded quietly for a later recipe review.
+  function record(kind: "shown" | "dismissed" | "picked", ids: string[]) {
+    if (ids.length > 0) void recordSuggestionEventsAction(weekStart, kind, ids);
+  }
+  function changeDismissed(next: string[]) {
+    setDismissed(next);
+    startSaving(async () => {
+      const result = await saveDismissedAction(weekStart, next, setupIfNew);
+      if (!result.error) onWeekSaved();
+    });
+  }
+  function dismiss(id: string) {
+    changeDismissed([...dismissed, id]);
+    record("dismissed", [id]);
+  }
   function save(next: PlannedDish[]) {
     startSaving(async () => {
       const result = await saveWeekDishesAction(weekStart, next, setupIfNew);
@@ -120,6 +146,8 @@ export function WeekChooser({
     });
   }
   function change(next: PlannedDish[]) {
+    const before = new Set(dishes.map((d) => d.recipeId));
+    record("picked", next.map((d) => d.recipeId).filter((id) => !before.has(id)));
     setHistory((h) => [...h, dishes]);
     setDishes(next);
     setPage(0);
@@ -312,7 +340,7 @@ export function WeekChooser({
                     suggestion={s}
                     day={pickEvening(s.recipe, setup, known)}
                     onAdd={() => add(s.recipe, known.length === 0 ? "start" : "suggestion")}
-                    onDismiss={() => setDismissed((d) => [...d, s.recipe.id])}
+                    onDismiss={() => dismiss(s.recipe.id)}
                   />
                 </li>
               ))}
@@ -369,7 +397,7 @@ export function WeekChooser({
               </button>
             )}
             {dismissed.length > 0 && (
-              <button type="button" onClick={() => setDismissed([])} className="px-2 py-2 text-sm text-accent underline">
+              <button type="button" onClick={() => changeDismissed([])} className="px-2 py-2 text-sm text-accent underline">
                 Bring back {dismissed.length} hidden
               </button>
             )}

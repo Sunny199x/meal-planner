@@ -1,7 +1,7 @@
 // Database tables. After changing this file, run `npm run db:generate` to
 // create a migration in drizzle/. Prefer adding tables or columns: while a
 // deploy finishes, the previous version may still be running against them.
-import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, integer, jsonb, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "../plan/types";
 import { DIETS, RECIPE_STATUSES, type IngredientLine, type MakeAheadTask } from "../recipes/types";
 
@@ -68,6 +68,8 @@ export const weekPlans = pgTable("week_plans", {
   shopping: jsonb("shopping").$type<ShoppingState>().notNull().default({}),
   /** Sunday prep tasks ticked off. */
   prep: jsonb("prep").$type<PrepState>().notNull().default({}),
+  /** Recipes hidden with "Not this one" for this week. */
+  dismissed: jsonb("dismissed").$type<string[]>().notNull().default([]),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -126,3 +128,26 @@ export const householdSettings = pgTable("household_settings", {
   usualWeek: jsonb("usual_week").$type<WeekSetup>().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * What the choosing screen showed, what was hidden with "Not this one" and what
+ * was picked, per week and recipe, with no extra taps. One row per week,
+ * recipe and kind; `count` is how many times (a suggestion is counted once per
+ * visit to the page). For a later recipe review: shown often, rarely picked.
+ */
+export const suggestionEvents = pgTable(
+  "suggestion_events",
+  {
+    weekStart: date("week_start", { mode: "string" }).notNull(),
+    recipeId: uuid("recipe_id")
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    kind: text("kind", { enum: ["shown", "dismissed", "picked"] }).notNull(),
+    count: integer("count").notNull().default(1),
+    firstAt: timestamp("first_at", { withTimezone: true }).notNull().defaultNow(),
+    lastAt: timestamp("last_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.weekStart, table.recipeId, table.kind] })],
+);
+
+export type SuggestionEventKind = (typeof suggestionEvents.$inferSelect)["kind"];

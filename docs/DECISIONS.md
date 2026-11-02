@@ -542,6 +542,16 @@ R1, R3, R4 and the small fixes while the recipes are rebuilt.
     review session.
   - Changed on the recipe page (one tap) or several at once on Recipes (*Select* → *Move to*),
     and filtered on Recipes.
+- **Recording what's shown (R3):** table `suggestion_events`, one row per week, recipe and kind
+  (shown, dismissed, picked), with a count and first/last time. There are no extra taps:
+  - A suggestion counts as shown once per visit to the page.
+  - "Not this one" counts as dismissed.
+  - Any dish added to the week counts as picked, however it got there.
+
+  Recording is quiet: if it fails, choosing carries on. Nothing in the app reads it yet. It is
+  for a later recipe review (R8): dishes shown often but rarely picked, and dishes never shown.
+  Events go with their recipe when it's deleted, and Reset everything clears them.
+- **"Not this one" lasts the week** (`week_plans.dismissed`), on both phones, until *Bring back*.
 
 ## Product decisions
 

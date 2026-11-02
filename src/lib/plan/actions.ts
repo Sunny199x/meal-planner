@@ -8,8 +8,9 @@ import { guidanceFor, MAX_PREP_DAYS } from "./food-safety";
 import { readLikedIds, type LikedCombination } from "./liked";
 import { forgetLikedCombination, saveLikedCombination } from "./liked-store";
 import { setPrepLimit } from "./prep-limits";
-import { getPlan, saveDishesOrCreate, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
+import { getPlan, saveDismissed, saveDishesOrCreate, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
 import { saveUsualWeek } from "./usual-week";
+import { recordEvents } from "./events";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
 export async function saveWeekSetupAction(
@@ -169,6 +170,50 @@ export async function saveUsualWeekAction(input: WeekSetup): Promise<{ setup?: W
     const saved = await saveUsualWeek(await getDb(), setup);
     revalidatePath("/", "layout");
     return { setup: saved };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+const RECIPE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isRecipeIds = (ids: unknown, max: number): ids is string[] =>
+  Array.isArray(ids) && ids.length <= max && ids.every((id) => typeof id === "string" && RECIPE_ID.test(id));
+
+/**
+ * Records what the choosing screen showed, hid or picked. Quiet: a failure here
+ * never gets in the way of choosing, so it only reports whether it worked.
+ */
+export async function recordSuggestionEventsAction(
+  weekStart: string,
+  kind: "shown" | "dismissed" | "picked",
+  recipeIds: string[],
+): Promise<{ ok: boolean }> {
+  await requireSignedIn();
+  const week = readWeekStart(weekStart);
+  if (!week || !["shown", "dismissed", "picked"].includes(kind) || !isRecipeIds(recipeIds, 50)) return { ok: false };
+  try {
+    await recordEvents(await getDb(), week, kind, recipeIds);
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/** Saves this week's "Not this one" list, so it lasts after leaving the page. */
+export async function saveDismissedAction(
+  weekStart: string,
+  recipeIds: string[],
+  setupIfNew: WeekSetup | null = null,
+): Promise<{ error?: string }> {
+  await requireSignedIn();
+  const week = readWeekStart(weekStart);
+  const setup = setupIfNew === null ? null : readSetup(setupIfNew);
+  if (!week || !isRecipeIds(recipeIds, 500) || (setupIfNew !== null && !setup)) {
+    return { error: "Something wasn't valid. Please reload and try again." };
+  }
+  try {
+    const saved = await saveDismissed(await getDb(), week, [...new Set(recipeIds)], setup);
+    return saved ? {} : { error: "This week isn't saved yet. Please reload and try again." };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

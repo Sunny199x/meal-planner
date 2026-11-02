@@ -5,10 +5,11 @@
 //   app, in which case it is kept as an app recipe.
 // - A file that can't be read leaves the previous version in place.
 // - Recipes added in the app are never touched, except by "Reset everything",
-//   which deletes every recipe (and its photo), every planned week and every liked
-//   combination before loading the files. The grocery list and prep limits stay.
+//   which deletes every recipe (and its photo), every planned week, every liked
+//   combination and the record of what was suggested, before loading the files.
+//   The grocery list, prep limits and the usual week stay.
 import { and, count, eq, sql } from "drizzle-orm";
-import { likedCombinations, recipes, weekPlans } from "../db/schema";
+import { likedCombinations, recipes, suggestionEvents, weekPlans } from "../db/schema";
 import type { Db } from "../db/types";
 import { parseRecipeFile } from "./parse-recipe-file";
 import type { Problem, RecipeContent } from "./types";
@@ -57,6 +58,7 @@ export async function loadRecipeFiles(
   const parsed = files.map((file) => ({ file, ...parseRecipeFile(file.fileName, file.text) }));
 
   if (reset) {
+    await db.delete(suggestionEvents);
     await db.delete(likedCombinations);
     await db.delete(weekPlans);
     await db.delete(recipes);
