@@ -4,9 +4,10 @@ import { openLocalDb } from "../db/local";
 import { recipes } from "../db/schema";
 import type { Db } from "../db/types";
 import { parseRecipeForm, recipeToFormValues, EMPTY_FORM } from "./form";
+import { parseRecipeFile } from "./parse-recipe-file";
 import { loadRecipeFiles } from "./load-files";
 import { readTemplateFixtures } from "./test-fixtures";
-import { deleteRecipe, insertRecipe, updateRecipe } from "./save";
+import { deleteRecipe, insertRecipe, setRecipeStatus, updateRecipe } from "./save";
 
 const pasta = parseRecipeForm({
   ...EMPTY_FORM,
@@ -60,5 +61,28 @@ describe("saving recipes from the app", () => {
     const id = await insertRecipe(db, pasta);
     await deleteRecipe(db, id);
     expect(await db.select().from(recipes)).toEqual([]);
+  });
+});
+
+describe("recipe statuses", () => {
+  it("adds recipes to the rotation unless told otherwise, and changes several at once", async () => {
+    const db: Db = await openLocalDb("memory://");
+    const [file] = await readTemplateFixtures();
+    const content = parseRecipeFile(file.fileName, file.text).recipe!;
+    const typed = await insertRecipe(db, content);
+    const imported = await insertRecipe(db, { ...content, title: "Imported" }, "trial");
+    const status = async () => (await db.select().from(recipes).orderBy(recipes.title)).map((r) => [r.title, r.status]);
+    expect(await status()).toEqual([
+      [content.title, "rotation"],
+      ["Imported", "trial"],
+    ]);
+    expect(await setRecipeStatus(db, [typed, imported], "excluded")).toBe(2);
+    // Editing keeps the status unless the form sends one.
+    await updateRecipe(db, typed, content);
+    await updateRecipe(db, imported, { ...content, title: "Imported" }, "rotation");
+    expect(await status()).toEqual([
+      [content.title, "excluded"],
+      ["Imported", "rotation"],
+    ]);
   });
 });

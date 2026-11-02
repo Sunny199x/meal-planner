@@ -121,6 +121,11 @@ describe("repeating a past week", () => {
     expect(noRoom).toEqual([]);
   });
 
+  it("leaves out recipes now marked not suggested", () => {
+    const withStatus = new Map([...all].map(([id, r]) => [id, { ...r, status: id === ID(2) ? ("excluded" as const) : ("rotation" as const) }]));
+    expect(placed(repeatWeek([], [dish(1, 1), dish(2, 2)], setup, withStatus, now).dishes)).toEqual([[ID(1), 1, null]]);
+  });
+
   it("adds nothing when every dinner is already chosen", () => {
     const chosen = [dish(1, 1), dish(2, 2)];
     expect(repeatWeek(chosen, chosen, setup, all, now)).toEqual({ dishes: chosen, added: [], noRoom: [] });

@@ -34,14 +34,16 @@ describe("which combinations can be used", () => {
       { id: ID(2), seafood: null },
       { id: ID(3), seafood: "contains" as const },
       { id: ID(4), seafood: "may contain" as const },
+      { id: ID(5), seafood: null, status: "excluded" as const },
     ].map((r) => [r.id, r]),
   );
 
-  it("leaves out deleted recipes and recipes now containing seafood, and drops a combination left with one dish", () => {
+  it("leaves out deleted, seafood and not-suggested recipes, and drops a combination left with one dish", () => {
     const combinations = [
       { id: "a", recipeIds: [ID(1), ID(2), ID(9)], weekStart: null }, // one deleted
       { id: "b", recipeIds: [ID(1), ID(3)], weekStart: null }, // seafood: one left
       { id: "c", recipeIds: [ID(2), ID(4)], weekStart: "2026-10-25" }, // "may contain" is a warning, not a ban
+      { id: "d", recipeIds: [ID(1), ID(5)], weekStart: null }, // one not suggested: one left
     ];
     expect(usableCombinations(combinations, recipes)).toEqual([
       { id: "a", recipeIds: [ID(1), ID(2)], weekStart: null },

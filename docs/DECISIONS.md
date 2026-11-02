@@ -527,6 +527,21 @@ R1, R3, R4 and the small fixes while the recipes are rebuilt.
   ingredients to use up are under "More". Every change saves at once. The week is saved on the
   first change or the first dish chosen (`saveDishesOrCreate`), so nothing has to be confirmed
   first.
+- **Recipe statuses (R4):** each recipe is *In rotation*, *New to try* or *Not suggested*
+  (`recipes.status`).
+  - Where they start: recipes added by hand and from files start in rotation (files have been
+    approved in the recipe session). Imports start as new to try. Loading the files again keeps a
+    recipe's status.
+  - Suggestions:
+    - Not-suggested recipes are never suggested, nor offered in *Browse all recipes*, *Repeat a
+      past week* or liked combinations. They stay in Recipes.
+    - A new-to-try dish is suggested with a note. Once one is in the week, no other is suggested.
+      Browsing can still add one on purpose.
+  - The week after a new dish was planned, the choosing screen asks "Keep it in your rotation?"
+    (Yes / No, stop suggesting it / Not yet). That is how a dish leaves the trial lane without a
+    review session.
+  - Changed on the recipe page (one tap) or several at once on Recipes (*Select* → *Move to*),
+    and filtered on Recipes.
 
 ## Product decisions
 

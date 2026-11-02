@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { FavouriteButton } from "@/components/favourite-button";
+import { StatusControl } from "@/components/status-control";
 import { Chip, DIET_LABEL, ErrorBox, formatMinutes, RecipeTile } from "@/components/ui";
 import { describeDatabaseError } from "@/lib/db";
 import type { RecipeRow } from "@/lib/db/schema";
@@ -99,6 +100,7 @@ async function RecipeDetail({ params, searchParams }: PageProps<"/recipes/[id]">
           </div>
         </div>
       </header>
+      <StatusControl key={`${recipe.id}-${recipe.status}`} id={recipe.id} status={recipe.status} />
 
       {recipe.isTemplate && (
         <p className="rounded-xl bg-note-light px-4 py-3 text-sm">

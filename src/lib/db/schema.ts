@@ -3,7 +3,7 @@
 // deploy finishes, the previous version may still be running against them.
 import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "../plan/types";
-import { DIETS, type IngredientLine, type MakeAheadTask } from "../recipes/types";
+import { DIETS, RECIPE_STATUSES, type IngredientLine, type MakeAheadTask } from "../recipes/types";
 
 export const recipes = pgTable("recipes", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -30,6 +30,8 @@ export const recipes = pgTable("recipes", {
   makeAhead: jsonb("make_ahead").$type<MakeAheadTask[]>().notNull(),
   notes: text("notes"),
   isFavourite: boolean("is_favourite").notNull().default(false),
+  /** In the weekly suggestions: rotation, trial (new to try) or excluded. Not part of the recipe files. */
+  status: text("status", { enum: RECIPE_STATUSES }).notNull().default("rotation"),
   /** Changes whenever the photo is added or replaced (so phones fetch the new one); null = no photo. */
   photoVersion: text("photo_version"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

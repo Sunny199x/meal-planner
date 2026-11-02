@@ -19,6 +19,7 @@ function recipe(id: string, overrides: Partial<Omit<PlanRecipe, "ingredients">> 
     freezerFriendly: false,
     isFavourite: false,
     isTemplate: false,
+    status: "rotation",
     seafood: null,
     makeAhead: [],
     photo: null,
@@ -210,6 +211,23 @@ describe("combinations the household liked", () => {
     const state = plan(["a", "b", "c"], { setup: everyEvening, liked: [["a", "d"], ["b", "d"], ["c", "d"], ["a", "b", "d"]] });
     const reasons = rank(recipes, state)[0].reasons.filter((r) => r.kind === "liked");
     expect(reasons).toEqual([{ kind: "liked", points: POINTS.liked, text: "You liked this with a and b." }]);
+  });
+});
+
+describe("recipe statuses", () => {
+  it("never suggests a recipe marked not suggested", () => {
+    const recipes = [recipe("korma"), recipe("old stew", { status: "excluded" })];
+    expect(rank(recipes, plan([])).map((s) => s.recipe.id)).toEqual(["korma"]);
+  });
+
+  it("suggests a new dish with a note, and no second one once one is in the week", () => {
+    const recipes = [recipe("korma"), recipe("pad see ew", { status: "trial" }), recipe("tacos", { status: "trial" })];
+    const first = rank(recipes, plan([]));
+    expect(first.map((s) => s.recipe.id).sort()).toEqual(["korma", "pad see ew", "tacos"]);
+    expect(first.find((s) => s.recipe.id === "tacos")?.notes).toContain(
+      "New to try: at most one new dish is suggested a week.",
+    );
+    expect(rank(recipes, plan(["pad see ew"])).map((s) => s.recipe.id)).toEqual(["korma"]);
   });
 });
 

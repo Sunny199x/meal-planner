@@ -52,7 +52,7 @@ export function recentDinners(weeks: PastWeek[], weekStart: string): Record<stri
   return recent;
 }
 
-type RepeatRecipe = Pick<PlanRecipe, "id" | "timeTotalMin" | "seafood">;
+type RepeatRecipe = Pick<PlanRecipe, "id" | "timeTotalMin" | "seafood"> & { status?: PlanRecipe["status"] };
 
 export type Repeated = {
   dishes: PlannedDish[];
@@ -68,7 +68,7 @@ export type Repeated = {
  * leftovers on the same later evening when that is free too. Dinners whose
  * evening is taken go on the earliest free evening they fit. Dinners already
  * chosen stay as they are. Deleted recipes, recipes now marked as containing
- * seafood and recipes already in the week are left out. Lunch boxes and
+ * seafood or "not suggested", and recipes already in the week are left out. Lunch boxes and
  * freezer portions are not copied: they are worked out afresh.
  */
 export function repeatWeek(
@@ -86,7 +86,7 @@ export function repeatWeek(
   const candidates = past
     .filter((d) => {
       const recipe = recipes.get(d.recipeId);
-      return recipe && recipe.seafood !== "contains" && !inWeek.has(d.recipeId);
+      return recipe && recipe.seafood !== "contains" && recipe.status !== "excluded" && !inWeek.has(d.recipeId);
     })
     .sort((a, b) => (a.day ?? 7) - (b.day ?? 7));
 

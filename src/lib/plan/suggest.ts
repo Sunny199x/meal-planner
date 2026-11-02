@@ -7,7 +7,7 @@ import { formatQuantity } from "../recipes/format";
 import { photoUrl } from "../recipes/photo-url";
 import { parseIngredientLine, type ParsedIngredient } from "../recipes/parse-ingredient-line";
 import { checkRecipeForSeafood } from "../recipes/seafood";
-import type { MakeAheadTask } from "../recipes/types";
+import type { MakeAheadTask, RecipeStatus } from "../recipes/types";
 import {
   cuisineKey,
   ingredientKey,
@@ -33,6 +33,8 @@ export type PlanRecipe = {
   freezerFriendly: boolean;
   isFavourite: boolean;
   isTemplate: boolean;
+  /** In the weekly suggestions: rotation, trial (at most one a week) or excluded (never). */
+  status: RecipeStatus;
   seafood: "contains" | "may contain" | null;
   ingredients: ParsedIngredient[];
   makeAhead: MakeAheadTask[];
@@ -56,6 +58,7 @@ export function toPlanRecipe(row: RecipeRow): PlanRecipe {
     freezerFriendly: row.freezerFriendly,
     isFavourite: row.isFavourite,
     isTemplate: row.isTemplate,
+    status: row.status,
     seafood: seafood.some((f) => f.level === "contains") ? "contains" : seafood.length ? "may contain" : null,
     ingredients,
     makeAhead: row.makeAhead,
@@ -261,6 +264,7 @@ function scoreRecipe(candidate: PlanRecipe, chosen: PlanRecipe[], plan: PlanStat
   else if (weeksAgo === 2) add("recent", POINTS.twoWeeksAgo, "You had this two weeks before.");
 
   if (candidate.isTemplate) add("template", POINTS.template, "Illustrative example, not one of your own recipes.");
+  if (candidate.status === "trial") notes.push("New to try: at most one new dish is suggested a week.");
   if (candidate.seafood === "may contain") notes.push("May contain fish: check the label.");
   if (fitsDays.length && fitsDays.every((day) => plan.setup.evenings[day].time === "relaxed")) {
     notes.push(`Needs a Relaxed evening (${candidate.timeTotalMin} min).`);
@@ -285,8 +289,9 @@ function tieBreak(seed: string, id: string): number {
 
 /**
  * All recipes that could still go into the week, best first. Seafood, recipes
- * already chosen or dismissed, and recipes too long for every open evening are
- * left out.
+ * already chosen or dismissed, recipes marked "not suggested", and recipes too
+ * long for every open evening are left out. Once a "new to try" dish is in the
+ * week, no other one is suggested.
  */
 export function rankCandidates(recipes: PlanRecipe[], plan: PlanState, seed = ""): Suggestion[] {
   const open = openEvenings(plan);
@@ -294,8 +299,10 @@ export function rankCandidates(recipes: PlanRecipe[], plan: PlanState, seed = ""
   const chosenIds = new Set(plan.dishes.map((d) => d.recipeId));
   const chosen = recipes.filter((r) => chosenIds.has(r.id));
   const dismissed = new Set(plan.dismissed);
+  const trying = chosen.some((r) => r.status === "trial");
   return recipes
     .filter((r) => !chosenIds.has(r.id) && !dismissed.has(r.id) && r.seafood !== "contains")
+    .filter((r) => r.status !== "excluded" && !(trying && r.status === "trial"))
     .map((r) => scoreRecipe(r, chosen, plan, open))
     .filter((s) => s.fitsDays.length > 0)
     .sort((a, b) => b.score - a.score || tieBreak(seed, a.recipe.id) - tieBreak(seed, b.recipe.id));

@@ -1,0 +1,1 @@
+ALTER TABLE "recipes" ADD COLUMN "status" text DEFAULT 'rotation' NOT NULL;

@@ -1,4 +1,28 @@
 export const DIETS = ["vegetarian", "vegan", "meat"] as const;
+
+/**
+ * Whether a recipe takes part in the weekly suggestions: "rotation" = dishes the
+ * household knows and likes; "trial" = new to try (at most one a week);
+ * "excluded" = kept in the collection but never suggested.
+ */
+export const RECIPE_STATUSES = ["rotation", "trial", "excluded"] as const;
+export type RecipeStatus = (typeof RECIPE_STATUSES)[number];
+
+export const STATUS_LABEL: Record<RecipeStatus, string> = {
+  rotation: "In rotation",
+  trial: "New to try",
+  excluded: "Not suggested",
+};
+
+export const STATUS_HINT: Record<RecipeStatus, string> = {
+  rotation: "Dishes you know and like; suggested every week.",
+  trial: "Suggested, but at most one new dish a week. After you've had it, keep it or not.",
+  excluded: "Kept in your recipes, never suggested.",
+};
+
+export function readStatus(value: unknown): RecipeStatus | null {
+  return RECIPE_STATUSES.includes(value as RecipeStatus) ? (value as RecipeStatus) : null;
+}
 export type Diet = (typeof DIETS)[number];
 
 /** An ingredient exactly as written; amounts are worked out when shown. */

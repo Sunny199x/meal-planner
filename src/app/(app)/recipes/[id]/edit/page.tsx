@@ -53,6 +53,7 @@ async function EditRecipe({ params }: Pick<PageProps<"/recipes/[id]/edit">, "par
         cancelHref={`/recipes/${recipe.id}`}
         cuisines={suggestions.cuisines}
         prepNames={suggestions.prepNames}
+        status={recipe.status}
       />
       <DeleteRecipe
         id={recipe.id}

@@ -5,6 +5,7 @@ import { describeDatabaseError, getDb } from "../db";
 import { formValuesFromFormData, parseRecipeForm, type FieldErrors } from "./form";
 import { isRecipeId } from "./queries";
 import { deleteRecipe, insertRecipe, updateRecipe } from "./save";
+import { readStatus } from "./types";
 
 // After a save or delete these actions return the page to open next, and the
 // browser loads it as a normal full page load. Next.js otherwise first shows a
@@ -23,7 +24,8 @@ export async function createRecipeAction(_prev: RecipeFormState, data: FormData)
   const { recipe, fieldErrors } = parseRecipeForm(formValuesFromFormData(data));
   if (!recipe) return { fieldErrors };
   try {
-    return { openNext: savedUrl(await insertRecipe(await getDb(), recipe)) };
+    const status = readStatus(data.get("status")) ?? "rotation";
+    return { openNext: savedUrl(await insertRecipe(await getDb(), recipe, status)) };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }
@@ -40,7 +42,7 @@ export async function updateRecipeAction(
   if (!recipe) return { fieldErrors };
   let found: boolean;
   try {
-    found = await updateRecipe(await getDb(), id, recipe);
+    found = await updateRecipe(await getDb(), id, recipe, readStatus(data.get("status")));
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

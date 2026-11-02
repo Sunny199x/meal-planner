@@ -6,7 +6,7 @@ import { carbLabel, proteinLabel } from "./labels";
 import { parseIngredientLine } from "./parse-ingredient-line";
 import { photoUrl } from "./photo-url";
 import { checkRecipeForSeafood } from "./seafood";
-import type { Diet } from "./types";
+import type { Diet, RecipeStatus } from "./types";
 
 export type RecipeSummary = {
   id: string;
@@ -23,6 +23,7 @@ export type RecipeSummary = {
   tags: string[];
   isTemplate: boolean;
   isFavourite: boolean;
+  status: RecipeStatus;
   proteinRich: boolean;
   carbFocused: boolean;
   seafood: "contains" | "may contain" | null;
@@ -48,6 +49,7 @@ export function toSummary(row: RecipeRow): RecipeSummary {
     tags: row.tags,
     isTemplate: row.isTemplate,
     isFavourite: row.isFavourite,
+    status: row.status,
     proteinRich: proteinLabel(parsed, row.servings).applies,
     carbFocused: carbLabel(parsed, row.servings).applies,
     seafood: seafood.some((f) => f.level === "contains")

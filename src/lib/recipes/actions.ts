@@ -7,6 +7,8 @@ import { recipes } from "../db/schema";
 import { recipesChanged } from "./changed";
 import { MAX_PHOTO_BYTES, photoType, removeRecipePhoto, saveRecipePhoto } from "./photos";
 import { isRecipeId } from "./queries";
+import { setRecipeStatus } from "./save";
+import { readStatus, type RecipeStatus } from "./types";
 
 /** Favourites are shared by the household, so both phones see the same hearts. */
 export async function setFavourite(id: string, favourite: boolean) {
@@ -52,4 +54,18 @@ export async function removeRecipePhotoAction(id: string): Promise<{ error?: str
   }
   recipesChanged();
   return {};
+}
+
+/** Moves one or more recipes into the rotation, the trial lane, or out of the suggestions. */
+export async function setRecipeStatusAction(ids: string[], status: RecipeStatus): Promise<{ changed?: number; error?: string }> {
+  await requireSignedIn();
+  const valid = Array.isArray(ids) && ids.length > 0 && ids.length <= 500 && ids.every((id) => typeof id === "string" && isRecipeId(id));
+  if (!valid || !readStatus(status)) return { error: "Something wasn't valid. Please reload and try again." };
+  try {
+    const changed = await setRecipeStatus(await getDb(), ids, status);
+    recipesChanged();
+    return { changed };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
 }

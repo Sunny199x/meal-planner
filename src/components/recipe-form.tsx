@@ -7,7 +7,7 @@ import type { RecipeFormState } from "@/lib/recipes/form-actions";
 import { formatAmount, formatMetric } from "@/lib/recipes/format";
 import { parseIngredientLine } from "@/lib/recipes/parse-ingredient-line";
 import { checkRecipeForSeafood } from "@/lib/recipes/seafood";
-import type { MakeAheadTask } from "@/lib/recipes/types";
+import { RECIPE_STATUSES, STATUS_HINT, STATUS_LABEL, type MakeAheadTask, type RecipeStatus } from "@/lib/recipes/types";
 
 type Props = {
   initial: RecipeFormValues;
@@ -20,6 +20,8 @@ type Props = {
   suggestedMakeAhead?: MakeAheadTask[];
   /** Runs after a successful save, before the saved recipe opens (e.g. to attach an imported photo). */
   afterSave?: (savedPath: string) => Promise<void>;
+  /** Whether it takes part in the weekly suggestions: imports start as "trial". */
+  status?: RecipeStatus;
 };
 
 const inputClass =
@@ -34,8 +36,10 @@ export function RecipeForm({
   prepNames,
   suggestedMakeAhead = [],
   afterSave,
+  status: initialStatus = "rotation",
 }: Props) {
   const [values, setValues] = useState(initial);
+  const [status, setStatus] = useState(initialStatus);
   const [state, formAction, saving] = useActionState(action, {});
   const leaving = Boolean(state.openNext);
 
@@ -303,6 +307,28 @@ export function RecipeForm({
         <Field label="Anything else" hint="What you'd change next time, what to serve it with, who liked it." id="notes">
           <textarea {...text("notes")} rows={3} className={inputClass} />
         </Field>
+      </Section>
+
+      <Section title="Weekly suggestions">
+        <fieldset className="space-y-2">
+          <legend className="sr-only">Weekly suggestions</legend>
+          {RECIPE_STATUSES.map((value) => (
+            <label key={value} className="flex cursor-pointer items-start gap-3">
+              <input
+                type="radio"
+                name="status"
+                value={value}
+                checked={status === value}
+                onChange={() => setStatus(value)}
+                className="mt-1 h-4 w-4 accent-ink"
+              />
+              <span>
+                <span className="font-medium">{STATUS_LABEL[value]}</span>
+                <span className="block text-sm text-muted">{STATUS_HINT[value]}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
       </Section>
 
       <div className="space-y-3">

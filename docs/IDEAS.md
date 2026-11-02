@@ -30,8 +30,8 @@ sizes and what exists today are in the note at its end. Nothing here is agreed y
   Also explain why tasks without a prep limit happen on the evening.
 - **R3. Log what was shown, dismissed and picked** (*must*, medium), and keep "Not this one" for
   the week. Picks are already saved.
-- **R4. Rotation, trial and excluded recipes** (*should*, medium). There is no exclude yet. Imports
-  would start as trial; the HelloFresh set could be excluded in bulk.
+- **R4. Rotation, trial and excluded recipes** (*should*, medium). **Done (milestone 6):** In
+  rotation / New to try / Not suggested, with a "keep it?" prompt after a new dish.
 - **R5. "Any dishes you really want?" as the first step** (*should*, small).
 - **R6. A 1–5 "how hard did that feel?" after choosing** (*should*, small).
 - **R7. Swipe yes/no on suggestion cards** (*could*, medium; evidence is vendor claims).

@@ -142,6 +142,14 @@ describe("loadRecipeFiles", () => {
     ]);
   });
 
+  it("keeps a recipe's status in the weekly suggestions when the files are loaded again", async () => {
+    await loadRecipeFiles(db, [daal]);
+    expect((await db.select().from(recipes))[0].status).toBe("rotation");
+    await db.update(recipes).set({ status: "excluded" });
+    await loadRecipeFiles(db, [daal]);
+    expect((await db.select().from(recipes))[0].status).toBe("excluded");
+  });
+
   it("reset also clears planned weeks and liked combinations, but keeps the grocery list and prep limits", async () => {
     await loadRecipeFiles(db, [daal]);
     const [recipe] = await db.select().from(recipes);

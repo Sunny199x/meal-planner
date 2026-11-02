@@ -25,6 +25,7 @@ function recipe(overrides: Partial<RecipeSummary>): RecipeSummary {
     tags: [],
     isTemplate: false,
     isFavourite: false,
+    status: "rotation",
     proteinRich: false,
     carbFocused: false,
     seafood: null,
@@ -84,6 +85,18 @@ describe("filterRecipes", () => {
     expect(titles({ q: "spinach" })).toEqual(["Tadka"]);
     expect(titles({ q: "creme" })).toEqual(["Black"]);
     expect(titles({ q: "chicken lentils" })).toEqual([]);
+  });
+
+  it("shows only the recipes with the chosen status in the weekly suggestions", () => {
+    const list = [
+      recipe({ title: "Korma", status: "rotation" }),
+      recipe({ title: "Pad see ew", status: "trial" }),
+      recipe({ title: "Old stew", status: "excluded" }),
+    ];
+    const found = (status: Filters["status"]) => filterRecipes(list, { ...NO_FILTERS, status }).map((r) => r.title);
+    expect(found(null)).toEqual(["Korma", "Pad see ew", "Old stew"]);
+    expect(found("trial")).toEqual(["Pad see ew"]);
+    expect(found("excluded")).toEqual(["Old stew"]);
   });
 
   it("searches where a recipe is from and its website, ignoring spaces", () => {
@@ -158,17 +171,18 @@ describe("filters in the page address", () => {
       freezer: true,
       leftovers: false,
       favourites: true,
+      status: "trial",
     };
     const params = filtersToParams(filters);
     expect(params.toString()).toBe(
-      "q=daal&time=30&diet=vegetarian&cuisine=Indian&tag=comfort&with=spinach%2C+lentils&without=coriander&protein=1&freezer=1&fav=1",
+      "q=daal&time=30&diet=vegetarian&cuisine=Indian&tag=comfort&with=spinach%2C+lentils&without=coriander&status=trial&protein=1&freezer=1&fav=1",
     );
     expect(filtersFromParams(params)).toEqual(filters);
-    expect(activeFilterCount(filters)).toBe(9);
+    expect(activeFilterCount(filters)).toBe(10);
   });
 
   it("ignores nonsense values", () => {
-    expect(filtersFromParams(new URLSearchParams("time=abc&diet=fish&protein=yes"))).toEqual(NO_FILTERS);
+    expect(filtersFromParams(new URLSearchParams("time=abc&diet=fish&protein=yes&status=maybe"))).toEqual(NO_FILTERS);
     expect(filtersToParams(NO_FILTERS).toString()).toBe("");
     expect(activeFilterCount(NO_FILTERS)).toBe(0);
   });

@@ -1,7 +1,7 @@
 // Search and filters for the recipe collection. Filters live in the page
 // address (?q=daal&time=30), so the Back button and shared links keep them.
 import type { RecipeSummary } from "./summary";
-import type { Diet } from "./types";
+import { readStatus, type Diet, type RecipeStatus } from "./types";
 
 export const TIME_OPTIONS = [20, 30, 45, 60] as const;
 
@@ -20,6 +20,8 @@ export type Filters = {
   freezer: boolean;
   leftovers: boolean;
   favourites: boolean;
+  /** Only recipes with this status in the weekly suggestions. */
+  status: RecipeStatus | null;
 };
 
 export const NO_FILTERS: Filters = {
@@ -35,6 +37,7 @@ export const NO_FILTERS: Filters = {
   freezer: false,
   leftovers: false,
   favourites: false,
+  status: null,
 };
 
 const FLAGS = {
@@ -61,6 +64,7 @@ export function filtersFromParams(params: URLSearchParams): Filters {
     tag: params.get("tag") || null,
     withIngredients: list(params.get("with")),
     withoutIngredients: list(params.get("without")),
+    status: readStatus(params.get("status")),
   };
   for (const [param, key] of Object.entries(FLAGS)) {
     filters[key] = params.get(param) === "1";
@@ -77,6 +81,7 @@ export function filtersToParams(filters: Filters): URLSearchParams {
   if (filters.tag) params.set("tag", filters.tag);
   if (filters.withIngredients.length) params.set("with", filters.withIngredients.join(", "));
   if (filters.withoutIngredients.length) params.set("without", filters.withoutIngredients.join(", "));
+  if (filters.status) params.set("status", filters.status);
   for (const [param, key] of Object.entries(FLAGS)) {
     if (filters[key]) params.set(param, "1");
   }
@@ -92,6 +97,7 @@ export function activeFilterCount(filters: Filters): number {
     filters.tag,
     filters.withIngredients.length,
     filters.withoutIngredients.length,
+    filters.status,
     ...Object.values(FLAGS).map((key) => filters[key]),
   ].filter(Boolean).length;
 }
@@ -137,6 +143,7 @@ export function filterRecipes(recipes: RecipeSummary[], filters: Filters): Recip
     if (filters.freezer && !recipe.freezerFriendly) return false;
     if (filters.leftovers && !recipe.goodAsLeftovers) return false;
     if (filters.favourites && !recipe.isFavourite) return false;
+    if (filters.status && recipe.status !== filters.status) return false;
 
     const names = recipe.ingredients.map((i) => ({ name: normalise(i.name), optional: i.optional }));
     if (!withTerms.every((term) => names.some((i) => i.name.includes(term)))) return false;

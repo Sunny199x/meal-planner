@@ -209,6 +209,7 @@ export function ImportFlow({
           prepNames={prepNames}
           suggestedMakeAhead={normalised.suggestedMakeAhead}
           afterSave={afterSave}
+          status="trial"
         />
       </div>
     );

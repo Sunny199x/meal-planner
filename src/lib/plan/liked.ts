@@ -28,17 +28,17 @@ export function sameRecipes(a: string[], b: string[]): boolean {
 }
 
 /**
- * The combinations that can still be used: their recipes that still exist and
- * don't contain seafood, kept only while at least two are left.
+ * The combinations that can still be used: their recipes that still exist, don't
+ * contain seafood and aren't marked "not suggested", kept only while at least two are left.
  */
 export function usableCombinations(
   combinations: LikedCombination[],
-  recipes: Map<string, Pick<PlanRecipe, "id" | "seafood">>,
+  recipes: Map<string, Pick<PlanRecipe, "id" | "seafood"> & { status?: PlanRecipe["status"] }>,
 ): LikedCombination[] {
   return combinations.flatMap((combination) => {
     const recipeIds = combination.recipeIds.filter((id) => {
       const recipe = recipes.get(id);
-      return recipe && recipe.seafood !== "contains";
+      return recipe && recipe.seafood !== "contains" && recipe.status !== "excluded";
     });
     return recipeIds.length >= LIKED_MIN ? [{ ...combination, recipeIds }] : [];
   });

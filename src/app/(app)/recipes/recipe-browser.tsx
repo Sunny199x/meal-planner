@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { RecipeCard } from "@/components/recipe-card";
 import { formatMinutes } from "@/components/ui";
 import {
@@ -16,7 +16,9 @@ import {
 } from "@/lib/recipes/filters";
 import { CARB_RULE_TEXT, LABEL_DISCLAIMER, PROTEIN_RULE_TEXT } from "@/lib/recipes/labels";
 import { LAST_LIST_QUERY_KEY } from "@/lib/recipes/list-query";
+import { setRecipeStatusAction } from "@/lib/recipes/actions";
 import type { RecipeSummary } from "@/lib/recipes/summary";
+import { RECIPE_STATUSES, STATUS_LABEL, type RecipeStatus } from "@/lib/recipes/types";
 
 const DIET_OPTIONS: { value: DietFilter; label: string }[] = [
   { value: "vegetarian", label: "Vegetarian" },
@@ -51,6 +53,28 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
   const [withText, setWithText] = useState(filters.withIngredients.join(", "));
   const [withoutText, setWithoutText] = useState(filters.withoutIngredients.join(", "));
   const [panelOpen, setPanelOpen] = useState(false);
+  // Choosing several recipes to move them into or out of the weekly suggestions.
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [moveMessage, setMoveMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [moving, startMoving] = useTransition();
+
+  function toggleSelected(id: string) {
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }
+  function move(status: RecipeStatus) {
+    const ids = selected;
+    startMoving(async () => {
+      const result = await setRecipeStatusAction(ids, status);
+      if (result.error) {
+        setMoveMessage({ text: result.error, error: true });
+        return;
+      }
+      setMoveMessage({ text: `Moved ${ids.length} ${ids.length === 1 ? "recipe" : "recipes"} to “${STATUS_LABEL[status]}”.` });
+      setSelected([]);
+      setSelecting(false);
+    });
+  }
 
   function update(change: Partial<Filters>) {
     const query = filtersToParams({ ...filters, ...change }).toString();
@@ -98,12 +122,64 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
           >
             Filters{activeCount > 0 && ` (${activeCount})`} {panelOpen ? "▴" : "▾"}
           </button>
-          <p className="text-sm text-muted" aria-live="polite">
-            {results.length === recipes.length
-              ? `${recipes.length} ${recipes.length === 1 ? "recipe" : "recipes"}`
-              : `${results.length} of ${recipes.length} recipes`}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-muted" aria-live="polite">
+              {results.length === recipes.length
+                ? `${recipes.length} ${recipes.length === 1 ? "recipe" : "recipes"}`
+                : `${results.length} of ${recipes.length} recipes`}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSelecting(!selecting);
+                setSelected([]);
+                setMoveMessage(null);
+              }}
+              aria-pressed={selecting}
+              className="rounded-full border border-line bg-paper px-3 py-1.5 text-sm hover:border-accent/50"
+            >
+              {selecting ? "Done" : "Select"}
+            </button>
+          </div>
         </div>
+        {selecting && (
+          <div className="sticky top-2 z-20 space-y-2 rounded-2xl border border-line bg-paper p-3 shadow-sm">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium">{selected.length} selected</span>
+              <button
+                type="button"
+                onClick={() => setSelected(results.map((r) => r.id))}
+                className="text-accent underline"
+              >
+                Select all {results.length}
+              </button>
+              {selected.length > 0 && (
+                <button type="button" onClick={() => setSelected([])} className="text-muted underline">
+                  Clear
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-muted">Move to:</span>
+              {RECIPE_STATUSES.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  disabled={selected.length === 0 || moving}
+                  onClick={() => move(status)}
+                  className="rounded-full border border-line px-3 py-1.5 text-sm hover:border-accent/50 disabled:opacity-40"
+                >
+                  {STATUS_LABEL[status]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {moveMessage && (
+          <p role={moveMessage.error ? "alert" : "status"} className={`text-sm ${moveMessage.error ? "text-danger" : "text-good"}`}>
+            {moveMessage.text}
+          </p>
+        )}
         {activeChips.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {activeChips.map((chip) => (
@@ -130,6 +206,13 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
 
       {panelOpen && (
         <div id="filter-panel" className="space-y-5 rounded-2xl border border-line bg-paper p-4">
+          <FilterGroup title="Weekly suggestions">
+            <Segmented
+              options={[{ value: null, label: "Any" }, ...RECIPE_STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] }))]}
+              selected={filters.status}
+              onSelect={(value) => update({ status: value })}
+            />
+          </FilterGroup>
           <FilterGroup title="Cooking time (start to plate)">
             <Segmented
               options={[
@@ -224,7 +307,23 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
         <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {results.map((recipe) => (
             <li key={recipe.id}>
-              <RecipeCard recipe={recipe} />
+              {selecting ? (
+                // While selecting, a tap anywhere on the card ticks it instead of opening the recipe.
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(recipe.id)}
+                    onChange={() => toggleSelected(recipe.id)}
+                    aria-label={`Select ${recipe.title}`}
+                    className="h-5 w-5 shrink-0 accent-ink"
+                  />
+                  <div className="pointer-events-none min-w-0 flex-1">
+                    <RecipeCard recipe={recipe} />
+                  </div>
+                </label>
+              ) : (
+                <RecipeCard recipe={recipe} />
+              )}
             </li>
           ))}
         </ul>
@@ -241,6 +340,7 @@ function describeActive(filters: Filters): { label: string; clear: Partial<Filte
   }
   if (filters.cuisine) chips.push({ label: filters.cuisine, clear: { cuisine: null } });
   if (filters.tag) chips.push({ label: `#${filters.tag}`, clear: { tag: null } });
+  if (filters.status) chips.push({ label: STATUS_LABEL[filters.status], clear: { status: null } });
   for (const { key, label } of TOGGLES) {
     if (filters[key]) chips.push({ label, clear: { [key]: false } });
   }

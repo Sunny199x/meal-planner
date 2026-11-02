@@ -21,6 +21,8 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
           {recipe.seafood === "contains" && <Chip tone="danger">Contains seafood</Chip>}
           {recipe.seafood === "may contain" && <Chip tone="danger">May contain fish</Chip>}
           {recipe.isTemplate && <Chip tone="warn">Illustrative example</Chip>}
+          {recipe.status === "trial" && <Chip tone="warn">New to try</Chip>}
+          {recipe.status === "excluded" && <Chip>Not suggested</Chip>}
           {recipe.proteinRich && <Chip tone="good">Protein-rich</Chip>}
           {recipe.carbFocused && <Chip>Carb-focused</Chip>}
           {recipe.freezerFriendly && <Chip>Freezer-friendly</Chip>}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { saveWeekDishesAction } from "@/lib/plan/actions";
-import { formatWeek } from "@/lib/plan/dates";
+import { addDays, formatWeek } from "@/lib/plan/dates";
 import { recentDinners, type PastWeek, type Repeated } from "@/lib/plan/history";
 import { usableCombinations, type LikedCombination } from "@/lib/plan/liked";
 import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, setRepeat, timeClash } from "@/lib/plan/choose";
@@ -18,7 +18,9 @@ import {
 import { openEvenings, rankCandidates, shortlist, type PlanRecipe, type Suggestion } from "@/lib/plan/suggest";
 import { DAY_NAMES, DAY_SHORT, MAX_FREEZER, TIME_SLOTS, type PlannedDish, type WeekSetup } from "@/lib/plan/types";
 import { RecipeTile } from "@/components/ui";
+import { setRecipeStatusAction } from "@/lib/recipes/actions";
 import { matchesWords } from "@/lib/recipes/filters";
+import type { RecipeStatus } from "@/lib/recipes/types";
 import { formatQuantity } from "@/lib/recipes/format";
 import { LikeDishes, LikedList } from "./liked";
 import { PastWeeks } from "./past-weeks";
@@ -30,7 +32,7 @@ export function WeekChooser({
   onWeekSaved,
   initialDishes,
   choosingStartedAt,
-  recipes,
+  recipes: recipeRows,
   pastWeeks,
   likedCombinations,
 }: {
@@ -60,10 +62,39 @@ export function WeekChooser({
   const [startedAt, setStartedAt] = useState(choosingStartedAt);
   const [, startSaving] = useTransition();
 
+  // Statuses changed here ("keep it in your rotation?") apply straight away.
+  const [statusChanges, setStatusChanges] = useState<Record<string, RecipeStatus>>({});
+  const recipes = useMemo(
+    () => recipeRows.map((r) => (statusChanges[r.id] ? { ...r, status: statusChanges[r.id] } : r)),
+    [recipeRows, statusChanges],
+  );
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   const known = useMemo(() => dishes.filter((d) => byId.has(d.recipeId)), [dishes, byId]);
   const usable = useMemo(() => usableCombinations(liked, byId), [liked, byId]);
   const recent = useMemo(() => recentDinners(pastWeeks, weekStart), [pastWeeks, weekStart]);
+  // New dishes tried the week before, to keep in the rotation or not.
+  const [notYet, setNotYet] = useState<string[]>([]);
+  const tried = useMemo(() => {
+    const lastWeek = pastWeeks.find((w) => w.weekStart === addDays(weekStart, -7));
+    return (lastWeek?.dishes ?? [])
+      .filter((d) => d.day !== null)
+      .map((d) => byId.get(d.recipeId))
+      .filter((r): r is PlanRecipe => r?.status === "trial" && !notYet.includes(r.id));
+  }, [pastWeeks, weekStart, byId, notYet]);
+  const [keepError, setKeepError] = useState<string | null>(null);
+  const [, startKeeping] = useTransition();
+  function decide(recipe: PlanRecipe, status: RecipeStatus) {
+    setStatusChanges((c) => ({ ...c, [recipe.id]: status }));
+    startKeeping(async () => {
+      const result = await setRecipeStatusAction([recipe.id], status);
+      if (result.error) {
+        setKeepError(result.error);
+        setStatusChanges((c) => ({ ...c, [recipe.id]: "trial" }));
+      } else {
+        setKeepError(null);
+      }
+    });
+  }
   // Weeks whose dishes have all been deleted have nothing to repeat.
   const repeatable = useMemo(() => pastWeeks.filter((w) => w.dishes.some((d) => byId.has(d.recipeId))), [pastWeeks, byId]);
   const plan = { setup, dishes: known, dismissed };
@@ -147,6 +178,42 @@ export function WeekChooser({
 
   return (
     <>
+      {tried.length > 0 && (
+        <section className="space-y-2 rounded-2xl border border-note/40 bg-note-light p-5">
+          <h2 className="font-display text-lg font-extrabold tracking-tight">
+            You tried {tried[0].title} last week
+          </h2>
+          <p className="text-sm">Keep it in your rotation, so it&apos;s suggested like your other dishes?</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => decide(tried[0], "rotation")}
+              className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-dark"
+            >
+              Yes, keep it
+            </button>
+            <button
+              type="button"
+              onClick={() => decide(tried[0], "excluded")}
+              className="rounded-full border border-line bg-paper px-4 py-2 text-sm hover:border-accent/50"
+            >
+              No, stop suggesting it
+            </button>
+            <button
+              type="button"
+              onClick={() => setNotYet((n) => [...n, tried[0].id])}
+              className="px-2 py-2 text-sm text-muted underline"
+            >
+              Not yet
+            </button>
+          </div>
+          {keepError && (
+            <p role="alert" className="text-sm text-danger">
+              Not saved: {keepError}
+            </p>
+          )}
+        </section>
+      )}
       <section className="space-y-3 rounded-2xl border border-line bg-paper p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight">
@@ -678,7 +745,7 @@ function BrowseAll({
   const [query, setQuery] = useState("");
   const chosenIds = new Set(chosen.map((d) => d.recipeId));
   const list = recipes
-    .filter((r) => !chosenIds.has(r.id) && r.seafood !== "contains")
+    .filter((r) => !chosenIds.has(r.id) && r.seafood !== "contains" && r.status !== "excluded")
     .filter((r) => matchesWords([r.title, r.cuisine, r.source, r.site], query))
     .sort((a, b) => a.title.localeCompare(b.title));
   return (
@@ -698,6 +765,7 @@ function BrowseAll({
               <span className="block">{r.title}</span>
               <span className="text-sm text-muted">
                 {r.timeTotalMin} min · {r.cuisine}
+                {r.status === "trial" && <> · new to try</>}
                 {recent[r.id] && <> · had {recent[r.id] === 1 ? "the week before" : "two weeks before"}</>}
               </span>
             </span>
@@ -712,7 +780,7 @@ function BrowseAll({
         ))}
         {list.length === 0 && <li className="py-2 text-muted">No recipes match.</li>}
       </ul>
-      <p className="text-xs text-muted">Recipes with seafood are left out.</p>
+      <p className="text-xs text-muted">Recipes with seafood, and those marked “Not suggested”, are left out.</p>
     </div>
   );
 }

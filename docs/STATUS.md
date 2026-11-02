@@ -121,6 +121,10 @@ and the yellow logo. A week of real use starts now.
   - Tick tasks off; ticks are shared by both phones.
   - Each evening: what was prepped and when, what's done that day and why, lunch boxes to pack
     and portions to freeze, or an evening of leftovers with no cooking.
+- **Recipe statuses:** each recipe is *In rotation*, *New to try* (at most one suggested a week;
+  imports start here) or *Not suggested* (kept, never suggested). Change it on the recipe page, or
+  for several at once on Recipes with *Select*. The week after a new dish, the Week page asks
+  whether to keep it.
 - **Look:** modern and minimal, with an earthy colour per part of the app (Groceries green,
   Recipes aubergine, Week teal, Settings ochre). The menu marks the page you're on. The logo is
   a yellow bowl of soup that smiles.
