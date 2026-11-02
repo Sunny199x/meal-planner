@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { recordSuggestionEventsAction, saveDismissedAction, saveWeekDishesAction } from "@/lib/plan/actions";
+import {
+  recordSuggestionEventsAction,
+  saveDismissedAction,
+  saveEaseAction,
+  saveWeekDishesAction,
+} from "@/lib/plan/actions";
 import { addDays, formatWeek } from "@/lib/plan/dates";
 import { recentDinners, type PastWeek, type Repeated } from "@/lib/plan/history";
 import { usableCombinations, type LikedCombination } from "@/lib/plan/liked";
@@ -32,6 +37,7 @@ export function WeekChooser({
   onWeekSaved,
   initialDishes,
   initialDismissed,
+  initialEase,
   choosingStartedAt,
   recipes: recipeRows,
   pastWeeks,
@@ -45,6 +51,8 @@ export function WeekChooser({
   initialDishes: PlannedDish[];
   /** "Not this one" for this week, as saved. */
   initialDismissed: string[];
+  /** "How hard did choosing feel?" (1–5), if answered. */
+  initialEase: number | null;
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
   /** Earlier weeks with dinners, newest first. */
@@ -61,6 +69,8 @@ export function WeekChooser({
   const [notice, setNotice] = useState<string | null>(null);
   const [liked, setLiked] = useState(likedCombinations);
   const [showingLiked, setShowingLiked] = useState(false);
+  // "Any dishes you really want this week?": open at the start of a week, until a suggestion is picked.
+  const [wanting, setWanting] = useState(initialDishes.length === 0);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [startedAt, setStartedAt] = useState(choosingStartedAt);
   const [, startSaving] = useTransition();
@@ -291,7 +301,8 @@ export function WeekChooser({
           })}
           {offEvening.map((dish) => (
             <li key={dish.recipeId} className="py-2">
-              <p className="text-xs tracking-wide text-muted uppercase">Not on an evening yet</p>
+              <p className="text-xs tracking-wide text-muted uppercase">Backup dinner · no evening</p>
+              <p className="text-xs text-muted">Still on the shopping list: cook it if a night&apos;s plan falls through.</p>
               {renderDish(dish)}
             </li>
           ))}
@@ -314,13 +325,27 @@ export function WeekChooser({
       {open.length > 0 ? (
         <section className="space-y-3">
           <h2 className="font-display text-xl font-extrabold tracking-tight">
-            {known.length === 0 ? "Pick a first dish" : "Suggestions for the rest of the week"}
+            {wanting
+              ? known.length === 0
+                ? "Any dishes you really want this week?"
+                : "Anything else you really want?"
+              : known.length === 0
+                ? "Pick a first dish"
+                : "Suggestions for the rest of the week"}
           </h2>
-          {known.length === 0 && (
-            <p className="text-sm text-muted">
-              Start with anything you feel like{repeatable.length > 0 && <>, or repeat a past week</>}. After each pick,
-              the suggestions update to fit what you&apos;ve chosen.
-            </p>
+          {wanting && (
+            <>
+              <p className="text-sm text-muted">
+                Type to find them and add as many as you like. Or start from a suggestion below
+                {repeatable.length > 0 && <>, or repeat a past week</>}: they update after each pick.
+              </p>
+              <WantedSearch recipes={recipes} chosen={known} onAdd={(r) => add(r, "browse")} />
+              {known.length > 0 && (
+                <button type="button" onClick={() => setWanting(false)} className="text-sm text-accent underline">
+                  That&apos;s all: suggest the rest
+                </button>
+              )}
+            </>
           )}
           {known.length === 0 && usable.length > 0 && (
             <div className="space-y-2">
@@ -339,7 +364,10 @@ export function WeekChooser({
                   <SuggestionCard
                     suggestion={s}
                     day={pickEvening(s.recipe, setup, known)}
-                    onAdd={() => add(s.recipe, known.length === 0 ? "start" : "suggestion")}
+                    onAdd={() => {
+                      add(s.recipe, known.length === 0 ? "start" : "suggestion");
+                      setWanting(false);
+                    }}
                     onDismiss={() => dismiss(s.recipe.id)}
                   />
                 </li>
@@ -434,9 +462,56 @@ export function WeekChooser({
             </Link>
             .
           </p>
+          <EaseRating weekStart={weekStart} initial={initialEase} />
         </section>
       )}
     </>
+  );
+}
+
+const EASE_LABELS = ["", "Very easy", "Easy", "OK", "Hard", "Very hard"];
+
+/** One tap after choosing: how hard did that feel? Saved with the week to see the trend. */
+function EaseRating({ weekStart, initial }: { weekStart: string; initial: number | null }) {
+  const [ease, setEase] = useState(initial);
+  const [error, setError] = useState<string | null>(null);
+  const [, startSaving] = useTransition();
+  function choose(value: number) {
+    const next = value === ease ? null : value;
+    setEase(next);
+    startSaving(async () => {
+      const result = await saveEaseAction(weekStart, next);
+      setError(result.error ?? null);
+    });
+  }
+  return (
+    <div className="mt-3 space-y-1 border-t border-good/30 pt-3">
+      <p className="text-sm font-medium">How hard did choosing feel?</p>
+      <div role="group" aria-label="How hard did choosing feel?" className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={ease === value}
+            aria-label={`${value}: ${EASE_LABELS[value]}`}
+            onClick={() => choose(value)}
+            className={`h-10 w-10 rounded-full border text-sm font-medium ${
+              ease === value ? "border-good bg-good text-white" : "border-good/40 bg-paper hover:border-good"
+            }`}
+          >
+            {value}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted">
+        {ease ? `${EASE_LABELS[ease]}. Thanks: this helps see whether choosing gets easier.` : "1 is very easy, 5 is very hard."}
+      </p>
+      {error && (
+        <p role="alert" className="text-sm text-danger">
+          Not saved: {error}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -553,7 +628,7 @@ function ChosenDish({
               {DAY_SHORT[day]}
             </option>
           ))}
-          <option value="">No evening</option>
+          <option value="">Backup (no evening)</option>
         </select>
         <button
           type="button"
@@ -755,6 +830,66 @@ function SuggestionCard({
         </div>
       </div>
     </article>
+  );
+}
+
+/** A search box for the dishes you really want; results show only while typing, and stay open for more. */
+function WantedSearch({
+  recipes,
+  chosen,
+  onAdd,
+}: {
+  recipes: PlanRecipe[];
+  chosen: PlannedDish[];
+  onAdd: (recipe: PlanRecipe) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const chosenIds = new Set(chosen.map((d) => d.recipeId));
+  const matches =
+    query.trim().length < 2
+      ? []
+      : recipes
+          .filter((r) => !chosenIds.has(r.id) && r.seafood !== "contains" && r.status !== "excluded")
+          .filter((r) => matchesWords([r.title, r.cuisine, r.source, r.site], query))
+          .slice(0, 6);
+  return (
+    <div className="space-y-2">
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="e.g. korma, tacos, Andy Cooks"
+        aria-label="Find a dish you want this week"
+        className="block w-full rounded-xl border border-line bg-paper px-3 py-2 text-base"
+      />
+      {matches.length > 0 && (
+        <ul className="divide-y divide-line rounded-2xl border border-line bg-paper px-3">
+          {matches.map((r) => (
+            <li key={r.id} className="flex items-center gap-3 py-2">
+              <RecipeTile title={r.title} cuisine={r.cuisine} photo={r.photo} size="sm" />
+              <span className="min-w-0 flex-1">
+                <span className="block leading-snug">{r.title}</span>
+                <span className="text-sm text-muted">
+                  {r.timeTotalMin} min · {r.cuisine}
+                  {r.status === "trial" && <> · new to try</>}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  onAdd(r);
+                  setQuery("");
+                }}
+                className="shrink-0 rounded-xl border border-line px-3 py-1 text-sm hover:border-accent/50"
+              >
+                Add
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {query.trim().length >= 2 && matches.length === 0 && <p className="text-sm text-muted">No recipes match.</p>}
+    </div>
   );
 }
 

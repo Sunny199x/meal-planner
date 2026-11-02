@@ -70,6 +70,8 @@ export const weekPlans = pgTable("week_plans", {
   prep: jsonb("prep").$type<PrepState>().notNull().default({}),
   /** Recipes hidden with "Not this one" for this week. */
   dismissed: jsonb("dismissed").$type<string[]>().notNull().default([]),
+  /** "How hard did choosing feel?" after all dinners were chosen: 1 (easy) to 5 (hard); null = not answered. */
+  ease: integer("ease"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

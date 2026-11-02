@@ -95,6 +95,12 @@ export async function saveDismissed(
   return (await update()).length > 0;
 }
 
+/** Saves how hard choosing felt (1–5), or clears it (null). */
+export async function saveEase(db: Db, weekStart: string, ease: number | null): Promise<boolean> {
+  const updated = await db.update(weekPlans).set({ ease }).where(eq(weekPlans.weekStart, weekStart)).returning({ id: weekPlans.id });
+  return updated.length > 0;
+}
+
 export async function saveSetup(db: Db, weekStart: string, setup: WeekSetup): Promise<WeekPlanRow> {
   const [row] = await db
     .insert(weekPlans)

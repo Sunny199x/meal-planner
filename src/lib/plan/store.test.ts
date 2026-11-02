@@ -8,6 +8,7 @@ import {
   saveDishes,
   saveDishesOrCreate,
   saveDismissed,
+  saveEase,
   saveSetup,
   tickPrepTask,
   tickShoppingItem,
@@ -65,6 +66,16 @@ describe("week plan storage", () => {
     expect((await getPlan(db, "2026-11-08"))?.dismissed).toEqual([id]);
     expect(await saveDismissed(db, "2026-11-08", [], null)).toBe(true);
     expect((await getPlan(db, "2026-11-08"))?.dismissed).toEqual([]);
+  });
+
+  it("saves how hard choosing felt, and clears it", async () => {
+    expect(await saveEase(db, "2026-11-08", 2)).toBe(false); // no week yet
+    await saveSetup(db, "2026-11-08", DEFAULT_SETUP);
+    expect((await getPlan(db, "2026-11-08"))?.ease).toBeNull();
+    expect(await saveEase(db, "2026-11-08", 2)).toBe(true);
+    expect((await getPlan(db, "2026-11-08"))?.ease).toBe(2);
+    await saveEase(db, "2026-11-08", null);
+    expect((await getPlan(db, "2026-11-08"))?.ease).toBeNull();
   });
 
   it("creates a week on its first save of dishes, with the setup shown for it", async () => {

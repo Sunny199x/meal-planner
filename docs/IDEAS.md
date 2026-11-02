@@ -25,18 +25,19 @@ sizes and what exists today are in the note at its end. Nothing here is agreed y
 
 - **R1. Fewer setup questions each week** (*must*, medium). **Done (milestone 6):** Settings →
   *Your usual week*, and a "This week" row of nights on the Week page.
-- **R2. Show the prep load** (*must*). The task count and dishes per prep day: small. Proposing
-  prep days: medium. Minutes need a time on every make-ahead task, which recipes don't have yet.
-  Also explain why tasks without a prep limit happen on the evening.
+- **R2. Show the prep load** (*must*). **Done (milestone 6):** task count and dinners per prep day,
+  and why an empty prep day is empty. Still open: proposing prep days (medium), and minutes, which
+  need a time on every make-ahead task.
 - **R3. Log what was shown, dismissed and picked** (*must*, medium). **Done (milestone 6):**
   recorded quietly per week and recipe; "Not this one" now lasts the week.
 - **R4. Rotation, trial and excluded recipes** (*should*, medium). **Done (milestone 6):** In
   rotation / New to try / Not suggested, with a "keep it?" prompt after a new dish.
-- **R5. "Any dishes you really want?" as the first step** (*should*, small).
-- **R6. A 1–5 "how hard did that feel?" after choosing** (*should*, small).
+- **R5. "Any dishes you really want?" as the first step** (*should*, small). **Done (milestone 6).**
+- **R6. A 1–5 "how hard did that feel?" after choosing** (*should*, small). **Done (milestone 6).**
 - **R7. Swipe yes/no on suggestion cards** (*could*, medium; evidence is vendor claims).
 - **R8. A quarterly recipe review** (*could*, large; needs R3 and R4).
-- **R9. A backup dinner** (*could*, small). A dish on "No evening" already works as one; label it.
+- **R9. A backup dinner** (*could*, small). **Done (milestone 6):** a dish with no evening is a
+  *Backup dinner*.
 - **Bought for a dinner you removed** (found while checking the brief): items ticked as bought
   for a dish later removed just vanish from the shopping list. Say so instead, so they get used.
   Small to medium.

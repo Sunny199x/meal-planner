@@ -8,7 +8,7 @@ import { guidanceFor, MAX_PREP_DAYS } from "./food-safety";
 import { readLikedIds, type LikedCombination } from "./liked";
 import { forgetLikedCombination, saveLikedCombination } from "./liked-store";
 import { setPrepLimit } from "./prep-limits";
-import { getPlan, saveDismissed, saveDishesOrCreate, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
+import { getPlan, saveDismissed, saveDishesOrCreate, saveEase, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
 import { saveUsualWeek } from "./usual-week";
 import { recordEvents } from "./events";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
@@ -214,6 +214,20 @@ export async function saveDismissedAction(
   try {
     const saved = await saveDismissed(await getDb(), week, [...new Set(recipeIds)], setup);
     return saved ? {} : { error: "This week isn't saved yet. Please reload and try again." };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+/** "How hard did choosing feel?", 1 (easy) to 5 (hard), or null to clear it. */
+export async function saveEaseAction(weekStart: string, ease: number | null): Promise<{ error?: string }> {
+  await requireSignedIn();
+  const week = readWeekStart(weekStart);
+  if (!week || !(ease === null || (Number.isInteger(ease) && ease >= 1 && ease <= 5))) {
+    return { error: "Something wasn't valid. Please reload and try again." };
+  }
+  try {
+    return (await saveEase(await getDb(), week, ease)) ? {} : { error: "This week isn't saved yet." };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

@@ -552,6 +552,17 @@ R1, R3, R4 and the small fixes while the recipes are rebuilt.
   for a later recipe review (R8): dishes shown often but rarely picked, and dishes never shown.
   Events go with their recipe when it's deleted, and Reset everything clears them.
 - **"Not this one" lasts the week** (`week_plans.dismissed`), on both phones, until *Bring back*.
+- **Small fixes:**
+  - **R2:** each prep day shows its task count and dinners. An empty prep day says why: tasks
+    without a "how far ahead" limit are done on the evening, with a link to Prep limits. Make-ahead
+    tasks carry no time, so no prep minutes are shown.
+  - **R5:** a week with no dinners starts with "Any dishes you really want this week?": a search
+    box that adds as many as you like, with the suggestions right below. Skipping needs no tap.
+    Picking a suggestion or "That's all" ends it.
+  - **R6:** after "All N dinners chosen", a one-tap 1–5 "How hard did choosing feel?" is saved with
+    the week (`week_plans.ease`), next to the minutes it took.
+  - **R9:** a dish with no evening is a **Backup dinner**: still on the shopping list, cooked if a
+    night's plan falls through.
 
 ## Product decisions
 

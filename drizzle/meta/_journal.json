@@ -78,6 +78,13 @@
       "when": 1793661586141,
       "tag": "0010_suggestion_events",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793661878638,
+      "tag": "0011_ease_rating",
+      "breakpoints": true
     }
   ]
 }

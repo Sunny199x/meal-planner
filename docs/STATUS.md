@@ -121,6 +121,9 @@ and the yellow logo. A week of real use starts now.
   - Tick tasks off; ticks are shared by both phones.
   - Each evening: what was prepped and when, what's done that day and why, lunch boxes to pack
     and portions to freeze, or an evening of leftovers with no cooking.
+- **Choosing starts with your wants:** "Any dishes you really want this week?" (search and add
+  several), with suggestions right below. After all dinners are chosen, a 1–5 "How hard did
+  choosing feel?". A dish with no evening is a *Backup dinner*. Each prep day shows its task count.
 - **What's suggested is recorded** quietly (shown, hidden with *Not this one*, picked), per week
   and recipe, for a later recipe review. *Not this one* now lasts the whole week.
 - **Recipe statuses:** each recipe is *In rotation*, *New to try* (at most one suggested a week;

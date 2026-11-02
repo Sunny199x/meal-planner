@@ -62,6 +62,7 @@ async function Week({ searchParams }: Pick<PageProps<"/week">, "searchParams">) 
           startingSetup={startingSetup}
           dishes={plan?.dishes ?? []}
           dismissed={plan?.dismissed ?? []}
+          ease={plan?.ease ?? null}
           choosingStartedAt={plan?.choosingStartedAt?.toISOString() ?? null}
           recipes={recipeRows.map(toPlanRecipe)}
           pastWeeks={pastWeeks}

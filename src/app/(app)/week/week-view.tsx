@@ -15,6 +15,7 @@ export function WeekView({
   startingSetup,
   dishes,
   dismissed,
+  ease,
   choosingStartedAt,
   recipes,
   pastWeeks,
@@ -26,6 +27,7 @@ export function WeekView({
   startingSetup: WeekSetup;
   dishes: PlannedDish[];
   dismissed: string[];
+  ease: number | null;
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
   pastWeeks: PastWeek[];
@@ -63,6 +65,7 @@ export function WeekView({
           onWeekSaved={() => setSaved(true)}
           initialDishes={dishes}
           initialDismissed={dismissed}
+          initialEase={ease}
           choosingStartedAt={choosingStartedAt}
           recipes={recipes}
           pastWeeks={pastWeeks}

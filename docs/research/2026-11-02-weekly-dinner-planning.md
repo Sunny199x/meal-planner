@@ -257,3 +257,19 @@ first. It needs no code.
 5. The small ones: R5, R6, and R9's label.
 
 R7 and R8 later.
+
+### What was built (milestone 6, 2–3 November 2026)
+
+Sunny chose R1, R3, R4 and the small fixes while the recipes are rebuilt. All are on the preview:
+
+- **R1:** Settings → *Your usual week*; on the Week page, a "This week" row of seven nights, one tap
+  each, with the suggestions straight below. A new week no longer copies last week's setup.
+- **R3:** shown, dismissed and picked are recorded per week and recipe. "Not this one" lasts the
+  week.
+- **R4:** *In rotation* / *New to try* (at most one suggested a week; imports start here) / *Not
+  suggested*, with a "keep it?" prompt the week after a new dish.
+- **R2** (task counts and the empty-prep-day explanation), **R5** (wanted dishes first), **R6**
+  (1–5 ease rating) and **R9** (backup dinner).
+
+Not built: proposing prep days and prep minutes (R2), swiping (R7), the quarterly review (R8),
+and the two gaps found while checking (bought for a removed dinner; a night that fell through).

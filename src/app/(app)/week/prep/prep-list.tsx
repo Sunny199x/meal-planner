@@ -12,7 +12,7 @@ import { DAY_NAMES, DAY_SHORT, prepDaysOf, type PrepState } from "@/lib/plan/typ
 import { formatQuantity } from "@/lib/recipes/format";
 import { useLiveWeek } from "../use-live-week";
 
-const dayShort = (day: number | null) => (day === null ? "No evening" : DAY_SHORT[day]);
+const dayShort = (day: number | null) => (day === null ? "Backup" : DAY_SHORT[day]);
 const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 /** "Sunday, before the week" for the weekend before; the day's name otherwise. */
@@ -106,11 +106,33 @@ export function PrepList({
 
       {prepDays.map((day) => {
         const today = tasks.filter((t) => t.prepDay === day);
+        const dinners = new Set(today.flatMap((t) => t.dishes.map((d) => d.recipeId))).size;
         return (
           <section key={day} className="rounded-2xl border border-line bg-paper p-4">
-            <h2 className="font-display text-lg font-extrabold tracking-tight">{prepDayName(day)}</h2>
+            <h2 className="font-display text-lg font-extrabold tracking-tight">
+              {prepDayName(day)}
+              {today.length > 0 && (
+                <span className="font-sans text-sm font-normal text-muted">
+                  {" "}
+                  · {today.length} {today.length === 1 ? "task" : "tasks"} for {dinners}{" "}
+                  {dinners === 1 ? "dinner" : "dinners"}
+                </span>
+              )}
+            </h2>
             {today.length === 0 ? (
-              <p className="mt-1 text-sm text-muted">Nothing to prep ahead on this day.</p>
+              <p className="mt-1 text-sm text-muted">
+                Nothing to prep ahead on this day.
+                {noLimit.length > 0 && (
+                  <>
+                    {" "}
+                    Tasks without a &ldquo;how far ahead&rdquo; limit are done on the evening instead;{" "}
+                    <Link href="/settings#prep-limits" className="text-accent underline">
+                      set limits in Settings
+                    </Link>{" "}
+                    to move them here.
+                  </>
+                )}
+              </p>
             ) : (
               <ul className="mt-1 divide-y divide-line">
                 {today.map((task) => (
