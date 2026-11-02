@@ -8,7 +8,7 @@ and the yellow logo. A week of real use starts now.
 - **Preview** (the latest work in progress):
   https://meal-planner-git-claude-youthful-newton-o8dps0-sunny199x.vercel.app (needs a Vercel login
   in the browser).
-- **Production** (what Saketh and Victoria use): https://sunny-forkcast.vercel.app (set 30
+- **Production** (what Sunny and Victoria use): https://sunny-forkcast.vercel.app (set 30
   October 2026 under *Settings → Domains* in the Vercel project). It has whatever is merged into
   `main`.
 - Both ask for the household passcode (`HOUSEHOLD_PASSCODE` in Vercel). Preview and production

@@ -8,7 +8,7 @@ import { z } from "zod";
 import type { ImportDraft } from "./normalise";
 import type { ReadPhoto } from "./read-photos";
 
-/** The cheapest current model, chosen by Saketh for reading and translating recipes. */
+/** The cheapest current model, chosen by Sunny for reading and translating recipes. */
 export const READER_MODEL = "claude-haiku-5-5";
 export const MAX_RECIPE_TEXT = 60_000;
 

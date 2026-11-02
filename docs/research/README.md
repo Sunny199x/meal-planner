@@ -7,7 +7,7 @@ Its findings reach the build session ("Core Builder") as **briefs**, saved here 
 ## How a brief becomes code
 
 1. **Research writes a brief** in the format below.
-2. **Saketh brings it to Core Builder**: pasted into that chat, or sent from the Research session.
+2. **Sunny brings it to Core Builder**: pasted into that chat, or sent from the Research session.
 3. **Core Builder takes it in:**
    - saves the brief here unchanged, with a short "What this means for Forkcast" note at the end
    - checks each proposed requirement against the product rules in `CLAUDE.md` and
@@ -15,12 +15,12 @@ Its findings reach the build session ("Core Builder") as **briefs**, saved here 
    - says which requirements are new, which already exist, which conflict, and roughly how big
      each one is
    - adds the ones worth doing to `docs/IDEAS.md`
-4. **Saketh decides.** Nothing from a brief is built until he agrees. Agreed items then go into a
+4. **Sunny decides.** Nothing from a brief is built until he agrees. Agreed items then go into a
    milestone plan, and the decisions into `docs/DECISIONS.md`.
 5. **Core Builder builds** in small steps, as usual.
 
 A brief informs; it doesn't change the plan by itself. Where research and the brief or decisions
-disagree, Core Builder points it out and Saketh chooses.
+disagree, Core Builder points it out and Sunny chooses.
 
 ## Brief format
 
@@ -37,7 +37,7 @@ Each finding with its evidence and how strong it is (one person said / most peop
 published data).
 
 ## What it means for Forkcast
-Which part of the app it touches, and why it matters for Saketh and Victoria (or for other
+Which part of the app it touches, and why it matters for Sunny and Victoria (or for other
 households, if that's the question).
 
 ## Proposed requirements
