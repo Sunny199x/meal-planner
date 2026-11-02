@@ -23,9 +23,8 @@ Feedback from using Forkcast for real, newest first. Reviewed together at the en
 From Research's first brief, `docs/research/2026-11-02-weekly-dinner-planning.md` (a draft). The
 sizes and what exists today are in the note at its end. Nothing here is agreed yet.
 
-- **R1. Fewer setup questions each week** (*must*, medium). Ask only which nights and how much
-  effort, from a standard week. People, portions, lunch boxes and prep days become standing
-  settings. Conflicts with "a new week copies last week's setup"; Sunny decides.
+- **R1. Fewer setup questions each week** (*must*, medium). **Done (milestone 6):** Settings →
+  *Your usual week*, and a "This week" row of nights on the Week page.
 - **R2. Show the prep load** (*must*). The task count and dishes per prep day: small. Proposing
   prep days: medium. Minutes need a time on every make-ahead task, which recipes don't have yet.
   Also explain why tasks without a prep limit happen on the evening.

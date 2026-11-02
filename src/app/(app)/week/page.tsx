@@ -7,7 +7,8 @@ import { defaultWeekStart, readWeekStart, stockholmToday } from "@/lib/plan/date
 import type { PastWeek } from "@/lib/plan/history";
 import type { LikedCombination } from "@/lib/plan/liked";
 import { getLikedCombinations } from "@/lib/plan/liked-store";
-import { getPastWeeks, getPlan, setupForNewWeek } from "@/lib/plan/store";
+import { getPastWeeks, getPlan } from "@/lib/plan/store";
+import { getUsualWeek } from "@/lib/plan/usual-week";
 import { toPlanRecipe } from "@/lib/plan/suggest";
 import type { WeekSetup } from "@/lib/plan/types";
 import { getAllRecipes } from "@/lib/recipes/queries";
@@ -43,7 +44,7 @@ async function Week({ searchParams }: Pick<PageProps<"/week">, "searchParams">) 
       getPastWeeks(db, weekStart),
       getLikedCombinations(db),
     ]);
-    startingSetup = plan?.setup ?? (await setupForNewWeek(db, weekStart));
+    startingSetup = plan?.setup ?? (await getUsualWeek(db));
   } catch (error) {
     return <ErrorBox>{describeDatabaseError(error)}</ErrorBox>;
   }

@@ -512,6 +512,22 @@ the suggestions can't be judged on them. Research's first brief says the same.
   reader is told not to list it.
 - *Repeat a past week* only lists weeks that still have at least one dish whose recipe exists.
 
+## Milestone 6: a lighter week (2 November 2026)
+
+From Research's first brief (`docs/research/2026-11-02-weekly-dinner-planning.md`). Sunny chose
+R1, R3, R4 and the small fixes while the recipes are rebuilt.
+
+- **The usual week (R1).** Settings → *Your usual week* holds the evenings and their effort,
+  people with portions and lunch boxes, and prep days (table `household_settings`, one row). Each
+  new week starts from it. This replaces "a new week copies last week's setup" (milestone 2).
+  Sunny: "weeks change, moods and efforts change, we should simplify selections, not carry it
+  over." Victoria found the setup step the hard part.
+- **No setup form on the Week page.** A new week shows "This week": seven nights, each a tap to
+  change it (Off, Quick, Normal, Relaxed). The suggestions are right below. Lunch boxes and
+  ingredients to use up are under "More". Every change saves at once. The week is saved on the
+  first change or the first dish chosen (`saveDishesOrCreate`), so nothing has to be confirmed
+  first.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

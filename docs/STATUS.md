@@ -73,9 +73,10 @@ and the yellow logo. A week of real use starts now.
 - **Week tab:** arrows move between weeks; it opens on the coming week (Sunday to Saturday). Three
   parts: **Dinners**, **Shopping** and **Sunday prep**.
 - **Dinners (choosing a week):**
-  - **Setup:** which evenings you cook and how much time each has (Quick ≤ 25 min, Normal
-    ≤ 45 min, Relaxed), dinner portions and lunch boxes for Sunny and Victoria, and ingredients
-    to use up. A new week copies last week's setup, minus the ingredients.
+  - **This week:** a new week starts from Settings → *Your usual week* (evenings and how much
+    time each has: Quick ≤ 25 min, Normal ≤ 45 min, Relaxed; portions and lunch boxes; prep
+    days). Tap a night to change it for this week only; lunch boxes and ingredients to use up
+    are under *More*. Changes save straight away, and the suggestions show without a setup step.
   - **Choosing:** pick a first dish from a few options or by browsing, then get three suggestions
     with the reasons they fit (shared Sunday prep, the other half of an ingredient, shared fresh
     ingredients, things to use up, quick enough, good for lunches, variety). Each card can be
@@ -198,9 +199,8 @@ and the yellow logo. A week of real use starts now.
 
 ### Choosing a week together (about 10 minutes, the real test)
 
-1. Sit together with one phone. Tap **Week**. Tick the evenings you'll cook and set Quick /
-   Normal / Relaxed for each. Check portions and lunch boxes. Type anything that needs using up.
-   Tap **Save setup**.
+1. Sit together with one phone. Tap **Week**. Under **This week**, tap any night that's different
+   from usual. Under **More**, add anything that needs using up.
 2. Pick a first dish you both want.
 3. Read the three suggestions out loud. Do the reasons make sense? Add one, or tap **Not this
    one**. Repeat until the week is full.

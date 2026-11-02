@@ -8,15 +8,27 @@ import { recipes } from "@/lib/db/schema";
 import { GUIDANCE, guidanceFor, SWEDISH_ADVICE } from "@/lib/plan/food-safety";
 import { prepKey } from "@/lib/plan/ingredients";
 import { getPrepLimits } from "@/lib/plan/prep-limits";
+import type { WeekSetup } from "@/lib/plan/types";
+import { getUsualWeek } from "@/lib/plan/usual-week";
 import { checkRecipes } from "@/lib/recipes/health";
 import { getAllRecipes, getImportHousehold } from "@/lib/recipes/queries";
 import { PrepLimits, type PrepLimitRow } from "./prep-limits";
 import { RecipeFilesPanel } from "./recipe-files-panel";
+import { UsualWeekPanel } from "./usual-week-panel";
 
 export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <h1 className="font-display text-3xl font-extrabold tracking-tight text-settings">Settings</h1>
+
+      <Section title="Your usual week" id="usual-week">
+        <p className="mb-3 text-sm text-muted">
+          Each new week starts from this. On the Week page you only change what&apos;s different that week.
+        </p>
+        <Suspense fallback={<p className="text-muted">Loading…</p>}>
+          <UsualWeekSection />
+        </Suspense>
+      </Section>
 
       <Section title="Database">
         <Suspense fallback={<p className="text-muted">Checking the database…</p>}>
@@ -67,6 +79,17 @@ export default function SettingsPage() {
       </Section>
     </div>
   );
+}
+
+async function UsualWeekSection() {
+  await connection();
+  let usualWeek: WeekSetup;
+  try {
+    usualWeek = await getUsualWeek(await getDb());
+  } catch (error) {
+    return <p className="text-danger">{describeDatabaseError(error)}</p>;
+  }
+  return <UsualWeekPanel usualWeek={usualWeek} />;
 }
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {

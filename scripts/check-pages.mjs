@@ -62,11 +62,11 @@ const firstRecipe = (await page.locator("main article").count())
   : null;
 if (!firstRecipe) console.log("No recipes in seed-recipes/: the filtered list, recipe and edit pages are skipped.");
 
-// A coming week with its setup saved and one dish chosen.
+// A coming week with one dish chosen (choosing saves the week).
 await page.goto(base + "/week");
-if (firstRecipe && (await page.locator("button:has-text('Save setup')").count())) {
-  await page.click("button:has-text('Save setup')");
-  await page.locator("ul.grid > li").first().locator("button:has-text('Add')").click();
+await page.waitForLoadState("networkidle");
+if (firstRecipe && (await page.locator("text=0 of").count())) {
+  await page.locator("article button:has-text('Add')").first().click();
   await page.waitForSelector("text=1 of");
 }
 
@@ -74,9 +74,9 @@ const pages = [
   ["groceries", "/"],
   ["recipes", "/recipes"],
   ["week", "/week"],
-  ["week-setup", "/week?week=2030-01-07"],
+  ["week-new", "/week?week=2030-01-06"],
   ["shopping", "/week/shopping"],
-  ["shopping-empty", "/week/shopping?week=2030-01-07"],
+  ["shopping-empty", "/week/shopping?week=2030-01-06"],
   ["prep", "/week/prep"],
   ...(firstRecipe
     ? [

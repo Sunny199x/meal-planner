@@ -8,7 +8,8 @@ import { guidanceFor, MAX_PREP_DAYS } from "./food-safety";
 import { readLikedIds, type LikedCombination } from "./liked";
 import { forgetLikedCombination, saveLikedCombination } from "./liked-store";
 import { setPrepLimit } from "./prep-limits";
-import { getPlan, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
+import { getPlan, saveDishesOrCreate, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
+import { saveUsualWeek } from "./usual-week";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
 export async function saveWeekSetupAction(
@@ -28,18 +29,25 @@ export async function saveWeekSetupAction(
   }
 }
 
-/** Saves the chosen dishes after each change on the choosing screen. */
+/**
+ * Saves the chosen dishes after each change on the choosing screen. A week not
+ * saved yet is created with `setupIfNew`, the setup shown for it.
+ */
 export async function saveWeekDishesAction(
   weekStart: string,
   input: PlannedDish[],
+  setupIfNew: WeekSetup | null = null,
 ): Promise<{ choosingStartedAt?: string; error?: string }> {
   await requireSignedIn();
   const week = readWeekStart(weekStart);
   const dishes = readDishes(input);
-  if (!week || !dishes) return { error: "Something in the week wasn't valid. Please reload and try again." };
+  const setup = setupIfNew === null ? null : readSetup(setupIfNew);
+  if (!week || !dishes || (setupIfNew !== null && !setup)) {
+    return { error: "Something in the week wasn't valid. Please reload and try again." };
+  }
   try {
-    const row = await saveDishes(await getDb(), week, dishes);
-    if (!row) return { error: "Save the week's setup first." };
+    const row = await saveDishesOrCreate(await getDb(), week, dishes, setup);
+    if (!row) return { error: "This week isn't saved yet. Please reload and try again." };
     return { choosingStartedAt: row.choosingStartedAt?.toISOString() };
   } catch (error) {
     return { error: describeDatabaseError(error) };
@@ -147,6 +155,20 @@ export async function forgetLikedCombinationAction(id: string): Promise<LikedRes
   if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) return { error: "Something wasn't valid. Please reload and try again." };
   try {
     return { liked: await forgetLikedCombination(await getDb(), id) };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+/** Saves the household's usual week (Settings), which each new week starts from. */
+export async function saveUsualWeekAction(input: WeekSetup): Promise<{ setup?: WeekSetup; error?: string }> {
+  await requireSignedIn();
+  const setup = readSetup(input);
+  if (!setup) return { error: "Something in the usual week wasn't valid. Please reload and try again." };
+  try {
+    const saved = await saveUsualWeek(await getDb(), setup);
+    revalidatePath("/", "layout");
+    return { setup: saved };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

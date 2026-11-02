@@ -113,3 +113,14 @@ export const likedCombinations = pgTable("liked_combinations", {
 });
 
 export type LikedCombinationRow = typeof likedCombinations.$inferSelect;
+
+/**
+ * Household settings, one row (id "household"). The usual week is set once in
+ * Settings: evenings and their effort, people with portions and lunch boxes,
+ * and prep days. Each new week starts from it.
+ */
+export const householdSettings = pgTable("household_settings", {
+  id: text("id").primaryKey(),
+  usualWeek: jsonb("usual_week").$type<WeekSetup>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

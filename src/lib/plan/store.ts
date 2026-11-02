@@ -4,8 +4,8 @@ import { weekPlans, type WeekPlanRow } from "../db/schema";
 import type { Db } from "../db/types";
 import { addDays, weekday } from "./dates";
 import { pastWeeks, type PastWeek } from "./history";
-import { isOldWeek, oldWeeksFor, setupFromOldWeek, weekFromOldWeeks } from "./old-weeks";
-import { DEFAULT_SETUP, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
+import { oldWeeksFor, weekFromOldWeeks } from "./old-weeks";
+import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "./types";
 
 /**
  * A week's plan. A Sunday week not saved yet but overlapping weeks saved the
@@ -45,17 +45,21 @@ export async function getPastWeeks(db: Db, before: string): Promise<PastWeek[]> 
   return pastWeeks(rows, before).filter((week) => week.weekStart >= earliest);
 }
 
-/** A new week starts from the last week's setup, without its "ingredients to use". */
-export async function setupForNewWeek(db: Db, weekStart: string): Promise<WeekSetup> {
-  const [previous] = await db
-    .select({ weekStart: weekPlans.weekStart, setup: weekPlans.setup })
-    .from(weekPlans)
-    .where(lt(weekPlans.weekStart, weekStart))
-    .orderBy(desc(weekPlans.weekStart))
-    .limit(1);
-  if (!previous) return DEFAULT_SETUP;
-  const setup = isOldWeek(previous.weekStart) ? setupFromOldWeek(previous.setup) : previous.setup;
-  return { ...setup, ingredientsToUse: [] };
+/**
+ * Saves the dishes of a week. A week not saved yet is first created with
+ * `setupIfNew` (the setup shown for it, from the usual week), so choosing can
+ * start without a separate "save setup" step.
+ */
+export async function saveDishesOrCreate(
+  db: Db,
+  weekStart: string,
+  dishes: PlannedDish[],
+  setupIfNew: WeekSetup | null,
+): Promise<WeekPlanRow | null> {
+  const row = await saveDishes(db, weekStart, dishes);
+  if (row || !setupIfNew) return row;
+  await db.insert(weekPlans).values({ weekStart, setup: setupIfNew }).onConflictDoNothing({ target: weekPlans.weekStart });
+  return saveDishes(db, weekStart, dishes);
 }
 
 /**

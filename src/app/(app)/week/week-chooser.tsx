@@ -26,6 +26,8 @@ import { PastWeeks } from "./past-weeks";
 export function WeekChooser({
   weekStart,
   setup,
+  setupIfNew,
+  onWeekSaved,
   initialDishes,
   choosingStartedAt,
   recipes,
@@ -34,6 +36,9 @@ export function WeekChooser({
 }: {
   weekStart: string;
   setup: WeekSetup;
+  /** The setup to create the week with on its first save, while it isn't saved yet. */
+  setupIfNew: WeekSetup | null;
+  onWeekSaved: () => void;
   initialDishes: PlannedDish[];
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
@@ -77,8 +82,9 @@ export function WeekChooser({
 
   function save(next: PlannedDish[]) {
     startSaving(async () => {
-      const result = await saveWeekDishesAction(weekStart, next);
+      const result = await saveWeekDishesAction(weekStart, next, setupIfNew);
       setSaveError(result.error ?? null);
+      if (!result.error) onWeekSaved();
       if (result.choosingStartedAt) setStartedAt(result.choosingStartedAt);
     });
   }
