@@ -38,8 +38,8 @@ These are hypotheses to test, not proven product–market fit.
 
 HOUSEHOLD CONTEXT
 
-- Saketh and Victoria, based in Stockholm, Sweden.
-- Dinner for two; lunch leftovers usually for Saketh only.
+- Sunny and Victoria, based in Stockholm, Sweden.
+- Dinner for two; lunch leftovers usually for Sunny only.
 - Typically four or five dinners and four or five lunches per week: roughly 12–15 individual portions.
 - No seafood.
 - Balanced eating and adequate protein matter as we start exercising.
@@ -70,7 +70,7 @@ We have not established whether it recommends complementary meals across a weekl
 
 2. HelloFresh Cookbook
 
-A screenshot supplied by Saketh shows:
+A screenshot supplied by Sunny shows:
 - Saving recipes from social media, blogs, articles and HelloFresh.
 - Instagram and TikTok link entry points.
 - An externally saved Pav Bhaji recipe with its source.
@@ -161,7 +161,7 @@ Remember successful meal combinations. Distinguish user-saved connections from s
 
 OPTIONAL INGREDIENTS-FIRST ENTRY
 
-Saketh’s mother chooses good vegetables at the supermarket and plans dishes around them.
+Sunny’s mother chooses good vegetables at the supermarket and plans dishes around them.
 
 Allow an optional starting point:
 “What ingredients would you like to use?”
@@ -290,7 +290,7 @@ OUT OF SCOPE
 
 SUCCESS TEST
 
-Victoria and Saketh should be able to:
+Victoria and Sunny should be able to:
 - Understand the app quickly.
 - Set a realistic week.
 - Select a first dish.

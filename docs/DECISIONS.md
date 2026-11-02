@@ -1,6 +1,6 @@
 # Decisions log
 
-Decisions made with Saketh in the claude.ai "Meal Planning App" project chat, 28–29 October 2026.
+Decisions made with Sunny in the claude.ai "Meal Planning App" project chat, 28–29 October 2026.
 The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree, this file wins.
 
 ## Where the work happens
@@ -9,7 +9,7 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
   working in this GitHub repository.
 - **Product thinking:** the claude.ai "Meal Planning App" project chat. Decisions made there get
   added to this file so Claude Code sees them.
-- Saketh is new to software development. Explain steps in plain language, give exact click paths for
+- Sunny is new to software development. Explain steps in plain language, give exact click paths for
   anything he must do himself (GitHub, Vercel, environment variables), and stop to walk him through
   them rather than assuming.
 
@@ -23,10 +23,10 @@ The original brief is in `docs/BRIEF.md`. Where this file and the brief disagree
 | Sign-in | One shared household passcode (environment variable), cookie session | Two people, one household. Real user accounts are out of scope. |
 | Recipe URL import | Server-side fetch, parse schema.org `Recipe` JSON-LD, then a review screen | Works for most food blogs. Falls back to "save link + manual entry" when there is no structured data. |
 | Instagram | Link + pasted caption, read by Claude (milestone 4) | Instagram's official access is locked down; a better way is in `docs/IDEAS.md` for later. |
-| YouTube | Link only: the official YouTube Data API reads the title, description and thumbnail (`YOUTUBE_API_KEY`, free; Saketh's OK 29 October 2026). Without the key, the description is pasted. | Most cooking videos write the recipe in the description. |
-| TikTok | Not supported | Saketh and Victoria don't use it (decided 29 October 2026). |
-| Photo import | Up to 4 photos (cookbook pages, a handwritten recipe, screenshots) read by Claude on the Import page; dish photos attached to recipes (milestone 4) | Added 30 October 2026 with Saketh's OK, once the cheap model made it about the same cost as text. |
-| Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Saketh writes his own recipes there. See `seed-recipes/README.md`. |
+| YouTube | Link only: the official YouTube Data API reads the title, description and thumbnail (`YOUTUBE_API_KEY`, free; Sunny's OK 29 October 2026). Without the key, the description is pasted. | Most cooking videos write the recipe in the description. |
+| TikTok | Not supported | Sunny and Victoria don't use it (decided 29 October 2026). |
+| Photo import | Up to 4 photos (cookbook pages, a handwritten recipe, screenshots) read by Claude on the Import page; dish photos attached to recipes (milestone 4) | Added 30 October 2026 with Sunny's OK, once the cheap model made it about the same cost as text. |
+| Seed data | Markdown files in `seed-recipes/`, loaded by a seed script and a "reset demo data" action | Sunny writes his own recipes there. See `seed-recipes/README.md`. |
 
 **Caveat:** Vercel's Hobby plan is for personal, non-commercial use. That fits a household app.
 If this becomes a commercial product, hosting needs to move to a paid plan; this is not a reason
@@ -53,9 +53,15 @@ the repo, then check it for real on the Vercel preview deployment.
   "contains seafood" are also calculated when shown, never stored.
 - **Migrations run at the start of every Vercel build** (`npm run build` runs
   `scripts/migrate.mts` first). If no database is connected, that step is skipped with a message.
-- **Preview and production share one database for now.** Until that changes, database changes
-  must only add tables or columns, never rename or remove them. Revisit before weekly use
-  (milestone 2/3), e.g. with Neon's per-preview database branches.
+- **Each preview has its own copy of the database** (since 2 November 2026). The Neon connection in
+  Vercel has "Create database branch for deployment: Preview" on: a preview build gets a branch
+  `preview/<git-branch>`, copied from production when that branch's first preview is built, and
+  the build's migrations run on the copy. Production uses the main branch. Sunny checked it with
+  a test grocery item that showed on the preview only. To refresh a preview's copy: Neon →
+  Branches → the branch → *Reset from parent*. (Before this, preview and production shared one
+  database.)
+- **Database changes still prefer adding** tables or columns: while a production deploy finishes,
+  the previous version can still be serving. Renaming or removing something takes two releases.
 - **Server region Frankfurt** (`fra1` in `vercel.json`), next to the Neon database in Frankfurt.
 - **Passcode sign-in:** a signed, HttpOnly cookie lasting 90 days. The passcode ignores capitals
   and extra spaces. Changing `HOUSEHOLD_PASSCODE` or `SESSION_SECRET` in Vercel signs everyone
@@ -115,7 +121,7 @@ the repo, then check it for real on the Vercel preview deployment.
 
 ## Decisions for milestone 2 (29 October 2026)
 
-- **In the app, Saketh is shown as "Sunny"** (portion sizes, lunches). Docs keep his full name.
+- **In the app, Sunny is shown as "Sunny"** (portion sizes, lunches). Docs keep his full name.
 - **Photo and screenshot import:** the free version comes first.
   - A "paste recipe text" box sorts pasted text into the form using rules. Text can come from a
     phone's copy-text-from-photo feature (iPhone Live Text, Google Lens), an Instagram caption or a
@@ -181,7 +187,7 @@ the repo, then check it for real on the Vercel preview deployment.
 - **Portions per dish** (`src/lib/plan/portions.ts`):
   - Every chosen dish is cooked for one dinner for everyone (the setup's dinner portions added
     up, e.g. Sunny 1.5 + Victoria 1 = 2.5).
-  - **A lunch box is the same size as that person's dinner** (Saketh's choice), so a lunch box
+  - **A lunch box is the same size as that person's dinner** (Sunny's choice), so a lunch box
     for Sunny is 1.5 portions.
   - Lunch boxes are shared out automatically over dishes marked good as leftovers, one at a time,
     earliest evening first, **at most two per dish** (one dish for dinner and four lunches is
@@ -203,7 +209,7 @@ the repo, then check it for real on the Vercel preview deployment.
     (shown as kg or l from 1,000). Spoons, decilitres and pieces round to quarters, or halves from 3.
   - Packs and cans also show their scaled weight ("2¾ packs … (about 1.05 kg in total)").
   - Lines without an amount ("salt, to taste") and lines with reading problems stay as written.
-  - **Amounts in the steps** are scaled too (added 29 October 2026, Saketh's request): only a
+  - **Amounts in the steps** are scaled too (added 29 October 2026, Sunny's request): only a
     number followed by a metric unit ("300 ml", "½ tsp", "1–2 tbsp", "2 dl", "1 litre"), with the
     same rounding, highlighted so it's clear what changed (the original shows on hover). Times,
     temperatures, sizes and counts ("10 minutes", "220°C", "2 cm", "4 tortillas") stay as
@@ -251,7 +257,7 @@ the repo, then check it for real on the Vercel preview deployment.
 
 ## The grocery list as the home page (29 October 2026)
 
-Saketh asked for the grocery list to be the first thing the app opens, because it's used more
+Sunny asked for the grocery list to be the first thing the app opens, because it's used more
 often than the planner and things get added through the week. The weekly list should feed it,
 and a change in one should show in the other.
 
@@ -281,9 +287,9 @@ and a change in one should show in the other.
   normalising layer with a review screen, prep timing (prep days and how far ahead each task can
   be done), and a recipe health check. History (past weeks, repeat a week, liked combinations)
   moves to milestone 5.
-- **Sources first:** English recipe websites, Instagram and YouTube (Saketh's answer), then
+- **Sources first:** English recipe websites, Instagram and YouTube (Sunny's answer), then
   others. Recipes may be in English, Swedish, Hindi, Romanian or Russian.
-- **Reading and translating with Claude** (Saketh's choice): an import is sent once to Claude
+- **Reading and translating with Claude** (Sunny's choice): an import is sent once to Claude
   Haiku 5.5 (`claude-haiku-5-5`, $0.10 / $0.50 per million input / output tokens; roughly 1–3 öre
   per recipe), which returns the recipe in the app's format: English, metric units, flags where a
   conversion is uncertain (a "glass" can be 200 or 250 ml). Needs `ANTHROPIC_API_KEY` in Vercel.
@@ -361,7 +367,7 @@ and a change in one should show in the other.
   - **"1 day ahead" means the day before the dinner,** so rice cooked on Sunday afternoon for
     Monday's dinner can pass 24 hours; Settings suggests cooking it late on the prep day.
   - The household can choose stricter limits than the guidance, never longer ones.
-- **Photo import** (30 October 2026, Saketh: "Add it now"). On Import, up to 4 photos (cookbook
+- **Photo import** (30 October 2026, Sunny: "Add it now"). On Import, up to 4 photos (cookbook
   pages, a handwritten recipe, screenshots of a post), taken or chosen on the phone:
   - **Shrunk on the phone** to about 2,000 px on the long side (JPEG, under 900 KB each), larger
     than dish photos so small print stays legible, and still within what the model reads without
@@ -379,7 +385,7 @@ and a change in one should show in the other.
   - **One photo button with a menu** (*Take photo* / *Choose from gallery*, and *Remove photo* on a
     recipe page), the same for import and dish photos. Android's Chrome offers only the gallery
     unless a web page asks for the camera directly, and two separate buttons cluttered the page
-    (Saketh, 30 October). Computers see only the choose option. An in-app camera like WhatsApp's is
+    (Sunny, 30 October). Computers see only the choose option. An in-app camera like WhatsApp's is
     in `docs/IDEAS.md`.
 - **Recipe check** (Settings → Recipe check, `src/lib/recipes/health.ts`): lists recipes with no
   make-ahead tasks, lines the app can't fully read, no cuisine or main protein, seafood, or that
@@ -397,7 +403,7 @@ and a change in one should show in the other.
 ## Look and feel (30 October 2026)
 
 The first look (cream background, terracotta orange, serif headings) felt "very Claude-y" to
-Saketh. He compared four directions rendered side by side and chose the fourth, "D", which
+Sunny. He compared four directions rendered side by side and chose the fourth, "D", which
 replaces the brief's "warm" look:
 
 - **Modern and minimal:** black and white with grey for quiet details. Headings are extra bold in
@@ -411,9 +417,9 @@ replaces the brief's "warm" look:
 - **Status colours:** green for good things, soft yellow for hints, red for warnings.
 - **Logo, "Grin":** a bowl of soup as a smiling mouth, with two wisps of steam as the eyes, in black
   on sunny yellow `#ffc83d`, the classic smiley colour. (The first version was white on black,
-  which Saketh found sad; he picked yellow from 13 options on 30 October.) Yellow is used only for
+  which Sunny found sad; he picked yellow from 13 options on 30 October.) Yellow is used only for
   the logo, so the page colours stay the app's only other colour.
-- **Name: Forkcast** (Saketh, 30 October 2026), replacing "Meal Planner" everywhere the household
+- **Name: Forkcast** (Sunny, 30 October 2026), replacing "Meal Planner" everywhere the household
   sees it: the browser tab, the home-screen name, the menu and the sign-in page. The code, the
   GitHub repository and the Vercel project keep the name `meal-planner`; renaming those changes
   addresses and connections for no visible gain.
@@ -423,7 +429,7 @@ replaces the brief's "warm" look:
 
 ## Weeks run Sunday to Saturday (31 October 2026)
 
-Saketh: "the week needs to start from Sunday because that's when prep happens."
+Sunny: "the week needs to start from Sunday because that's when prep happens."
 
 - **The week:** Sunday to Saturday, named by its Sunday. Day 0 is Sunday, so Sunday's prep and
   Sunday's dinner belong to the week they start.
@@ -444,6 +450,68 @@ Saketh: "the week needs to start from Sunday because that's when prep happens."
   week there could copy its setup from a Sunday row a preview saved, with its evenings off by a
   day, until this is merged.
 
+## Milestone 5: history (2 November 2026)
+
+Sunny chose three parts: past weeks with "repeat a week", liked combinations, and "not again so
+soon". The trend of how long choosing takes was left out.
+
+- **Past weeks live inside the choosing screen** (*Repeat a past week*, next to *Browse all
+  recipes*), not on a page of their own: repeating is a way to choose, and inside the chooser it
+  joins the same *Undo* and saving as every other pick.
+- **Repeating a week** (`src/lib/plan/history.ts`):
+  - Each dinner goes on the same evening if that evening is cooked on and free. Then its leftovers
+    evening, if that is free too. Then dinners whose evening was taken go on the earliest free
+    evening they fit by time. Placing the dinners that keep their evening first stops a moved
+    dinner from taking another dinner's evening.
+  - Dinners already chosen stay. A dinner with no free evening left is not added, and the
+    message names it. Recipes deleted since, recipes now containing seafood, and recipes
+    already in the week are left out.
+  - Lunch boxes and freezer portions are not copied: this week's setup may differ, so they are
+    shared out afresh.
+  - Repeated dinners are saved as added by "repeat", next to "start", "suggestion" and "browse".
+- **The list** covers the half year before the week shown (26 weeks), weeks with at least one
+  dinner, newest first. Weeks saved the old way (Monday to Sunday) are read as Sunday weeks the
+  same way opening them would, but listing them saves nothing.
+- **Liked combinations** (`src/lib/plan/liked.ts`, table `liked_combinations`): Sunny chose to
+  pick them from a week.
+  - Under the week's dinners, *Save dishes that went well together* asks which 2 or 3 of the
+    week's dishes went well together. Two or three keep it a real pairing; a whole week is what
+    *Repeat a past week* is for. The same recipes saved again are kept once.
+  - They are used two ways, always marked with ♥ and "your combination", apart from the rules'
+    ✓ reasons:
+    - **A starting point:** when a week has no dinners yet, they are offered first (*Add these*).
+      Later, *Combinations you liked* adds the dishes not chosen yet.
+    - **A suggestion reason:** "You liked this with Korean BBQ pork" (25 points, like using an
+      ingredient you want to use up). It counts only when a dish from the combination is
+      already in the week.
+  - Deleted recipes and recipes now containing seafood drop out. A combination left with fewer
+    than two dishes is hidden. *Forget* removes one.
+- **Not again so soon** (`recentDinners` in `history.ts`, a rule in `suggest.ts`): a dinner from the
+  week before loses 15 points, one from two weeks before 8, and the card says so ("You had this
+  the week before."). Browse all recipes shows the same. It is a nudge, not a ban: a dish that
+  shares prep with one already chosen can still come first, and repeating a week on purpose is
+  unaffected. Weeks are counted from the week being planned. Dishes never put on an evening
+  don't count, since they weren't eaten.
+- **Older app versions** reject a week with a "repeat" or "liked" dinner when saving it again.
+  That only mattered while preview and production shared a database; production gets this code
+  when it is merged.
+
+## A fresh start for recipes (2 November 2026)
+
+Sunny: the recipes from HelloFresh were trial data the household no longer recognises or likes, and
+the suggestions can't be judged on them. Research's first brief says the same.
+
+- **The recipe files were removed** from `seed-recipes/` (15 written from HelloFresh pages, 3
+  templates). The templates stay in `src/lib/recipes/__fixtures__/` for tests. New recipes come
+  from the "Forkcast recipes" session through `recipe-drafts/`.
+- **Reset everything** (Settings) now also deletes every planned week, with its shopping and prep
+  ticks and choosing time, and every liked combination. Sunny chose a completely blank start. The
+  grocery list and prep limits stay: they belong to the household, not to recipes.
+- **Oyster sauce is allowed** (Sunny, in the recipe session). Fish sauce, fish and shellfish stay
+  blocked. `seafood.ts` treats "oyster sauce" like "oyster mushrooms": not seafood. The import
+  reader is told not to list it.
+- *Repeat a past week* only lists weeks that still have at least one dish whose recipe exists.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and
@@ -451,18 +519,18 @@ Saketh: "the week needs to start from Sunday because that's when prep happens."
 2. **Keep history.** Store past weekly plans and meal combinations the couple marked as liked.
    These should make week 4 faster than week 1 (e.g. "repeat a past week", "start from a liked
    combination").
-3. **Portion sizes vary per person.** Saketh eats more than Victoria and takes most lunch leftovers.
+3. **Portion sizes vary per person.** Sunny eats more than Victoria and takes most lunch leftovers.
    Portions are set per person (dinner) and per lunch, not as identical servings. Shopping
    quantities follow from that.
 4. **English throughout**, including ingredient names on the shopping list.
-5. **Recipes come from Saketh.** The three `_template-` files in `seed-recipes/` are format examples
+5. **Recipes come from Sunny.** The three `_template-` files in `seed-recipes/` are format examples
    to be deleted later. Recipes must be labelled with their real source; templates are labelled
    illustrative.
 6. **Protein-rich / carb-focused labels** are computed from ingredients with a rule that is shown to
    the user (e.g. a main protein source in a meaningful amount per portion). No invented gram-level
    nutrition figures.
 
-## Recommended build order (Saketh can override)
+## Recommended build order (Sunny can override)
 
 The riskiest assumption is that connected suggestions make choosing easier. Recipe import is a
 solved problem in other apps. So test the risky part early:

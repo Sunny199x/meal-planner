@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { saveWeekDishesAction } from "@/lib/plan/actions";
+import { formatWeek } from "@/lib/plan/dates";
+import { recentDinners, type PastWeek, type Repeated } from "@/lib/plan/history";
+import { usableCombinations, type LikedCombination } from "@/lib/plan/liked";
 import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, setRepeat, timeClash } from "@/lib/plan/choose";
 import {
   changeFreezer,
@@ -15,8 +18,10 @@ import {
 import { openEvenings, rankCandidates, shortlist, type PlanRecipe, type Suggestion } from "@/lib/plan/suggest";
 import { DAY_NAMES, DAY_SHORT, MAX_FREEZER, TIME_SLOTS, type PlannedDish, type WeekSetup } from "@/lib/plan/types";
 import { RecipeTile } from "@/components/ui";
-import { normalise } from "@/lib/recipes/filters";
+import { matchesWords } from "@/lib/recipes/filters";
 import { formatQuantity } from "@/lib/recipes/format";
+import { LikeDishes, LikedList } from "./liked";
+import { PastWeeks } from "./past-weeks";
 
 export function WeekChooser({
   weekStart,
@@ -24,28 +29,43 @@ export function WeekChooser({
   initialDishes,
   choosingStartedAt,
   recipes,
+  pastWeeks,
+  likedCombinations,
 }: {
   weekStart: string;
   setup: WeekSetup;
   initialDishes: PlannedDish[];
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
+  /** Earlier weeks with dinners, newest first. */
+  pastWeeks: PastWeek[];
+  /** Combinations the household liked, newest first. */
+  likedCombinations: LikedCombination[];
 }) {
   const [dishes, setDishes] = useState(initialDishes);
   const [history, setHistory] = useState<PlannedDish[][]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [page, setPage] = useState(0);
   const [browsing, setBrowsing] = useState(false);
+  const [showingPast, setShowingPast] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [liked, setLiked] = useState(likedCombinations);
+  const [showingLiked, setShowingLiked] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [startedAt, setStartedAt] = useState(choosingStartedAt);
   const [, startSaving] = useTransition();
 
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   const known = useMemo(() => dishes.filter((d) => byId.has(d.recipeId)), [dishes, byId]);
+  const usable = useMemo(() => usableCombinations(liked, byId), [liked, byId]);
+  const recent = useMemo(() => recentDinners(pastWeeks, weekStart), [pastWeeks, weekStart]);
+  // Weeks whose dishes have all been deleted have nothing to repeat.
+  const repeatable = useMemo(() => pastWeeks.filter((w) => w.dishes.some((d) => byId.has(d.recipeId))), [pastWeeks, byId]);
   const plan = { setup, dishes: known, dismissed };
   const ranked = useMemo(
-    () => rankCandidates(recipes, { setup, dishes: known, dismissed }, weekStart),
-    [recipes, setup, known, dismissed, weekStart],
+    () =>
+      rankCandidates(recipes, { setup, dishes: known, dismissed, liked: usable.map((c) => c.recipeIds), recent }, weekStart),
+    [recipes, setup, known, dismissed, usable, recent, weekStart],
   );
   const open = openEvenings(plan);
   const shown = shortlist(ranked, 3, page);
@@ -66,17 +86,39 @@ export function WeekChooser({
     setHistory((h) => [...h, dishes]);
     setDishes(next);
     setPage(0);
+    setNotice(null);
     save(next);
   }
   function undo() {
     const previous = history.at(-1);
     if (!previous) return;
+    setNotice(null);
     setHistory((h) => h.slice(0, -1));
     setDishes(previous);
     save(previous);
   }
   function add(recipe: PlanRecipe, via: PlannedDish["via"]) {
     change(addDish(dishes, recipe, setup, via));
+  }
+  function addLiked(recipeIds: string[]) {
+    let next = dishes;
+    for (const id of recipeIds) {
+      const recipe = byId.get(id);
+      if (recipe) next = addDish(next, recipe, setup, "liked");
+    }
+    change(next);
+    setShowingLiked(false);
+  }
+  function repeat(week: PastWeek, repeated: Repeated) {
+    change(repeated.dishes);
+    setShowingPast(false);
+    const count = repeated.added.length;
+    const missing = repeated.noRoom.map((id) => byId.get(id)?.title).filter(Boolean);
+    setNotice(
+      `Added ${count} ${count === 1 ? "dinner" : "dinners"} from ${formatWeek(week.weekStart)}. ` +
+        (missing.length > 0 ? `No free evening was left for ${missing.join(", ")}. ` : "") +
+        "Undo takes them all back.",
+    );
   }
   function renderDish(dish: PlannedDish) {
     return (
@@ -153,6 +195,14 @@ export function WeekChooser({
             </li>
           ))}
         </ul>
+        {known.length >= 2 && (
+          <LikeDishes weekStart={weekStart} dishes={known} byId={byId} liked={liked} onSaved={setLiked} />
+        )}
+        {notice && (
+          <p role="status" className="rounded-xl bg-good-light px-3 py-2 text-sm text-good">
+            {notice}
+          </p>
+        )}
         {saveError && (
           <p role="alert" className="rounded-xl bg-danger-light px-3 py-2 text-sm text-danger">
             Not saved: {saveError}
@@ -167,8 +217,15 @@ export function WeekChooser({
           </h2>
           {known.length === 0 && (
             <p className="text-sm text-muted">
-              Start with anything you feel like. After each pick, the suggestions update to fit what you&apos;ve chosen.
+              Start with anything you feel like{repeatable.length > 0 && <>, or repeat a past week</>}. After each pick,
+              the suggestions update to fit what you&apos;ve chosen.
             </p>
+          )}
+          {known.length === 0 && usable.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold">♥ Start from a combination you liked</h3>
+              <LikedList combinations={usable} byId={byId} chosen={known} onAdd={addLiked} onChanged={setLiked} />
+            </div>
           )}
           {shown.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-line p-5 text-muted">
@@ -200,22 +257,59 @@ export function WeekChooser({
             )}
             <button
               type="button"
-              onClick={() => setBrowsing(!browsing)}
+              onClick={() => {
+                setBrowsing(!browsing);
+                setShowingPast(false);
+                setShowingLiked(false);
+              }}
               aria-expanded={browsing}
               className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
             >
               {browsing ? "Hide all recipes" : "Browse all recipes"}
             </button>
+            {known.length > 0 && usable.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowingLiked(!showingLiked);
+                  setBrowsing(false);
+                  setShowingPast(false);
+                }}
+                aria-expanded={showingLiked}
+                className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
+              >
+                {showingLiked ? "Hide combinations" : "♥ Combinations you liked"}
+              </button>
+            )}
+            {repeatable.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowingPast(!showingPast);
+                  setBrowsing(false);
+                  setShowingLiked(false);
+                }}
+                aria-expanded={showingPast}
+                className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
+              >
+                {showingPast ? "Hide past weeks" : "Repeat a past week"}
+              </button>
+            )}
             {dismissed.length > 0 && (
               <button type="button" onClick={() => setDismissed([])} className="px-2 py-2 text-sm text-accent underline">
                 Bring back {dismissed.length} hidden
               </button>
             )}
           </div>
+          {showingLiked && known.length > 0 && (
+            <LikedList combinations={usable} byId={byId} chosen={known} onAdd={addLiked} onChanged={setLiked} />
+          )}
+          {showingPast && <PastWeeks weeks={repeatable} byId={byId} setup={setup} dishes={known} onRepeat={repeat} />}
           {browsing && (
             <BrowseAll
               recipes={recipes}
               chosen={known}
+              recent={recent}
               onAdd={(r) => {
                 add(r, "browse");
                 setBrowsing(false);
@@ -491,7 +585,10 @@ function SuggestionCard({
   onDismiss: () => void;
 }) {
   const [allReasons, setAllReasons] = useState(false);
-  const { recipe, reasons, notes } = suggestion;
+  const { recipe, notes } = suggestion;
+  // The household's own judgement first, marked apart from the rules' reasons.
+  const yours = suggestion.reasons.filter((r) => r.kind === "liked");
+  const reasons = suggestion.reasons.filter((r) => r.kind !== "liked");
   const visible = allReasons ? reasons : reasons.slice(0, 3);
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper">
@@ -508,6 +605,14 @@ function SuggestionCard({
         <p className="text-sm text-muted">
           {recipe.timeTotalMin} min · {recipe.cuisine}
         </p>
+        {yours.map((r) => (
+          <p key={r.text} className="flex gap-2 text-sm font-medium">
+            <span aria-hidden>♥</span>
+            <span>
+              {r.text} <span className="font-normal text-muted">(your combination)</span>
+            </span>
+          </p>
+        ))}
         {visible.length > 0 && (
           <ul className="space-y-1 text-sm">
             {visible.map((r) => (
@@ -555,18 +660,20 @@ function SuggestionCard({
 function BrowseAll({
   recipes,
   chosen,
+  recent,
   onAdd,
 }: {
   recipes: PlanRecipe[];
   chosen: PlannedDish[];
+  /** Dinners of the last two weeks: 1 = the week before, 2 = two weeks before. */
+  recent: Record<string, number>;
   onAdd: (recipe: PlanRecipe) => void;
 }) {
   const [query, setQuery] = useState("");
   const chosenIds = new Set(chosen.map((d) => d.recipeId));
-  const words = normalise(query).split(/\s+/).filter(Boolean);
   const list = recipes
     .filter((r) => !chosenIds.has(r.id) && r.seafood !== "contains")
-    .filter((r) => words.every((w) => normalise(`${r.title} ${r.cuisine}`).includes(w)))
+    .filter((r) => matchesWords([r.title, r.cuisine, r.source, r.site], query))
     .sort((a, b) => a.title.localeCompare(b.title));
   return (
     <div className="space-y-2 rounded-2xl border border-line bg-paper p-4">
@@ -574,7 +681,7 @@ function BrowseAll({
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search by name or cuisine"
+        placeholder="Search by name, cuisine or where it's from"
         className="block w-full rounded-xl border border-line bg-soft px-3 py-2 text-base"
       />
       <ul className="divide-y divide-line">
@@ -585,6 +692,7 @@ function BrowseAll({
               <span className="block">{r.title}</span>
               <span className="text-sm text-muted">
                 {r.timeTotalMin} min · {r.cuisine}
+                {recent[r.id] && <> · had {recent[r.id] === 1 ? "the week before" : "two weeks before"}</>}
               </span>
             </span>
             <button

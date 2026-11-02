@@ -106,16 +106,24 @@ function matchesDiet(diet: Diet, filter: DietFilter): boolean {
   return diet === filter;
 }
 
-function searchText(recipe: RecipeSummary): string {
-  return normalise(
-    [recipe.title, recipe.cuisine, recipe.source, ...recipe.tags, ...recipe.ingredients.map((i) => i.name)].join(
-      " ",
-    ),
-  );
+/**
+ * Whether every word typed appears somewhere in the texts, ignoring case,
+ * accents and spaces: "hello fresh" finds "HelloFresh", "andycooks" finds "Andy Cooks".
+ */
+export function matchesWords(texts: (string | null | undefined)[], query: string): boolean {
+  const words = normalise(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+  const text = normalise(texts.filter(Boolean).join(" "));
+  const squashed = text.replace(/\s+/g, "");
+  return words.every((word) => text.includes(word) || squashed.includes(word));
+}
+
+/** What the Recipes page searches: name, cuisine, where it's from (and its website), tags and ingredients. */
+function searchTexts(recipe: RecipeSummary): (string | null)[] {
+  return [recipe.title, recipe.cuisine, recipe.source, recipe.site, ...recipe.tags, ...recipe.ingredients.map((i) => i.name)];
 }
 
 export function filterRecipes(recipes: RecipeSummary[], filters: Filters): RecipeSummary[] {
-  const words = normalise(filters.q).split(/\s+/).filter(Boolean);
   const withTerms = filters.withIngredients.map(normalise);
   const withoutTerms = filters.withoutIngredients.map(normalise);
 
@@ -137,10 +145,6 @@ export function filterRecipes(recipes: RecipeSummary[], filters: Filters): Recip
       return false;
     }
 
-    if (words.length) {
-      const text = searchText(recipe);
-      if (!words.every((word) => text.includes(word))) return false;
-    }
-    return true;
+    return matchesWords(searchTexts(recipe), filters.q);
   });
 }

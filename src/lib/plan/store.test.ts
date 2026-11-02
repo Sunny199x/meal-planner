@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openLocalDb } from "../db/local";
 import type { Db } from "../db/types";
+import { weekPlans } from "../db/schema";
 import {
+  getPastWeeks,
   getPlan,
   saveDishes,
   saveSetup,
@@ -163,5 +165,34 @@ describe("prep limits", () => {
     await setPrepLimit(db, "Deseed pomegranate", 3);
     expect(await setPrepLimit(db, "cook rice", null)).toEqual({ "deseed pomegranate": 3 });
     expect(await getPrepLimits(db)).toEqual({ "deseed pomegranate": 3 });
+  });
+});
+
+describe("past weeks", () => {
+  const dish = (n: number, day: number) => ({
+    recipeId: `00000000-0000-4000-8000-00000000000${n}`,
+    day,
+    addedAt: "2026-10-30T10:00:00.000Z",
+    via: "browse" as const,
+  });
+
+  it("lists the half year of weeks with dinners before a week, and only reads", async () => {
+    for (const [week, dishes] of [
+      ["2026-11-01", [dish(1, 1)]],
+      ["2026-10-25", []], // no dinners
+      ["2026-10-19", [dish(2, 0)]], // saved the old way, never opened: read as 18 October
+      ["2026-05-03", [dish(3, 1)]], // 27 weeks before: too long ago
+      ["2026-11-08", [dish(4, 1)]], // the week itself
+    ] as const) {
+      await saveSetup(db, week, DEFAULT_SETUP);
+      await saveDishes(db, week, [...dishes]);
+    }
+    const weeks = await getPastWeeks(db, "2026-11-08");
+    expect(weeks.map((w) => [w.weekStart, w.dishes.map((d) => d.day)])).toEqual([
+      ["2026-11-01", [1]],
+      ["2026-10-18", [1]],
+    ]);
+    // Nothing was saved for the old week.
+    expect(await db.select().from(weekPlans)).toHaveLength(5);
   });
 });

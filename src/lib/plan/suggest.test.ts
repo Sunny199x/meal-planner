@@ -9,6 +9,8 @@ function recipe(id: string, overrides: Partial<Omit<PlanRecipe, "ingredients">> 
   return {
     id,
     title: id,
+    source: "Own recipe",
+    site: null,
     cuisine: "Swedish",
     mainProtein: null,
     timeTotalMin: 30,
@@ -188,6 +190,46 @@ describe("reasons", () => {
       expect(negatives).toBeLessThanOrEqual(0);
       expect(s.reasons.every((r) => r.points > 0)).toBe(true);
     }
+  });
+});
+
+describe("combinations the household liked", () => {
+  it("says which chosen dish a suggestion was liked with, and ranks it higher", () => {
+    const recipes = [recipe("korma"), recipe("naan bread"), recipe("tacos")];
+    const state = plan(["korma"], { liked: [["korma", "naan bread"], ["tacos", "somewhere else"]] });
+    const ranked = rank(recipes, state);
+    expect(ranked[0].recipe.id).toBe("naan bread");
+    expect(ranked[0].reasons[0]).toEqual({ kind: "liked", points: POINTS.liked, text: "You liked this with korma." });
+    // A combination whose other dish isn't in the week gives no reason.
+    expect(kinds(recipes, state, "tacos")).not.toContain("liked");
+  });
+
+  it("names up to two chosen dishes once, however many combinations match", () => {
+    const recipes = [recipe("a"), recipe("b"), recipe("c"), recipe("d")];
+    const everyEvening = { ...setup, evenings: setup.evenings.map((e) => ({ ...e, cooking: true })) };
+    const state = plan(["a", "b", "c"], { setup: everyEvening, liked: [["a", "d"], ["b", "d"], ["c", "d"], ["a", "b", "d"]] });
+    const reasons = rank(recipes, state)[0].reasons.filter((r) => r.kind === "liked");
+    expect(reasons).toEqual([{ kind: "liked", points: POINTS.liked, text: "You liked this with a and b." }]);
+  });
+});
+
+describe("not again so soon", () => {
+  it("lowers dinners from the week before more than from two weeks before, and says why", () => {
+    const recipes = [recipe("korma"), recipe("tacos"), recipe("stew")];
+    const state = plan([], { recent: { korma: 1, tacos: 2 } });
+    const ranked = rank(recipes, state);
+    expect(ranked.map((s) => s.recipe.id)).toEqual(["stew", "tacos", "korma"]);
+    expect(ranked[2].notes).toContain("You had this the week before.");
+    expect(ranked[1].notes).toContain("You had this two weeks before.");
+    expect(ranked[2].score).toBe(POINTS.lastWeek);
+    expect(ranked[1].score).toBe(POINTS.twoWeeksAgo);
+  });
+
+  it("is a nudge: a dinner from the week before that shares prep can still come first", () => {
+    const rice = { makeAhead: [{ name: "Cook rice", description: "" }] };
+    const recipes = [recipe("curry", rice), recipe("korma", rice), recipe("stew")];
+    const ranked = rank(recipes, plan(["curry"], { recent: { korma: 1 } }));
+    expect(ranked[0].recipe.id).toBe("korma");
   });
 });
 

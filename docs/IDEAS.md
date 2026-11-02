@@ -5,11 +5,50 @@ scheduled until it moves into a milestone plan. Newest first within each section
 
 Status: **Open** (not decided), **Planned** (has a milestone), **Done**, **Dropped**.
 
+## Testing week (from 30 October 2026)
+
+Feedback from using Forkcast for real, newest first. Reviewed together at the end of the week.
+
+- **Search recipes by where they're from** (*Sunny, 31 October*): "not just by name and cuisine
+  but also by where or who it's from, like HelloFresh or Andy Cooks." **Done:** both the Recipes
+  search and Week → *Browse all recipes* now search the source ("HelloFresh Sweden", "YouTube:
+  Andy Cooks") and the link's website, ignoring spaces ("hello fresh", "andycooks").
+  - For Instagram, the app can't see the account from the link, so it only finds what's typed in
+    *Where is it from?* when importing.
+- **The week starts on Sunday** (*Sunny, 31 October*): prep happens on Sunday. **Done** (see
+  `docs/DECISIONS.md`).
+
+## From the research brief of 2 November 2026 (Open)
+
+From Research's first brief, `docs/research/2026-11-02-weekly-dinner-planning.md` (a draft). The
+sizes and what exists today are in the note at its end. Nothing here is agreed yet.
+
+- **R1. Fewer setup questions each week** (*must*, medium). Ask only which nights and how much
+  effort, from a standard week. People, portions, lunch boxes and prep days become standing
+  settings. Conflicts with "a new week copies last week's setup"; Sunny decides.
+- **R2. Show the prep load** (*must*). The task count and dishes per prep day: small. Proposing
+  prep days: medium. Minutes need a time on every make-ahead task, which recipes don't have yet.
+  Also explain why tasks without a prep limit happen on the evening.
+- **R3. Log what was shown, dismissed and picked** (*must*, medium), and keep "Not this one" for
+  the week. Picks are already saved.
+- **R4. Rotation, trial and excluded recipes** (*should*, medium). There is no exclude yet. Imports
+  would start as trial; the HelloFresh set could be excluded in bulk.
+- **R5. "Any dishes you really want?" as the first step** (*should*, small).
+- **R6. A 1–5 "how hard did that feel?" after choosing** (*should*, small).
+- **R7. Swipe yes/no on suggestion cards** (*could*, medium; evidence is vendor claims).
+- **R8. A quarterly recipe review** (*could*, large; needs R3 and R4).
+- **R9. A backup dinner** (*could*, small). A dish on "No evening" already works as one; label it.
+- **Bought for a dinner you removed** (found while checking the brief): items ticked as bought
+  for a dish later removed just vanish from the shopping list. Say so instead, so they get used.
+  Small to medium.
+- **A night that fell through** (found while checking the brief): nothing records it. A tap to
+  mark it would help R9 and count unplanned takeout nights without prices. Small to medium.
+
 ## From using the app
 
 ### Normalise imported recipes so they fit the suggestion rules (Planned: milestone 4)
 
-*Saketh, 29 October 2026, after milestone 3.*
+*Sunny, 29 October 2026, after milestone 3.*
 
 A layer between an imported recipe (website, Instagram caption, YouTube description, pasted
 text) and how it is stored, so every recipe has the same structure as the hand-written ones and
@@ -53,7 +92,7 @@ Related:
 
 ### Show a photo of each dish when choosing (Done)
 
-*Saketh, 29 October 2026, after milestone 2.*
+*Sunny, 29 October 2026, after milestone 2.*
 
 Show the dish's photo on the "Pick a first dish" options, the suggestion cards, *Show others* and
 *Browse all recipes* (and on the recipe cards in the collection).
@@ -77,7 +116,7 @@ Done in milestone 4: imports suggest the names already shared by your recipes, a
 Recipe check lists probably-duplicate names. Still open: the one-tap rename (option 1 below) and the
 hint while typing (option 2), worth building once duplicates actually turn up.
 
-*Saketh, 29 October 2026, after milestone 2.*
+*Sunny, 29 October 2026, after milestone 2.*
 
 Suggestions only connect two recipes through Sunday prep when both use exactly the same
 make-ahead name: "Cook rice" in both counts, "Cook rice" and "Make rice" don't. A near-miss
@@ -100,19 +139,19 @@ Options 1 and 2 together keep the rule strict and the names tidy.
 
 ### The grocery list as the home page, fed by the weekly plan (Done)
 
-*Saketh, 29 October 2026.* The app opens on the grocery list: things added through the week
+*Sunny, 29 October 2026.* The app opens on the grocery list: things added through the week
 plus this week's and next week's dinner ingredients, with ticks shared with Week → Shopping.
 See `docs/DECISIONS.md`.
 
 ### Scale the amounts in the recipe steps (Done)
 
-*Saketh, 29 October 2026.* Amounts with a metric unit in the steps ("300 ml water", "½ tsp
+*Sunny, 29 October 2026.* Amounts with a metric unit in the steps ("300 ml water", "½ tsp
 salt") now follow the portions control and are highlighted. Times, temperatures and counts stay
 as written.
 
 ## Noticed while building milestone 4 (Open)
 
-- **A camera screen inside the app, like WhatsApp's** (*Saketh, 30 October 2026: "note this as a
+- **A camera screen inside the app, like WhatsApp's** (*Sunny, 30 October 2026: "note this as a
   feature for future releases"*). Today one photo button opens a small menu (*Take photo* /
   *Choose from gallery*) that hands over to the phone's own camera or picker. A camera screen in
   the app would show a viewfinder with a shutter button and a gallery icon, all in one place.
@@ -125,7 +164,7 @@ as written.
 - **Instagram links on their own:** today the caption has to be pasted, or screenshots of the post
   added as photos. Instagram's official access needs a Meta developer app and is mainly for
   business accounts, so it needs a closer look.
-  Saketh: "let's see how we can fix it later" (29 October 2026).
+  Sunny: "let's see how we can fix it later" (29 October 2026).
 
 - **Remember corrections from the review screen:** if Claude keeps translating a word the same
   wrong way, or a name keeps needing the same fix, remember the fix and pass it to Claude next
@@ -152,4 +191,5 @@ Small things that may or may not matter once the app is used for real weeks:
 - **Remember "Not this one"** for the week, instead of forgetting it when you leave the Week tab.
 - **Named collections** beyond favourites and tags.
 - **TikTok links:** not used in the household.
-- **Separate databases for preview and production:** revisit before relying on the app weekly.
+- ~~**Separate databases for preview and production**~~ Done 2 November 2026: each preview gets its
+  own copy (see `docs/DECISIONS.md`).

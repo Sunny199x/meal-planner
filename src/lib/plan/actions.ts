@@ -5,6 +5,8 @@ import { requireSignedIn } from "../auth/server";
 import { describeDatabaseError, getDb } from "../db";
 import { readWeekStart } from "./dates";
 import { guidanceFor, MAX_PREP_DAYS } from "./food-safety";
+import { readLikedIds, type LikedCombination } from "./liked";
+import { forgetLikedCombination, saveLikedCombination } from "./liked-store";
 import { setPrepLimit } from "./prep-limits";
 import { getPlan, saveDishes, saveSetup, tickPrepTask, tickShoppingItem } from "./store";
 import { readDishes, readSetup, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
@@ -120,6 +122,31 @@ export async function setPrepLimitAction(name: string, days: number | null): Pro
     const limits = await setPrepLimit(await getDb(), name.trim(), days);
     revalidatePath("/", "layout");
     return { limits };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+type LikedResult = { liked?: LikedCombination[]; error?: string };
+
+/** Saves two or three dishes from a week as a combination the household liked. */
+export async function saveLikedCombinationAction(weekStart: string | null, recipeIds: string[]): Promise<LikedResult> {
+  await requireSignedIn();
+  const ids = readLikedIds(recipeIds);
+  const week = weekStart === null ? null : readWeekStart(weekStart);
+  if (!ids || (weekStart !== null && !week)) return { error: "Pick two or three dishes, then try again." };
+  try {
+    return { liked: await saveLikedCombination(await getDb(), ids, week) };
+  } catch (error) {
+    return { error: describeDatabaseError(error) };
+  }
+}
+
+export async function forgetLikedCombinationAction(id: string): Promise<LikedResult> {
+  await requireSignedIn();
+  if (typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) return { error: "Something wasn't valid. Please reload and try again." };
+  try {
+    return { liked: await forgetLikedCombination(await getDb(), id) };
   } catch (error) {
     return { error: describeDatabaseError(error) };
   }

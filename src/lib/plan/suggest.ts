@@ -1,6 +1,7 @@
 // The suggestion rules. Every rule that applies to a recipe adds a reason with
 // a number of points (negative for "why lower"); the score is simply the sum.
 // So the reasons shown are exactly the ones that produced the ranking.
+import { linkSite } from "../recipes/source-link";
 import type { RecipeRow } from "../db/schema";
 import { formatQuantity } from "../recipes/format";
 import { photoUrl } from "../recipes/photo-url";
@@ -21,6 +22,9 @@ import { DAY_NAMES, TIME_SLOTS, type PlannedDish, type WeekSetup } from "./types
 export type PlanRecipe = {
   id: string;
   title: string;
+  /** Where it's from ("HelloFresh Sweden", "YouTube: Andy Cooks") and its link's website, for searching. */
+  source: string;
+  site: string | null;
   cuisine: string;
   mainProtein: string | null;
   timeTotalMin: number;
@@ -42,6 +46,8 @@ export function toPlanRecipe(row: RecipeRow): PlanRecipe {
   return {
     id: row.id,
     title: row.title,
+    source: row.source,
+    site: linkSite(row.sourceUrl),
     cuisine: row.cuisine,
     mainProtein: row.mainProtein,
     timeTotalMin: row.timeTotalMin,
@@ -66,10 +72,12 @@ export type Reason = {
     | "quick-evening"
     | "lunches"
     | "favourite"
+    | "liked"
     | "new-cuisine"
     | "similar"
     | "same-cuisine"
     | "same-protein"
+    | "recent"
     | "template";
   text: string;
   points: number;
@@ -94,10 +102,13 @@ export const POINTS = {
   quickEvening: 10,
   lunches: 10,
   favourite: 6,
+  liked: 25,
   newCuisine: 6,
   similar: -40,
   sameCuisine: -8,
   sameProtein: -10,
+  lastWeek: -15,
+  twoWeeksAgo: -8,
   template: -5,
 } as const;
 
@@ -106,6 +117,10 @@ export type PlanState = {
   dishes: PlannedDish[];
   /** "Not this one" for this week. */
   dismissed: string[];
+  /** Combinations the household liked, as lists of recipe ids. */
+  liked?: string[][];
+  /** Dinners of the week before (1) and two weeks before (2), by recipe id. */
+  recent?: Record<string, number>;
 };
 
 /** Cooking evenings that don't have a dish yet (an evening of leftovers counts as taken). */
@@ -215,6 +230,12 @@ function scoreRecipe(candidate: PlanRecipe, chosen: PlanRecipe[], plan: PlanStat
 
   if (candidate.isFavourite) add("favourite", POINTS.favourite, "One of your favourites.");
 
+  // The household's own judgement: dishes they saved as going well together.
+  const likedWith = chosen.filter((c) => plan.liked?.some((group) => group.includes(candidate.id) && group.includes(c.id)));
+  if (likedWith.length) {
+    add("liked", POINTS.liked, `You liked this with ${joinNames(likedWith.slice(0, 2).map((c) => shortTitle(c.title)))}.`);
+  }
+
   // Variety across the whole week so far.
   const cuisine = cuisineKey(candidate.cuisine);
   const protein = proteinKey(candidate.mainProtein);
@@ -233,6 +254,11 @@ function scoreRecipe(candidate: PlanRecipe, chosen: PlanRecipe[], plan: PlanStat
       add("same-protein", POINTS.sameProtein, `${protein![0].toUpperCase()}${protein!.slice(1)} again, like ${shortTitle(sameProtein[0].title)}.`);
     }
   }
+
+  // Not again so soon: a gentle nudge, not a ban.
+  const weeksAgo = plan.recent?.[candidate.id];
+  if (weeksAgo === 1) add("recent", POINTS.lastWeek, "You had this the week before.");
+  else if (weeksAgo === 2) add("recent", POINTS.twoWeeksAgo, "You had this two weeks before.");
 
   if (candidate.isTemplate) add("template", POINTS.template, "Illustrative example, not one of your own recipes.");
   if (candidate.seafood === "may contain") notes.push("May contain fish: check the label.");

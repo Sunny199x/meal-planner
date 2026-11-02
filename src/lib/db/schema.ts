@@ -1,6 +1,6 @@
 // Database tables. After changing this file, run `npm run db:generate` to
-// create a migration in drizzle/. While preview and production share one
-// database, only add tables or columns; never rename or drop them.
+// create a migration in drizzle/. Prefer adding tables or columns: while a
+// deploy finishes, the previous version may still be running against them.
 import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "../plan/types";
 import { DIETS, type IngredientLine, type MakeAheadTask } from "../recipes/types";
@@ -98,3 +98,18 @@ export const prepLimits = pgTable("prep_limits", {
   days: integer("days").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Dishes the household ate together and liked, picked from a week. Their own
+ * judgement, kept apart from the suggestion rules' reasons. Recipes deleted
+ * later stay in the list and are skipped when read.
+ */
+export const likedCombinations = pgTable("liked_combinations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  recipeIds: jsonb("recipe_ids").$type<string[]>().notNull(),
+  /** The week they were picked from. */
+  weekStart: date("week_start", { mode: "string" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type LikedCombinationRow = typeof likedCombinations.$inferSelect;

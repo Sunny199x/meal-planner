@@ -11,6 +11,7 @@ import {
 } from "./form";
 import { parseRecipeFile } from "./parse-recipe-file";
 import { readRecipeFiles } from "./read-files";
+import { readTemplateFixtures } from "./test-fixtures";
 
 const valid: RecipeFormValues = {
   ...EMPTY_FORM,
@@ -111,7 +112,8 @@ describe("text box readers", () => {
 
 describe("editing a recipe", () => {
   it("fills the form so that saving unchanged gives back the same recipe", async () => {
-    for (const file of await readRecipeFiles()) {
+    // The household's files (which can be few or none) and the example files kept for tests.
+    for (const file of [...(await readRecipeFiles()), ...(await readTemplateFixtures())]) {
       const recipe = parseRecipeFile(file.fileName, file.text).recipe!;
       const roundTrip = parseRecipeForm(recipeToFormValues(recipe)).recipe;
       expect(roundTrip).toEqual({ ...recipe, isTemplate: false });

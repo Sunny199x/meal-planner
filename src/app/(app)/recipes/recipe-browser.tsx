@@ -84,7 +84,7 @@ export function RecipeBrowser({ recipes }: { recipes: RecipeSummary[] }) {
               setQuery(e.target.value);
               update({ q: e.target.value });
             }}
-            placeholder="Search recipes, ingredients, cuisines…"
+            placeholder="Search by name, ingredient, cuisine or source…"
             className="block w-full rounded-xl border border-line bg-paper px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </label>

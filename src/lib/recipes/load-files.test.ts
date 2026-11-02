@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { openLocalDb } from "../db/local";
-import { recipes } from "../db/schema";
+import { groceryItems, likedCombinations, prepLimits, recipes, weekPlans } from "../db/schema";
+import { DEFAULT_SETUP } from "../plan/types";
 import type { Db } from "../db/types";
 import { loadRecipeFiles } from "./load-files";
 
@@ -139,6 +140,27 @@ describe("loadRecipeFiles", () => {
       ["Daal", false],
       ["Tacos", false],
     ]);
+  });
+
+  it("reset also clears planned weeks and liked combinations, but keeps the grocery list and prep limits", async () => {
+    await loadRecipeFiles(db, [daal]);
+    const [recipe] = await db.select().from(recipes);
+    await db.insert(weekPlans).values({
+      weekStart: "2026-11-08",
+      setup: DEFAULT_SETUP,
+      dishes: [{ recipeId: recipe.id, day: 1, addedAt: "2026-11-02T10:00:00.000Z", via: "start" }],
+    });
+    await db.insert(likedCombinations).values({ recipeIds: [recipe.id, recipe.id] });
+    await db.insert(groceryItems).values({ text: "milk" });
+    await db.insert(prepLimits).values({ key: "pickle onion", name: "Pickle onions", days: 3 });
+
+    await loadRecipeFiles(db, [], { reset: true });
+
+    expect(await db.select().from(recipes)).toEqual([]);
+    expect(await db.select().from(weekPlans)).toEqual([]);
+    expect(await db.select().from(likedCombinations)).toEqual([]);
+    expect((await db.select().from(groceryItems)).map((g) => g.text)).toEqual(["milk"]);
+    expect(await db.select().from(prepLimits)).toHaveLength(1);
   });
 
   it("loads the real template files", async () => {

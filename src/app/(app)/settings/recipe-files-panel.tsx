@@ -33,8 +33,10 @@ export function RecipeFilesPanel() {
       <form action={resetAction} className="space-y-3 border-t border-line pt-6">
         <h3 className="font-medium">Reset everything</h3>
         <p className="text-sm text-muted">
-          Deletes <strong>all</strong> recipes, including ones added in the app and all favourites,
-          then loads the files again. This can&apos;t be undone.
+          Deletes <strong>all</strong> recipes (including ones added in the app, favourites and
+          photos), <strong>all planned weeks</strong> with their shopping and prep ticks, and the
+          combinations you liked. Then it loads the recipe files again. Your grocery list and prep
+          limits stay. This can&apos;t be undone.
         </p>
         <label className="block text-sm">
           Type <strong>RESET</strong> to confirm
