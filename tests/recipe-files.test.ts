@@ -7,8 +7,10 @@ import { readRecipeFiles } from "@/lib/recipes/read-files";
 const files = await readRecipeFiles();
 
 describe("recipe files in seed-recipes/", () => {
-  it("has at least one recipe", () => {
-    expect(files.length).toBeGreaterThan(0);
+  // The folder may be empty: the household started its collection afresh on 2 November 2026.
+  it("names files in lowercase with hyphens", () => {
+    const badNames = files.map((f) => f.fileName).filter((name) => !/^_?[a-z0-9]+(-[a-z0-9]+)*\.md$/.test(name));
+    expect(badNames, "Rename these files in seed-recipes/ (e.g. chicken-tikka.md)").toEqual([]);
   });
 
   it.each(files.map((f) => [f.fileName, f.text]))("%s can be read", (fileName, text) => {

@@ -59,6 +59,8 @@ export function WeekChooser({
   const known = useMemo(() => dishes.filter((d) => byId.has(d.recipeId)), [dishes, byId]);
   const usable = useMemo(() => usableCombinations(liked, byId), [liked, byId]);
   const recent = useMemo(() => recentDinners(pastWeeks, weekStart), [pastWeeks, weekStart]);
+  // Weeks whose dishes have all been deleted have nothing to repeat.
+  const repeatable = useMemo(() => pastWeeks.filter((w) => w.dishes.some((d) => byId.has(d.recipeId))), [pastWeeks, byId]);
   const plan = { setup, dishes: known, dismissed };
   const ranked = useMemo(
     () =>
@@ -215,7 +217,7 @@ export function WeekChooser({
           </h2>
           {known.length === 0 && (
             <p className="text-sm text-muted">
-              Start with anything you feel like{pastWeeks.length > 0 && <>, or repeat a past week</>}. After each pick,
+              Start with anything you feel like{repeatable.length > 0 && <>, or repeat a past week</>}. After each pick,
               the suggestions update to fit what you&apos;ve chosen.
             </p>
           )}
@@ -279,7 +281,7 @@ export function WeekChooser({
                 {showingLiked ? "Hide combinations" : "♥ Combinations you liked"}
               </button>
             )}
-            {pastWeeks.length > 0 && (
+            {repeatable.length > 0 && (
               <button
                 type="button"
                 onClick={() => {
@@ -302,7 +304,7 @@ export function WeekChooser({
           {showingLiked && known.length > 0 && (
             <LikedList combinations={usable} byId={byId} chosen={known} onAdd={addLiked} onChanged={setLiked} />
           )}
-          {showingPast && <PastWeeks weeks={pastWeeks} byId={byId} setup={setup} dishes={known} onRepeat={repeat} />}
+          {showingPast && <PastWeeks weeks={repeatable} byId={byId} setup={setup} dishes={known} onRepeat={repeat} />}
           {browsing && (
             <BrowseAll
               recipes={recipes}

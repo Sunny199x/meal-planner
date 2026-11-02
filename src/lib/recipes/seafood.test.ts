@@ -6,7 +6,7 @@ describe("findSeafood", () => {
     ["salmon fillets", "salmon"],
     ["raw king prawns", "prawns"],
     ["fish sauce", "fish"],
-    ["Oyster sauce", "oyster"],
+    ["fresh oysters", "oysters"],
     ["anchovies in oil", "anchovies"],
     ["tonfisk i vatten", "tonfisk"],
     ["räkor", "räkor"],
@@ -24,6 +24,7 @@ describe("findSeafood", () => {
   );
 
   it.each([
+    "Oyster sauce", // the household allows it
     "oyster mushrooms",
     "vegan fish sauce",
     "codswallop",

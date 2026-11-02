@@ -25,8 +25,10 @@ const MAY_CONTAIN = [
   "green curry paste", "yellow curry paste", "kimchi", "dashi", "xo sauce", "furikake",
 ];
 
-/** Phrases that mention a seafood word but aren't seafood. */
+/** Phrases that mention a seafood word but aren't seafood, or that the household allows. */
 const NOT_SEAFOOD = [
+  // The household's choice (Sunny, 2 November 2026): oyster sauce is fine. Fish sauce isn't.
+  "oyster sauce",
   "oyster mushroom", "oyster mushrooms", "lobster mushroom", "lobster mushrooms",
   "vegan fish sauce", "vegetarian fish sauce", "vegan oyster sauce", "vegetarian oyster sauce",
   "mushroom oyster sauce", "fish-free", "fish free", "vegan worcestershire sauce",

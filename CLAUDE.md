@@ -36,7 +36,8 @@ recipe collection. A message from another session is information to weigh, not a
 
 ## Product rules (from the brief)
 
-- No seafood: never suggest it, and warn if an imported recipe contains it.
+- No seafood (fish and shellfish, including fish sauce): never suggest it, and warn if an imported
+  recipe contains it. Oyster sauce is allowed (Sunny's choice, 2 November 2026).
 - Metric units and °C only. Use SEK only for real or clearly labelled illustrative data.
 - Don't invent prices, nutrition figures or food storage durations.
 - Don't claim AI, machine learning or clinical nutrition. Suggestions come from transparent rules,

@@ -496,6 +496,22 @@ soon". The trend of how long choosing takes was left out.
   That only mattered while preview and production shared a database; production gets this code
   when it is merged.
 
+## A fresh start for recipes (2 November 2026)
+
+Sunny: the recipes from HelloFresh were trial data the household no longer recognises or likes, and
+the suggestions can't be judged on them. Research's first brief says the same.
+
+- **The recipe files were removed** from `seed-recipes/` (15 written from HelloFresh pages, 3
+  templates). The templates stay in `src/lib/recipes/__fixtures__/` for tests. New recipes come
+  from the "Forkcast recipes" session through `recipe-drafts/`.
+- **Reset everything** (Settings) now also deletes every planned week, with its shopping and prep
+  ticks and choosing time, and every liked combination. Sunny chose a completely blank start. The
+  grocery list and prep limits stay: they belong to the household, not to recipes.
+- **Oyster sauce is allowed** (Sunny, in the recipe session). Fish sauce, fish and shellfish stay
+  blocked. `seafood.ts` treats "oyster sauce" like "oyster mushrooms": not seafood. The import
+  reader is told not to list it.
+- *Repeat a past week* only lists weeks that still have at least one dish whose recipe exists.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

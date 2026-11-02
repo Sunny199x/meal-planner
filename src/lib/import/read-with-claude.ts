@@ -38,7 +38,7 @@ const INSTRUCTIONS = `You read one recipe and write it out for a household's rec
 - One step per item in "steps", translated, with temperatures in °C.
 - Only use what the text says. If servings, times, cuisine or main protein aren't stated, use null; you may give the cuisine when the dish name makes it plain (for example, pad thai is Thai).
 - Do not add storage times, food-safety advice or nutrition figures.
-- List in "seafood" every fish or shellfish ingredient, including fish sauce and shrimp paste, as written in the original.
+- List in "seafood" every fish or shellfish ingredient, including fish sauce and shrimp paste, as written in the original. Oyster sauce is allowed by the household: don't list it.
 - Put anything you were unsure about in "checks", briefly.
 - The recipe may come as photos: cookbook pages, a handwritten card or screenshots, in order. Read only what you can see. If an amount, unit or word can't be read clearly, don't guess: put "?" in its place (for example "? g plain flour") and say in "checks" what was unclear. If the photos show more than one recipe, read the main one and say in "checks" that there was another.
 - If the text isn't a recipe, set "isRecipe" to false and leave the other fields empty.`;

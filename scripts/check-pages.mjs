@@ -55,12 +55,16 @@ await page.goto(base + "/settings");
 await page.click("text=Load recipes from files");
 await page.waitForSelector("text=The database now holds");
 await page.goto(base + "/recipes");
-await page.waitForSelector("main article");
-const firstRecipe = await page.getAttribute("main article h2 a", "href");
+await page.waitForLoadState("networkidle");
+// seed-recipes/ can be empty (the household's fresh start): then the recipe pages are skipped.
+const firstRecipe = (await page.locator("main article").count())
+  ? await page.getAttribute("main article h2 a", "href")
+  : null;
+if (!firstRecipe) console.log("No recipes in seed-recipes/: the filtered list, recipe and edit pages are skipped.");
 
 // A coming week with its setup saved and one dish chosen.
 await page.goto(base + "/week");
-if (await page.locator("button:has-text('Save setup')").count()) {
+if (firstRecipe && (await page.locator("button:has-text('Save setup')").count())) {
   await page.click("button:has-text('Save setup')");
   await page.locator("ul.grid > li").first().locator("button:has-text('Add')").click();
   await page.waitForSelector("text=1 of");
@@ -74,9 +78,13 @@ const pages = [
   ["shopping", "/week/shopping"],
   ["shopping-empty", "/week/shopping?week=2030-01-07"],
   ["prep", "/week/prep"],
-  ["recipes-filtered", "/recipes?time=45&diet=vegetarian&protein=1"],
-  ["recipe", firstRecipe],
-  ["edit", `${firstRecipe}/edit`],
+  ...(firstRecipe
+    ? [
+        ["recipes-filtered", "/recipes?time=45&diet=vegetarian&protein=1"],
+        ["recipe", firstRecipe],
+        ["edit", `${firstRecipe}/edit`],
+      ]
+    : []),
   ["add", "/recipes/new"],
   ["import", "/recipes/import"],
   ["settings", "/settings"],

@@ -179,8 +179,9 @@ and the yellow logo. A week of real use starts now.
 - **Photo import** was tested with a stand-in for Claude, not yet with real photos read by Claude.
   Blurry photos and messy handwriting can be misread; parts Claude can't make out are marked "?"
   and listed on the review screen. The photos aren't kept.
-- **The three template recipes** are illustrative and untested. Delete their files once real
-  recipes are in, then press *Load recipes from files*.
+- **No recipes yet (from 2 November 2026).** The HelloFresh and template recipes were removed for
+  a fresh start; the household's own collection is being built in the "Forkcast recipes"
+  session and loaded with Settings → *Load recipes from files*.
 
 ## Demo for Victoria (about 3 minutes)
 

@@ -3,28 +3,26 @@
 One recipe per file, written in Markdown. The app reads every `.md` file in this folder
 (except this README) when the demo data is loaded or reset.
 
-The three files starting with `_template-` are examples written by Claude to show the
-format. They are illustrative and untested in a kitchen. Delete them once your own recipes
-are in. The `template: true` line also marks them so the app can label them.
+**Fresh start (2 November 2026):** the earlier recipes (15 written from HelloFresh pages and three
+illustrative templates) were removed so the household can build its collection from scratch.
+They are still in the git history. New recipes are drafted in `recipe-drafts/` by the "Forkcast
+recipes" session and moved here once Sunny approves them.
 
-## Recipes taken from HelloFresh
+Example files in this format are in `src/lib/recipes/__fixtures__/` (the three templates, kept
+for tests). A file with `template: true` is shown in the app as an illustrative example.
 
-The files with `source: HelloFresh Sweden` were written from hellofresh.se recipe pages:
+Writing recipes from a website:
 
-- Ingredients, times and the source link come from the page. Quantities are HelloFresh's
-  2-portion amounts (`servings: 2`).
+- Ingredients, times, servings and the source link come from the page.
 - The method is rewritten in our own words, not copied.
-- HelloFresh's own spice blends are swapped for supermarket equivalents, marked
-  "replaces HelloFresh's … spice blend". Amounts the page showed only as "1 pack" or without a
-  unit are estimates, listed in the recipe's Notes.
 - `freezer_friendly` is `false` until you've actually frozen the dish and it was fine.
-- Make-ahead names are reused on purpose (e.g. `Cook rice`, `Harissa bulgur`,
-  `Deseed pomegranate`) so the app can spot shared preparation.
+- Reuse make-ahead names on purpose (e.g. `Cook rice`, `Quick-pickled red onions`) so the app
+  can spot shared preparation.
 
 ## Quick start
 
-1. Copy one of the template files and rename it, e.g. `chicken-tikka.md`
-   (lowercase, hyphens, no spaces).
+1. Copy one of the example files from `src/lib/recipes/__fixtures__/` here and rename it, e.g.
+   `chicken-tikka.md` (lowercase, hyphens, no spaces).
 2. Change `template: true` to `template: false`, or delete that line.
 3. Fill in the top section (between the `---` lines) and the headings below it.
 
