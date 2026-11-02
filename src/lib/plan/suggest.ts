@@ -77,6 +77,7 @@ export type Reason = {
     | "similar"
     | "same-cuisine"
     | "same-protein"
+    | "recent"
     | "template";
   text: string;
   points: number;
@@ -106,6 +107,8 @@ export const POINTS = {
   similar: -40,
   sameCuisine: -8,
   sameProtein: -10,
+  lastWeek: -15,
+  twoWeeksAgo: -8,
   template: -5,
 } as const;
 
@@ -116,6 +119,8 @@ export type PlanState = {
   dismissed: string[];
   /** Combinations the household liked, as lists of recipe ids. */
   liked?: string[][];
+  /** Dinners of the week before (1) and two weeks before (2), by recipe id. */
+  recent?: Record<string, number>;
 };
 
 /** Cooking evenings that don't have a dish yet (an evening of leftovers counts as taken). */
@@ -249,6 +254,11 @@ function scoreRecipe(candidate: PlanRecipe, chosen: PlanRecipe[], plan: PlanStat
       add("same-protein", POINTS.sameProtein, `${protein![0].toUpperCase()}${protein!.slice(1)} again, like ${shortTitle(sameProtein[0].title)}.`);
     }
   }
+
+  // Not again so soon: a gentle nudge, not a ban.
+  const weeksAgo = plan.recent?.[candidate.id];
+  if (weeksAgo === 1) add("recent", POINTS.lastWeek, "You had this the week before.");
+  else if (weeksAgo === 2) add("recent", POINTS.twoWeeksAgo, "You had this two weeks before.");
 
   if (candidate.isTemplate) add("template", POINTS.template, "Illustrative example, not one of your own recipes.");
   if (candidate.seafood === "may contain") notes.push("May contain fish: check the label.");

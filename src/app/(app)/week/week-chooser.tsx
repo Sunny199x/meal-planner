@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { saveWeekDishesAction } from "@/lib/plan/actions";
 import { formatWeek } from "@/lib/plan/dates";
-import type { PastWeek, Repeated } from "@/lib/plan/history";
+import { recentDinners, type PastWeek, type Repeated } from "@/lib/plan/history";
 import { usableCombinations, type LikedCombination } from "@/lib/plan/liked";
 import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, setRepeat, timeClash } from "@/lib/plan/choose";
 import {
@@ -58,10 +58,12 @@ export function WeekChooser({
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   const known = useMemo(() => dishes.filter((d) => byId.has(d.recipeId)), [dishes, byId]);
   const usable = useMemo(() => usableCombinations(liked, byId), [liked, byId]);
+  const recent = useMemo(() => recentDinners(pastWeeks, weekStart), [pastWeeks, weekStart]);
   const plan = { setup, dishes: known, dismissed };
   const ranked = useMemo(
-    () => rankCandidates(recipes, { setup, dishes: known, dismissed, liked: usable.map((c) => c.recipeIds) }, weekStart),
-    [recipes, setup, known, dismissed, usable, weekStart],
+    () =>
+      rankCandidates(recipes, { setup, dishes: known, dismissed, liked: usable.map((c) => c.recipeIds), recent }, weekStart),
+    [recipes, setup, known, dismissed, usable, recent, weekStart],
   );
   const open = openEvenings(plan);
   const shown = shortlist(ranked, 3, page);
@@ -305,6 +307,7 @@ export function WeekChooser({
             <BrowseAll
               recipes={recipes}
               chosen={known}
+              recent={recent}
               onAdd={(r) => {
                 add(r, "browse");
                 setBrowsing(false);
@@ -655,10 +658,13 @@ function SuggestionCard({
 function BrowseAll({
   recipes,
   chosen,
+  recent,
   onAdd,
 }: {
   recipes: PlanRecipe[];
   chosen: PlannedDish[];
+  /** Dinners of the last two weeks: 1 = the week before, 2 = two weeks before. */
+  recent: Record<string, number>;
   onAdd: (recipe: PlanRecipe) => void;
 }) {
   const [query, setQuery] = useState("");
@@ -684,6 +690,7 @@ function BrowseAll({
               <span className="block">{r.title}</span>
               <span className="text-sm text-muted">
                 {r.timeTotalMin} min · {r.cuisine}
+                {recent[r.id] && <> · had {recent[r.id] === 1 ? "the week before" : "two weeks before"}</>}
               </span>
             </span>
             <button

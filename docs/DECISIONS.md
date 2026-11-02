@@ -53,9 +53,15 @@ the repo, then check it for real on the Vercel preview deployment.
   "contains seafood" are also calculated when shown, never stored.
 - **Migrations run at the start of every Vercel build** (`npm run build` runs
   `scripts/migrate.mts` first). If no database is connected, that step is skipped with a message.
-- **Preview and production share one database for now.** Until that changes, database changes
-  must only add tables or columns, never rename or remove them. Revisit before weekly use
-  (milestone 2/3), e.g. with Neon's per-preview database branches.
+- **Each preview has its own copy of the database** (since 2 November 2026). The Neon connection in
+  Vercel has "Create database branch for deployment: Preview" on: a preview build gets a branch
+  `preview/<git-branch>`, copied from production when that branch's first preview is built, and
+  the build's migrations run on the copy. Production uses the main branch. Saketh checked it with
+  a test grocery item that showed on the preview only. To refresh a preview's copy: Neon →
+  Branches → the branch → *Reset from parent*. (Before this, preview and production shared one
+  database.)
+- **Database changes still prefer adding** tables or columns: while a production deploy finishes,
+  the previous version can still be serving. Renaming or removing something takes two releases.
 - **Server region Frankfurt** (`fra1` in `vercel.json`), next to the Neon database in Frankfurt.
 - **Passcode sign-in:** a signed, HttpOnly cookie lasting 90 days. The passcode ignores capitals
   and extra spaces. Changing `HOUSEHOLD_PASSCODE` or `SESSION_SECRET` in Vercel signs everyone
@@ -480,9 +486,15 @@ soon". The trend of how long choosing takes was left out.
       already in the week.
   - Deleted recipes and recipes now containing seafood drop out. A combination left with fewer
     than two dishes is hidden. *Forget* removes one.
-- **Shared database:** the production app before this change rejects a week with a "repeat" or
-  "liked" dinner when it saves that week again. So repeating should only be tried on a preview once
-  preview and production have separate databases.
+- **Not again so soon** (`recentDinners` in `history.ts`, a rule in `suggest.ts`): a dinner from the
+  week before loses 15 points, one from two weeks before 8, and the card says so ("You had this
+  the week before."). Browse all recipes shows the same. It is a nudge, not a ban: a dish that
+  shares prep with one already chosen can still come first, and repeating a week on purpose is
+  unaffected. Weeks are counted from the week being planned. Dishes never put on an evening
+  don't count, since they weren't eaten.
+- **Older app versions** reject a week with a "repeat" or "liked" dinner when saving it again.
+  That only mattered while preview and production shared a database; production gets this code
+  when it is merged.
 
 ## Product decisions
 

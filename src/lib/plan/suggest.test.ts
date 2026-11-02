@@ -213,6 +213,26 @@ describe("combinations the household liked", () => {
   });
 });
 
+describe("not again so soon", () => {
+  it("lowers dinners from the week before more than from two weeks before, and says why", () => {
+    const recipes = [recipe("korma"), recipe("tacos"), recipe("stew")];
+    const state = plan([], { recent: { korma: 1, tacos: 2 } });
+    const ranked = rank(recipes, state);
+    expect(ranked.map((s) => s.recipe.id)).toEqual(["stew", "tacos", "korma"]);
+    expect(ranked[2].notes).toContain("You had this the week before.");
+    expect(ranked[1].notes).toContain("You had this two weeks before.");
+    expect(ranked[2].score).toBe(POINTS.lastWeek);
+    expect(ranked[1].score).toBe(POINTS.twoWeeksAgo);
+  });
+
+  it("is a nudge: a dinner from the week before that shares prep can still come first", () => {
+    const rice = { makeAhead: [{ name: "Cook rice", description: "" }] };
+    const recipes = [recipe("curry", rice), recipe("korma", rice), recipe("stew")];
+    const ranked = rank(recipes, plan(["curry"], { recent: { korma: 1 } }));
+    expect(ranked[0].recipe.id).toBe("korma");
+  });
+});
+
 describe("shortlist", () => {
   it("avoids three dishes of the same cuisine side by side, and pages through the rest", () => {
     const ranked = rank(

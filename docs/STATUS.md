@@ -88,6 +88,8 @@ and the yellow logo. A week of real use starts now.
   - **Combinations you liked:** under the week's dinners, *Save dishes that went well together*
     saves 2–3 of them. They are offered when a new week starts and give suggestions a ♥ reason
     ("You liked this with …", marked as your combination). *Forget* removes one.
+  - **Not again so soon:** dinners from the week before, and less so two weeks before, are
+    suggested later, with the reason on the card; *Browse all recipes* marks them too.
   - **Your week:** dishes per evening, with a menu to move one (moving onto a taken evening swaps
     them), × to remove, *Undo*, a warning if a dish is too long for its evening, and what is still
     open (evenings, lunch boxes).
@@ -126,7 +128,6 @@ and the yellow logo. A week of real use starts now.
 
 ## Not built yet (and labelled in the app where it shows)
 
-- "Not again so soon" (gently avoiding dinners from the last week or two): milestone 5, next.
 - Instagram posts can't be read by the app yet: the caption is pasted, or screenshots of the post
   are added as photos (see `docs/IDEAS.md`).
 - YouTube recipes that are only said out loud in the video, not written in its description.
@@ -142,8 +143,9 @@ and the yellow logo. A week of real use starts now.
 - **Suggestion points are a first guess.** The rules and points are listed in
   `docs/DECISIONS.md`. They only find overlap the recipe files contain: shared prep needs the
   same make-ahead name in both recipes ("Cook rice" in both, not "Cook rice" and "Make rice").
-- **One database for preview and production.** Database changes must only add things until this
-  is revisited (before weekly use). Choosing a week on the preview changes the real week too.
+- **A preview's data is a copy** taken when that branch's first preview was built. It doesn't
+  follow later changes to the real data (refresh it in Neon with *Reset from parent*), and
+  nothing done on a preview reaches the real app.
 - **Briefly outdated pages.** Next.js shows pages you return to instantly and then refreshes them,
   so a change made on the other phone, or a new favourite, can take a moment to appear. After
   saving or deleting, the next page always loads fresh.
@@ -223,7 +225,5 @@ and the yellow logo. A week of real use starts now.
 
 1. **A week of real use** (from 30 October) on the main app. Feedback goes into `docs/IDEAS.md`,
    grouped by part of the app, and is reviewed together at the end of the week.
-2. **Separate databases for preview and production,** before testing previews again: today the
-   preview writes into the household's real data.
-3. **Milestone 5 (history):** past weeks, "repeat a past week" and liked meal combinations feeding
-   the suggestions, plus whatever the testing week shows matters most.
+2. **Milestone 5 (history)** is on the preview: repeat a past week, liked combinations and "not
+   again so soon". Then whatever the testing week shows matters most.

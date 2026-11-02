@@ -38,6 +38,20 @@ export function pastWeeks(rows: SavedRow[], before: string): PastWeek[] {
   return weeks.sort((a, b) => b.weekStart.localeCompare(a.weekStart));
 }
 
+/**
+ * Dinners from the two weeks before `weekStart`, by recipe: 1 = the week
+ * before, 2 = two weeks before (the more recent counts). Dishes never put on an
+ * evening are left out, since they weren't eaten.
+ */
+export function recentDinners(weeks: PastWeek[], weekStart: string): Record<string, 1 | 2> {
+  const recent: Record<string, 1 | 2> = {};
+  for (const ago of [2, 1] as const) {
+    const week = weeks.find((w) => w.weekStart === addDays(weekStart, -7 * ago));
+    for (const dish of week?.dishes ?? []) if (dish.day !== null) recent[dish.recipeId] = ago;
+  }
+  return recent;
+}
+
 type RepeatRecipe = Pick<PlanRecipe, "id" | "timeTotalMin" | "seafood">;
 
 export type Repeated = {

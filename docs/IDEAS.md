@@ -165,4 +165,5 @@ Small things that may or may not matter once the app is used for real weeks:
 - **Remember "Not this one"** for the week, instead of forgetting it when you leave the Week tab.
 - **Named collections** beyond favourites and tags.
 - **TikTok links:** not used in the household.
-- **Separate databases for preview and production:** revisit before relying on the app weekly.
+- ~~**Separate databases for preview and production**~~ Done 2 November 2026: each preview gets its
+  own copy (see `docs/DECISIONS.md`).

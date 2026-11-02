@@ -1,6 +1,6 @@
 // Database tables. After changing this file, run `npm run db:generate` to
-// create a migration in drizzle/. While preview and production share one
-// database, only add tables or columns; never rename or drop them.
+// create a migration in drizzle/. Prefer adding tables or columns: while a
+// deploy finishes, the previous version may still be running against them.
 import { boolean, date, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import type { PlannedDish, PrepState, ShoppingState, WeekSetup } from "../plan/types";
 import { DIETS, type IngredientLine, type MakeAheadTask } from "../recipes/types";

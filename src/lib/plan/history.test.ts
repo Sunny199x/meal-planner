@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pastWeeks, repeatWeek } from "./history";
+import { pastWeeks, recentDinners, repeatWeek } from "./history";
 import { DEFAULT_SETUP, readDishes, type PlannedDish, type WeekSetup } from "./types";
 
 const ID = (n: number) => `00000000-0000-4000-8000-00000000000${n}`;
@@ -164,5 +164,22 @@ describe("listing past weeks", () => {
   it("leaves out an old week's Sunday that falls in the given week", () => {
     const rows = [row("2026-11-02", [dish(1, 6)])];
     expect(pastWeeks(rows, "2026-11-08")).toEqual([]);
+  });
+});
+
+describe("dinners of the last two weeks", () => {
+  it("counts the week before as 1 and two weeks before as 2, the more recent winning", () => {
+    const weeks = [
+      { weekStart: "2026-11-01", dishes: [dish(1, 1), dish(2, 3), dish(5, null)] },
+      { weekStart: "2026-10-25", dishes: [dish(2, 2), dish(3, 4)] },
+      { weekStart: "2026-10-18", dishes: [dish(4, 1)] }, // three weeks before: forgotten
+    ];
+    expect(recentDinners(weeks, "2026-11-08")).toEqual({ [ID(1)]: 1, [ID(2)]: 1, [ID(3)]: 2 });
+  });
+
+  it("counts weeks by date, not by their place in the list", () => {
+    // Nothing was planned the week before.
+    expect(recentDinners([{ weekStart: "2026-10-25", dishes: [dish(3, 4)] }], "2026-11-08")).toEqual({ [ID(3)]: 2 });
+    expect(recentDinners([{ weekStart: "2026-10-25", dishes: [dish(3, 4)] }], "2026-11-15")).toEqual({});
   });
 });
