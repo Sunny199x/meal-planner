@@ -444,6 +444,32 @@ Saketh: "the week needs to start from Sunday because that's when prep happens."
   week there could copy its setup from a Sunday row a preview saved, with its evenings off by a
   day, until this is merged.
 
+## Milestone 5: history (2 November 2026)
+
+Saketh chose three parts: past weeks with "repeat a week", liked combinations, and "not again so
+soon". The trend of how long choosing takes was left out.
+
+- **Past weeks live inside the choosing screen** (*Repeat a past week*, next to *Browse all
+  recipes*), not on a page of their own: repeating is a way to choose, and inside the chooser it
+  joins the same *Undo* and saving as every other pick.
+- **Repeating a week** (`src/lib/plan/history.ts`):
+  - Each dinner goes on the same evening if that evening is cooked on and free. Then its leftovers
+    evening, if that is free too. Then dinners whose evening was taken go on the earliest free
+    evening they fit by time. Placing the dinners that keep their evening first stops a moved
+    dinner from taking another dinner's evening.
+  - Dinners already chosen stay. A dinner with no free evening left is not added, and the
+    message names it. Recipes deleted since, recipes now containing seafood, and recipes
+    already in the week are left out.
+  - Lunch boxes and freezer portions are not copied: this week's setup may differ, so they are
+    shared out afresh.
+  - Repeated dinners are saved as added by "repeat", next to "start", "suggestion" and "browse".
+- **The list** covers the half year before the week shown (26 weeks), weeks with at least one
+  dinner, newest first. Weeks saved the old way (Monday to Sunday) are read as Sunday weeks the
+  same way opening them would, but listing them saves nothing.
+- **Shared database:** the production app before this change rejects a week with a "repeat"
+  dinner when it saves that week again. So repeating should only be tried on a preview once
+  preview and production have separate databases.
+
 ## Product decisions
 
 1. **Backend is fine.** Use it for URL import and so both phones see the same recipes, plan and

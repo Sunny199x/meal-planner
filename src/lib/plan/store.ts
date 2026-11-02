@@ -1,8 +1,9 @@
 // Reading and saving weekly plans. Each save is a single write.
-import { desc, eq, inArray, lt, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, sql, type SQL } from "drizzle-orm";
 import { weekPlans, type WeekPlanRow } from "../db/schema";
 import type { Db } from "../db/types";
-import { weekday } from "./dates";
+import { addDays, weekday } from "./dates";
+import { pastWeeks, type PastWeek } from "./history";
 import { isOldWeek, oldWeeksFor, setupFromOldWeek, weekFromOldWeeks } from "./old-weeks";
 import { DEFAULT_SETUP, type PlannedDish, type PrepState, type ShoppingState, type WeekSetup } from "./types";
 
@@ -27,6 +28,21 @@ export async function getPlan(db: Db, weekStart: string): Promise<WeekPlanRow | 
   // The other phone built it at the same moment: use theirs.
   const [theirs] = await db.select().from(weekPlans).where(eq(weekPlans.weekStart, weekStart));
   return theirs ?? null;
+}
+
+/** How far back past weeks are listed. */
+export const PAST_WEEKS = 26;
+
+/** The weeks with dinners in the half year before `before`, newest first. Only reads. */
+export async function getPastWeeks(db: Db, before: string): Promise<PastWeek[]> {
+  // A week before the range can hold the first listed week's days, if it was saved the old way.
+  const rows = await db
+    .select()
+    .from(weekPlans)
+    .where(and(gte(weekPlans.weekStart, addDays(before, -7 * (PAST_WEEKS + 1))), lt(weekPlans.weekStart, before)))
+    .orderBy(desc(weekPlans.weekStart));
+  const earliest = addDays(before, -7 * PAST_WEEKS);
+  return pastWeeks(rows, before).filter((week) => week.weekStart >= earliest);
 }
 
 /** A new week starts from the last week's setup, without its "ingredients to use". */

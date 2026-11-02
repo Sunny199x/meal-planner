@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { saveWeekDishesAction } from "@/lib/plan/actions";
+import { formatWeek } from "@/lib/plan/dates";
+import type { PastWeek, Repeated } from "@/lib/plan/history";
 import { addDish, minutesToChoose, moveDish, pickEvening, removeDish, setRepeat, timeClash } from "@/lib/plan/choose";
 import {
   changeFreezer,
@@ -17,6 +19,7 @@ import { DAY_NAMES, DAY_SHORT, MAX_FREEZER, TIME_SLOTS, type PlannedDish, type W
 import { RecipeTile } from "@/components/ui";
 import { matchesWords } from "@/lib/recipes/filters";
 import { formatQuantity } from "@/lib/recipes/format";
+import { PastWeeks } from "./past-weeks";
 
 export function WeekChooser({
   weekStart,
@@ -24,18 +27,23 @@ export function WeekChooser({
   initialDishes,
   choosingStartedAt,
   recipes,
+  pastWeeks,
 }: {
   weekStart: string;
   setup: WeekSetup;
   initialDishes: PlannedDish[];
   choosingStartedAt: string | null;
   recipes: PlanRecipe[];
+  /** Earlier weeks with dinners, newest first. */
+  pastWeeks: PastWeek[];
 }) {
   const [dishes, setDishes] = useState(initialDishes);
   const [history, setHistory] = useState<PlannedDish[][]>([]);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [page, setPage] = useState(0);
   const [browsing, setBrowsing] = useState(false);
+  const [showingPast, setShowingPast] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [startedAt, setStartedAt] = useState(choosingStartedAt);
   const [, startSaving] = useTransition();
@@ -66,17 +74,30 @@ export function WeekChooser({
     setHistory((h) => [...h, dishes]);
     setDishes(next);
     setPage(0);
+    setNotice(null);
     save(next);
   }
   function undo() {
     const previous = history.at(-1);
     if (!previous) return;
+    setNotice(null);
     setHistory((h) => h.slice(0, -1));
     setDishes(previous);
     save(previous);
   }
   function add(recipe: PlanRecipe, via: PlannedDish["via"]) {
     change(addDish(dishes, recipe, setup, via));
+  }
+  function repeat(week: PastWeek, repeated: Repeated) {
+    change(repeated.dishes);
+    setShowingPast(false);
+    const count = repeated.added.length;
+    const missing = repeated.noRoom.map((id) => byId.get(id)?.title).filter(Boolean);
+    setNotice(
+      `Added ${count} ${count === 1 ? "dinner" : "dinners"} from ${formatWeek(week.weekStart)}. ` +
+        (missing.length > 0 ? `No free evening was left for ${missing.join(", ")}. ` : "") +
+        "Undo takes them all back.",
+    );
   }
   function renderDish(dish: PlannedDish) {
     return (
@@ -153,6 +174,11 @@ export function WeekChooser({
             </li>
           ))}
         </ul>
+        {notice && (
+          <p role="status" className="rounded-xl bg-good-light px-3 py-2 text-sm text-good">
+            {notice}
+          </p>
+        )}
         {saveError && (
           <p role="alert" className="rounded-xl bg-danger-light px-3 py-2 text-sm text-danger">
             Not saved: {saveError}
@@ -167,7 +193,8 @@ export function WeekChooser({
           </h2>
           {known.length === 0 && (
             <p className="text-sm text-muted">
-              Start with anything you feel like. After each pick, the suggestions update to fit what you&apos;ve chosen.
+              Start with anything you feel like{pastWeeks.length > 0 && <>, or repeat a past week</>}. After each pick,
+              the suggestions update to fit what you&apos;ve chosen.
             </p>
           )}
           {shown.length === 0 ? (
@@ -200,18 +227,35 @@ export function WeekChooser({
             )}
             <button
               type="button"
-              onClick={() => setBrowsing(!browsing)}
+              onClick={() => {
+                setBrowsing(!browsing);
+                setShowingPast(false);
+              }}
               aria-expanded={browsing}
               className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
             >
               {browsing ? "Hide all recipes" : "Browse all recipes"}
             </button>
+            {pastWeeks.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowingPast(!showingPast);
+                  setBrowsing(false);
+                }}
+                aria-expanded={showingPast}
+                className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent/50"
+              >
+                {showingPast ? "Hide past weeks" : "Repeat a past week"}
+              </button>
+            )}
             {dismissed.length > 0 && (
               <button type="button" onClick={() => setDismissed([])} className="px-2 py-2 text-sm text-accent underline">
                 Bring back {dismissed.length} hidden
               </button>
             )}
           </div>
+          {showingPast && <PastWeeks weeks={pastWeeks} byId={byId} setup={setup} dishes={known} onRepeat={repeat} />}
           {browsing && (
             <BrowseAll
               recipes={recipes}

@@ -81,6 +81,10 @@ and the yellow logo. A week of real use starts now.
     ingredients, things to use up, quick enough, good for lunches, variety). Each card can be
     added or dismissed with *Not this one*; *Show others* gives the next three; *Browse all
     recipes* finds any recipe.
+  - **Repeat a past week:** lists the half year of earlier weeks with their dinners, newest
+    first, three at a time. *Repeat this week* puts that week's dinners on the same evenings of
+    this one; dinners already chosen stay, a dinner whose evening is taken goes on the next free
+    evening it fits, and *Undo* takes the whole repeat back.
   - **Your week:** dishes per evening, with a menu to move one (moving onto a taken evening swaps
     them), × to remove, *Undo*, a warning if a dish is too long for its evening, and what is still
     open (evenings, lunch boxes).
@@ -119,7 +123,7 @@ and the yellow logo. A week of real use starts now.
 
 ## Not built yet (and labelled in the app where it shows)
 
-- Saved meal combinations and past weeks ("repeat a past week"): milestone 5.
+- Liked meal combinations and "not again so soon": milestone 5, in progress.
 - Instagram posts can't be read by the app yet: the caption is pasted, or screenshots of the post
   are added as photos (see `docs/IDEAS.md`).
 - YouTube recipes that are only said out loud in the video, not written in its description.
