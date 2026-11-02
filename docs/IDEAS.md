@@ -18,6 +18,32 @@ Feedback from using Forkcast for real, newest first. Reviewed together at the en
 - **The week starts on Sunday** (*Sunny, 31 October*): prep happens on Sunday. **Done** (see
   `docs/DECISIONS.md`).
 
+## From the research brief of 2 November 2026 (Open)
+
+From Research's first brief, `docs/research/2026-11-02-weekly-dinner-planning.md` (a draft). The
+sizes and what exists today are in the note at its end. Nothing here is agreed yet.
+
+- **R1. Fewer setup questions each week** (*must*, medium). Ask only which nights and how much
+  effort, from a standard week. People, portions, lunch boxes and prep days become standing
+  settings. Conflicts with "a new week copies last week's setup"; Sunny decides.
+- **R2. Show the prep load** (*must*). The task count and dishes per prep day: small. Proposing
+  prep days: medium. Minutes need a time on every make-ahead task, which recipes don't have yet.
+  Also explain why tasks without a prep limit happen on the evening.
+- **R3. Log what was shown, dismissed and picked** (*must*, medium), and keep "Not this one" for
+  the week. Picks are already saved.
+- **R4. Rotation, trial and excluded recipes** (*should*, medium). There is no exclude yet. Imports
+  would start as trial; the HelloFresh set could be excluded in bulk.
+- **R5. "Any dishes you really want?" as the first step** (*should*, small).
+- **R6. A 1–5 "how hard did that feel?" after choosing** (*should*, small).
+- **R7. Swipe yes/no on suggestion cards** (*could*, medium; evidence is vendor claims).
+- **R8. A quarterly recipe review** (*could*, large; needs R3 and R4).
+- **R9. A backup dinner** (*could*, small). A dish on "No evening" already works as one; label it.
+- **Bought for a dinner you removed** (found while checking the brief): items ticked as bought
+  for a dish later removed just vanish from the shopping list. Say so instead, so they get used.
+  Small to medium.
+- **A night that fell through** (found while checking the brief): nothing records it. A tap to
+  mark it would help R9 and count unplanned takeout nights without prices. Small to medium.
+
 ## From using the app
 
 ### Normalise imported recipes so they fit the suggestion rules (Planned: milestone 4)
